@@ -1,0 +1,34 @@
+get_filename_component(EMU_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+include(CMakeFindDependencyMacro)
+
+list(APPEND CMAKE_MODULE_PATH ${EMU_CMAKE_DIR})
+# NOTE: to find FindRapidJSON.cmake
+# find_dependency(RapidJSON @MIN_RapidJSON_VERSION@)
+# list(REMOVE_AT CMAKE_MODULE_PATH -1)
+
+# find_dependency(boost_regex @MIN_BOOST_VERSION@)
+
+include(${EMU_CMAKE_DIR}/conanbuildinfo.cmake)
+conan_basic_setup(TARGETS NO_OUTPUT_DIRS)
+
+if(Emu_FIND_COMPONENTS)
+    foreach(_comp IN LISTS Emu_FIND_COMPONENTS)
+        if(${_comp} STREQUAL "Cuda")
+            set(emu_use_cuda ON)
+        endif()
+    endforeach()
+endif()
+
+if(emu_use_cuda)
+    find_package(CUDA REQUIRED)
+endif()
+
+if(NOT TARGET Emu::Core)
+    include(${EMU_CMAKE_DIR}/EmuTargets.cmake)
+endif()
+
+if(emu_use_cuda)
+    set(EMU_TARGETS Emu::Core Emu::Cuda)
+else()
+    set(EMU_TARGETS Emu::Core)
+endif()

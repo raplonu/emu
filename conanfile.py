@@ -1,4 +1,14 @@
 from conans import ConanFile, CMake, tools
+import os
+
+def path_of(filename):
+    return filename if os.sep == '/' else filename.replace('/', os.sep)
+
+def load(filename):
+    path = path_of(filename)
+    
+    # Delete the return trail using [0:-1].
+    return [tools.load(path)[0:-1]] if os.path.exists(path) else []
 
 class EmuConan(ConanFile):
     name = 'emu'
@@ -32,23 +42,36 @@ class EmuConan(ConanFile):
     default_options = {'shared' : True,
                        'fPIC'   : True,
                        'cuda'   : True,
-                       'cuda_sm': "Auto"}
+                       'cuda_sm': 'Auto',
+                       'boost:header_only': True}
 
     settings = 'os', 'compiler', 'build_type', 'arch'
     generators = 'cmake'
     exports_sources = '*'
 
-    def build(self):
+    def _configure(self):
         cmake = CMake(self)
-        cmake.definitions["emu_use_cuda"] = self.options.cuda
-        cmake.definitions["emu_cuda_sm"] = self.options.cuda_sm
+        cmake.definitions['emu_use_cuda'] = self.options.cuda
+        cmake.definitions['emu_cuda_sm'] = self.options.cuda_sm
+        
+        # The project will generate EmuCoreFlags.txt & EmuCudaFlags.txt with the flags in it.
+        cmake.definitions['emu_export_flags'] = True
+        
         cmake.configure(source_folder='.')
-        cmake.build()
+        return cmake
+
+    def build(self):
+        self._configure().build()
 
     def package(self):
-        self.copy('*.h', dst='include', src='include')
-        self.copy('*.so', dst='lib', keep_path=False)
-        self.copy('*.a', dst='lib', keep_path=False)
+        self._configure().install()
     
     def package_info(self):
-        self.cpp_info.libs = ['emu_core', 'emu_cuda']
+        self.cpp_info.libs = ['emucore']
+
+        self.cpp_info.cxxflags = load(f'{self.package_folder}/lib/cmake/Emu/EmuCoreFlags.txt')
+
+        if self.options.cuda:
+            self.cpp_info.libs += ['emucuda']
+
+            self.cpp_info.cxxflags += load(f'{self.package_folder}/lib/cmake/Emu/EmuCudaFlags.txt')
