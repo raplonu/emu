@@ -19,7 +19,13 @@ project(emu VERSION 0.1.0 LANGUAGES ${emu_language})
 if (emu_verbose)
     message(STATUS "Emu - Conan setup.")
 endif()
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+
+if(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo_multi.cmake)
+    include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo_multi.cmake)
+else()
+    include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
+endif()
+
 conan_basic_setup(TARGETS)
 
 ########################################################################

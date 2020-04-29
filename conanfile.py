@@ -21,7 +21,7 @@ class EmuConan(ConanFile):
     requires = [
         'fmt/6.1.2',
         'boost/1.71.0@conan/stable',
-        'half/2.1.0@user/channel']
+        'half/2.1.0@user/stable']
 
     options = {'shared':  [True, False],
                'fPIC':    [True, False],
