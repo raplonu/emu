@@ -1,14 +1,9 @@
 from conans import ConanFile, CMake, tools
 import os
 
-def path_of(filename):
-    return filename if os.sep == '/' else filename.replace('/', os.sep)
-
 def load(filename):
-    path = path_of(filename)
-    
     # Delete the return trail using [0:-1].
-    return [tools.load(path)[0:-1]] if os.path.exists(path) else []
+    return [tools.load(filename)[0:-1]] if os.path.exists(filename) else []
 
 class EmuConan(ConanFile):
     name = 'emu'
@@ -25,6 +20,7 @@ class EmuConan(ConanFile):
 
     options = {'shared':  [True, False],
                'fPIC':    [True, False],
+               'test':    [True, False],
                # Build emu_cuda library.
                'cuda':    [True, False],
                # Specify the sm configuration used to build emu_cuda library.
@@ -41,6 +37,7 @@ class EmuConan(ConanFile):
 
     default_options = {'shared' : True,
                        'fPIC'   : True,
+                       'test'   : False,
                        'cuda'   : True,
                        'cuda_sm': 'Auto',
                        'boost:header_only': True}
@@ -49,10 +46,15 @@ class EmuConan(ConanFile):
     generators = 'cmake'
     exports_sources = '*'
 
+    def requirements(self):
+        if self.options.test:
+            self.requires("gtest/1.8.1@bincrafters/stable")
+
     def _configure(self):
         cmake = CMake(self)
         cmake.definitions['emu_use_cuda'] = self.options.cuda
         cmake.definitions['emu_cuda_sm'] = self.options.cuda_sm
+        cmake.definitions['emu_build_test'] = self.options.test
         
         # The project will generate EmuCoreFlags.txt & EmuCudaFlags.txt with the flags in it.
         cmake.definitions['emu_export_flags'] = True
@@ -61,7 +63,10 @@ class EmuConan(ConanFile):
         return cmake
 
     def build(self):
-        self._configure().build()
+        cmake = self._configure()
+        cmake.build()
+        if self.options.test:
+            cmake.test()
 
     def package(self):
         self._configure().install()

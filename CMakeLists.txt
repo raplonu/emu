@@ -20,6 +20,8 @@ if (emu_verbose)
     message(STATUS "Emu - Conan setup.")
 endif()
 
+SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
 if(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo_multi.cmake)
     include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo_multi.cmake)
 else()
