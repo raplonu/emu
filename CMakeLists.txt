@@ -39,8 +39,8 @@ add_library(emucore SHARED
     src/fun.cpp)
 
 target_include_directories(emucore PUBLIC
-    $<INSTALL_INTERFACE:include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include/core>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/core>
 )
 
 target_compile_features(emucore PUBLIC cxx_std_14)
@@ -81,8 +81,8 @@ if (emu_use_cuda)
     )
 
     target_include_directories(emucuda PUBLIC
-        $<INSTALL_INTERFACE:include>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include/cuda>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/cuda>
     )
 
     target_compile_features(emucuda PUBLIC cxx_std_14)
@@ -119,12 +119,13 @@ install(TARGETS ${emu_targets}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 set_target_properties(emucore PROPERTIES EXPORT_NAME Core)
+install(DIRECTORY include/core/emu DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})  
 
 if (emu_use_cuda)
     set_target_properties(emucuda PROPERTIES EXPORT_NAME Cuda)
+    install(DIRECTORY include/cuda/emu DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})  
 endif()
 
-install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})  
 
 install(EXPORT emu-targets
     FILE

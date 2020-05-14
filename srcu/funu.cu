@@ -1,4 +1,4 @@
-#include <emu/funu.h>
+#include <emu/funu.cuh>
 
 #include <fmt/core.h>
 
