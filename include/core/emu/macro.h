@@ -3,14 +3,12 @@
 
 #include <emu/config.h>
 
-#include <boost/preprocessor.hpp>
-
 /// Specify that a function may throw or not. Do nothing if noexcept is not available.
-#define EMU_NOEXCEPT(cond) BOOST_NOEXCEPT_IF(cond)
+#define EMU_NOEXCEPT(cond) noexcept(cond)
 
 /// Specify that a function may throw if the given expression may throw.
 /// Do nothing if noexcept is not available.
-#define EMU_NOEXCEPT_EXPR(expr) BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(expr))
+#define EMU_NOEXCEPT_EXPR(expr) noexcept(noexcept(expr))
 
 #if EMU_CUDA
 
@@ -25,5 +23,6 @@
 #define EMU_HODE
 
 #endif
+
 
 #endif //EMU_MACRO_H

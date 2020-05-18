@@ -1,5 +1,5 @@
-#ifndef EMU_FUNU_H
-#define EMU_FUNU_H
+#ifndef EMU_FUNU_CUH
+#define EMU_FUNU_CUH
 
 namespace emu
 {
@@ -8,4 +8,4 @@ namespace emu
 
 }
 
-#endif //EMU_FUNU_H
+#endif //EMU_FUNU_CUH

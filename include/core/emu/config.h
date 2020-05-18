@@ -11,10 +11,4 @@
 
 #endif
 
-#ifdef __CUDA_ARCH__
-    #define D_CONTEXT
-#else
-    #define H_CONTEXT
-#endif
-
 #endif //EMU_CONFIG_H
