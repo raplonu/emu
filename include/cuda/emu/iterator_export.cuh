@@ -1,7 +1,7 @@
-#ifndef EMU_EXPORT_ITERATOR_H
-#define EMU_EXPORT_ITERATOR_H
+#ifndef EMU_ITERATOR_EXPORT_CUH
+#define EMU_ITERATOR_EXPORT_CUH
 
-#include <emu/macro.h>
+#include <emu/macro.cuh>
 
 #include <thrust/iterator/iterator_adaptor.h>
 
@@ -55,4 +55,4 @@ namespace emu
     }
 }
 
-#endif //EMU_EXPORT_ITERATOR_H
+#endif //EMU_ITERATOR_EXPORT_CUH

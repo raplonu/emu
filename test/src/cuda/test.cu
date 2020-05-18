@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
 
-#include <emu/fun.h>
 #include <iostream>
 #include <cstdio>
 #include <cuda_runtime_api.h>
+
 
 __global__ void ker()
 {

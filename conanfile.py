@@ -16,7 +16,9 @@ class EmuConan(ConanFile):
     requires = [
         'fmt/6.1.2',
         'boost/1.71.0@conan/stable',
-        'half/2.1.0@user/stable']
+        'half/2.1.0@user/stable',
+        'cuda-api-wrappers/0.3.0@user/stable',
+        'cuda-kat/0.1.1@user/stable']
 
     options = {'shared':  [True, False],
                'fPIC':    [True, False],
@@ -26,8 +28,8 @@ class EmuConan(ConanFile):
                # Specify the sm configuration used to build emu_cuda library.
                # This has no effect if cuda option is set to False.
                # cuda_sm can be set to
-               # - "Auto" detects local machine GPU compute arch at runtime.
-               # - "Common" and "All" cover common and entire subsets of architectures
+               # - 'Auto' detects local machine GPU compute arch at runtime.
+               # - 'Common' and 'All' cover common and entire subsets of architectures
                # ARCH_AND_PTX : NAME | NUM.NUM | NUM.NUM(NUM.NUM) | NUM.NUM+PTX
                # NAME: Fermi Kepler Maxwell Kepler+Tegra Kepler+Tesla Maxwell+Tegra Pascal
                # NUM: Any number. Only those pairs are currently accepted by NVCC though:
@@ -48,7 +50,7 @@ class EmuConan(ConanFile):
 
     def requirements(self):
         if self.options.test:
-            self.requires("gtest/1.8.1@bincrafters/stable")
+            self.requires('gtest/1.8.1@bincrafters/stable')
 
     def _configure(self):
         cmake = CMake(self)

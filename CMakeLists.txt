@@ -36,16 +36,20 @@ conan_basic_setup(TARGETS)
 #
 
 add_library(emucore SHARED
-    src/fun.cpp)
+    src/core/fun.cpp)
 
 target_include_directories(emucore PUBLIC
     $<INSTALL_INTERFACE:include/core>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/core>
 )
 
-target_compile_features(emucore PUBLIC cxx_std_14)
+target_compile_features(emucore PUBLIC cxx_std_17)
 
-target_link_libraries(emucore PUBLIC ${CONAN_TARGETS})
+target_link_libraries(emucore PUBLIC
+    CONAN_PKG::fmt
+    CONAN_PKG::boost
+    CONAN_PKG::half
+)
 
 add_library(emu::core ALIAS emucore)
 
@@ -77,7 +81,7 @@ if (emu_use_cuda)
     string(REPLACE "-gencode;" "--generate-code=" ARCH_FLAGS "${ARCH_FLAGS}")
 
     add_library(emucuda SHARED
-        srcu/funu.cu
+        src/cuda/funu.cu
     )
 
     target_include_directories(emucuda PUBLIC
@@ -87,7 +91,12 @@ if (emu_use_cuda)
 
     target_compile_features(emucuda PUBLIC cxx_std_14)
 
-    target_link_libraries(emucuda PUBLIC emucore ${CUDA_LIBRARIES} ${CONAN_TARGETS})
+    target_link_libraries(emucuda PUBLIC
+        emucore
+        ${CUDA_LIBRARIES}
+        CONAN_PKG::cuda-api-wrappers
+        CONAN_PKG::cuda-kat
+    )
 
     target_compile_options(emucuda PUBLIC
         $<$<COMPILE_LANGUAGE:CUDA>:

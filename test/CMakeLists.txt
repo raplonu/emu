@@ -3,7 +3,7 @@ project(emu_test LANGUAGES ${emu_language})
 find_package(GTest REQUIRED)
 
 add_executable(emucoretest
-    src/test.cpp
+    src/core/test.cpp
 )
 
 target_link_libraries(emucoretest PRIVATE
@@ -16,6 +16,7 @@ add_test(NAME emucoretest
 
 if (emu_use_cuda)
     add_executable(emucudatest
+        src/cuda/test.cu
         srcu/test.cu
     )
 
