@@ -17,7 +17,7 @@ add_test(NAME emucoretest
 if (emu_use_cuda)
     add_executable(emucudatest
         src/cuda/test.cu
-        srcu/test.cu
+        src/cuda/iterator_function_test.cu
     )
 
     target_link_libraries(emucudatest PRIVATE
