@@ -4,16 +4,21 @@ find_package(GTest REQUIRED)
 
 add_executable(emucoretest
     src/core/test.cpp
+    src/core/byte_test.cpp
     src/core/span_test.cpp
+    src/core/range_test.cpp
 )
 
 target_link_libraries(emucoretest PRIVATE
-        GTest::GTest GTest::Main emucore
+    GTest::GTest GTest::Main emucore
 )
 
+target_include_directories(emucoretest PRIVATE include)
+
 add_test(NAME emucoretest
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-        COMMAND emucoretest)
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    COMMAND emucoretest
+)
 
 if (emu_use_cuda)
     add_executable(emucudatest
@@ -22,10 +27,13 @@ if (emu_use_cuda)
     )
 
     target_link_libraries(emucudatest PRIVATE
-            GTest::GTest GTest::Main emucuda
+        GTest::GTest GTest::Main emucuda
     )
 
+    target_include_directories(emucudatest PRIVATE include)
+
     add_test(NAME emucudatest
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-            COMMAND emucudatest)
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+        COMMAND emucudatest
+    )
 endif()

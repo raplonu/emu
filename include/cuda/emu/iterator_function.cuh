@@ -16,9 +16,9 @@ namespace emu
 {
     /**
      * Function object that apply a function with a given tuple.
-     * 
+     *
      * Procedure<B (Ts...)> F, Tuple<Ts...> T
-     */    
+     */
     template<typename F, typename... Ts>
     struct apply_t {
         F fn;
@@ -54,7 +54,7 @@ namespace emu
     /**
      * Helper function that return an iterator that iterate on multiple given iterators
      * and return the result of the given function with the source of the iterators.
-     * 
+     *
      * Procedure<B (Ts...)> F, Iterator<Ts>... Its
      */
     template<typename... Its, typename F>

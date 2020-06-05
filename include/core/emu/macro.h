@@ -16,7 +16,18 @@
 #define EMU_DEVICE __device__
 #define EMU_HODE __host__ __device__
 
+#ifdef __CUDA_ARCH__
+    #define DEVICE_CONTEXT 1
+    #define HOST_CONTEXT   0
 #else
+    #define DEVICE_CONTEXT 0
+    #define HOST_CONTEXT   1
+#endif
+
+#else
+
+#define DEVICE_CONTEXT     0
+#define HOST_CONTEXT       1
 
 #define EMU_HOST
 #define EMU_DEVICE
