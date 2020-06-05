@@ -4,6 +4,7 @@ find_package(GTest REQUIRED)
 
 add_executable(emucoretest
     src/core/test.cpp
+    src/core/span_test.cpp
 )
 
 target_link_libraries(emucoretest PRIVATE
