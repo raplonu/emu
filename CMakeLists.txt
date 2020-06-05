@@ -43,12 +43,15 @@ target_include_directories(emucore PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/core>
 )
 
-target_compile_features(emucore PUBLIC cxx_std_17)
+target_compile_features(emucore PUBLIC cxx_std_14)
 
 target_link_libraries(emucore PUBLIC
     CONAN_PKG::fmt
     CONAN_PKG::boost
     CONAN_PKG::half
+    CONAN_PKG::ms-gsl
+    CONAN_PKG::abseil
+    CONAN_PKG::folly
 )
 
 add_library(emu::core ALIAS emucore)
@@ -94,8 +97,6 @@ if (emu_use_cuda)
     target_link_libraries(emucuda PUBLIC
         emucore
         ${CUDA_LIBRARIES}
-        CONAN_PKG::cuda-api-wrappers
-        CONAN_PKG::cuda-kat
     )
 
     target_compile_options(emucuda PUBLIC
@@ -128,11 +129,11 @@ install(TARGETS ${emu_targets}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 set_target_properties(emucore PROPERTIES EXPORT_NAME Core)
-install(DIRECTORY include/core/emu DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})  
+install(DIRECTORY include/core/emu DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 if (emu_use_cuda)
     set_target_properties(emucuda PROPERTIES EXPORT_NAME Cuda)
-    install(DIRECTORY include/cuda/emu DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})  
+    install(DIRECTORY include/cuda/emu DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 endif()
 
 
@@ -173,7 +174,7 @@ if(emu_export_flags)
     endif()
 
     get_target_property(TMP_CXX_FLAGS emucore COMPILE_OPTIONS)
-    
+
     if(TMP_CXX_FLAGS)
         if (emu_verbose)
             message(STATUS "Exporting Emu::Core compile flags in EmuCoreFlags.txt.")
