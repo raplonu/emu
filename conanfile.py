@@ -16,9 +16,7 @@ class EmuConan(ConanFile):
     requires = [
         'fmt/6.1.2',
         'boost/1.71.0@conan/stable',
-        'half/2.1.0@user/stable',
-        'cuda-api-wrappers/0.3.0@user/stable',
-        'cuda-kat/0.1.1@user/stable']
+        'half/2.1.0@user/stable']
 
     options = {'shared':  [True, False],
                'fPIC':    [True, False],
@@ -35,7 +33,7 @@ class EmuConan(ConanFile):
                # NUM: Any number. Only those pairs are currently accepted by NVCC though:
                #    2.0 2.1 3.0 3.2 3.5 3.7 5.0 5.2 5.3 6.0 6.2
                # For more information refer to https://cmake.org/cmake/help/latest/module/FindCUDA.html
-               'cuda_sm': 'ANY'} 
+               'cuda_sm': 'ANY'}
 
     default_options = {'shared' : True,
                        'fPIC'   : True,
@@ -57,10 +55,10 @@ class EmuConan(ConanFile):
         cmake.definitions['emu_use_cuda'] = self.options.cuda
         cmake.definitions['emu_cuda_sm'] = self.options.cuda_sm
         cmake.definitions['emu_build_test'] = self.options.test
-        
+
         # The project will generate EmuCoreFlags.txt & EmuCudaFlags.txt with the flags in it.
         cmake.definitions['emu_export_flags'] = True
-        
+
         cmake.configure(source_folder='.')
         return cmake
 
@@ -72,7 +70,7 @@ class EmuConan(ConanFile):
 
     def package(self):
         self._configure().install()
-    
+
     def package_info(self):
         self.cpp_info.libs = ['emucore']
 
