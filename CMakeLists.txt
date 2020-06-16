@@ -43,7 +43,7 @@ target_include_directories(emucore PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/core>
 )
 
-target_compile_features(emucore PUBLIC cxx_std_14)
+target_compile_features(emucore PUBLIC cxx_std_17)
 
 target_link_libraries(emucore PUBLIC
     CONAN_PKG::fmt
@@ -51,7 +51,8 @@ target_link_libraries(emucore PUBLIC
     CONAN_PKG::half
     CONAN_PKG::ms-gsl
     CONAN_PKG::abseil
-    CONAN_PKG::folly
+    CONAN_PKG::tl-expected
+    CONAN_PKG::tl-optional
 )
 
 add_library(emu::core ALIAS emucore)
@@ -92,7 +93,10 @@ if (emu_use_cuda)
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/cuda>
     )
 
-    target_compile_features(emucuda PUBLIC cxx_std_14)
+    target_compile_features(emucuda PUBLIC cxx_std_17)
+    # Since cxx_std_17 is not supported for cuda project and do not produce
+    # any flag during compilation, we set the flag manually.
+    target_compile_options(emucuda PRIVATE "-std=c++17")
 
     target_link_libraries(emucuda PUBLIC
         emucore

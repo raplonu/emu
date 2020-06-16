@@ -15,7 +15,7 @@ namespace
             auto v = emu::as_vector(input);
             static_assert(std::is_same<decltype(v), std::vector<int>>::value, "");
 
-            using emu::size;
+            using std::size;
             EXPECT_EQ(size(v), size(input));
             EXPECT_EQ(v[0], input[0]);
             EXPECT_EQ(v[1], input[1]);
@@ -26,7 +26,7 @@ namespace
             auto v = emu::as_vector<unsigned int>(input);
             static_assert(std::is_same<decltype(v), std::vector<unsigned int>>::value, "");
 
-            using emu::size;
+            using std::size;
             EXPECT_EQ(size(v), size(input));
             EXPECT_EQ(v[0], static_cast<unsigned int>(input[0]));
             EXPECT_EQ(v[1], static_cast<unsigned int>(input[1]));
@@ -41,7 +41,7 @@ namespace
             auto v = emu::as_vector(input);
             static_assert(std::is_same<decltype(v), std::vector<int>>::value, "");
 
-            using emu::size;
+            using std::size;
             EXPECT_EQ(size(v), size(input));
             EXPECT_EQ(v[0], input[0]);
             EXPECT_EQ(v[1], input[1]);
@@ -52,7 +52,7 @@ namespace
             auto v = emu::as_vector<unsigned int>(input);
             static_assert(std::is_same<decltype(v), std::vector<unsigned int>>::value, "");
 
-            using emu::size;
+            using std::size;
             EXPECT_EQ(size(v), size(input));
             EXPECT_EQ(v[0], static_cast<unsigned int>(input[0]));
             EXPECT_EQ(v[1], static_cast<unsigned int>(input[1]));
@@ -67,7 +67,7 @@ namespace
             auto v = emu::as_vector(input);
             static_assert(std::is_same<decltype(v), std::vector<int>>::value, "");
 
-            using emu::size;
+            using std::size;
             EXPECT_EQ(size(v), size(input));
             EXPECT_EQ(v[0], input[0]);
             EXPECT_EQ(v[1], input[1]);
@@ -78,7 +78,7 @@ namespace
             auto v = emu::as_vector<unsigned int>(input);
             static_assert(std::is_same<decltype(v), std::vector<unsigned int>>::value, "");
 
-            using emu::size;
+            using std::size;
             EXPECT_EQ(size(v), size(input));
             EXPECT_EQ(v[0], static_cast<unsigned int>(input[0]));
             EXPECT_EQ(v[1], static_cast<unsigned int>(input[1]));
@@ -93,7 +93,7 @@ namespace
             auto v = emu::as_vector(input);
             static_assert(std::is_same<decltype(v), std::vector<int>>::value, "");
 
-            using emu::size;
+            using std::size;
             EXPECT_EQ(size(v), size(input));
             EXPECT_EQ(v[0], input[0]);
             EXPECT_EQ(v[1], input[1]);
@@ -104,7 +104,7 @@ namespace
             auto v = emu::as_vector<unsigned int>(input);
             static_assert(std::is_same<decltype(v), std::vector<unsigned int>>::value, "");
 
-            using emu::size;
+            using std::size;
             EXPECT_EQ(size(v), size(input));
             EXPECT_EQ(v[0], static_cast<unsigned int>(input[0]));
             EXPECT_EQ(v[1], static_cast<unsigned int>(input[1]));
@@ -119,7 +119,7 @@ namespace
             auto v = emu::as_vector(input);
             static_assert(std::is_same<decltype(v), std::vector<int>>::value, "");
 
-            using emu::size;
+            using std::size;
             EXPECT_EQ(size(v), size(input));
             EXPECT_EQ(v[0], input[0]);
             EXPECT_EQ(v[1], input[1]);
@@ -130,7 +130,7 @@ namespace
             auto v = emu::as_vector<unsigned int>(input);
             static_assert(std::is_same<decltype(v), std::vector<unsigned int>>::value, "");
 
-            using emu::size;
+            using std::size;
             EXPECT_EQ(size(v), size(input));
             EXPECT_EQ(v[0], static_cast<unsigned int>(input[0]));
             EXPECT_EQ(v[1], static_cast<unsigned int>(input[1]));
@@ -145,7 +145,7 @@ namespace
             auto v = emu::as_vector(input);
             static_assert(std::is_same<decltype(v), std::vector<int>>::value, "");
 
-            using emu::size;
+            using std::size;
             EXPECT_EQ(size(v), size(input));
             EXPECT_EQ(v[0], input[0]);
             EXPECT_EQ(v[1], input[1]);
@@ -156,7 +156,7 @@ namespace
             auto v = emu::as_vector<unsigned int>(input);
             static_assert(std::is_same<decltype(v), std::vector<unsigned int>>::value, "");
 
-            using emu::size;
+            using std::size;
             EXPECT_EQ(size(v), size(input));
             EXPECT_EQ(v[0], static_cast<unsigned int>(input[0]));
             EXPECT_EQ(v[1], static_cast<unsigned int>(input[1]));
@@ -199,7 +199,7 @@ namespace
             auto v = emu::as_vector(input);
             static_assert(std::is_same<decltype(v), std::vector<int>>::value, "");
 
-            using emu::size;
+            using std::size;
             EXPECT_EQ(size(v), size(input));
             EXPECT_EQ(v[0], input[0]);
             EXPECT_EQ(v[1], input[1]);
@@ -210,7 +210,7 @@ namespace
             auto v = emu::as_vector<unsigned int>(input);
             static_assert(std::is_same<decltype(v), std::vector<unsigned int>>::value, "");
 
-            using emu::size;
+            using std::size;
             EXPECT_EQ(size(v), size(input));
             EXPECT_EQ(v[0], static_cast<unsigned int>(input[0]));
             EXPECT_EQ(v[1], static_cast<unsigned int>(input[1]));

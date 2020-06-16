@@ -11,4 +11,19 @@
 
 #endif
 
+template<auto V>
+auto f(bool t)
+{
+    if constexpr (V)
+        return t;
+    else
+        return 1;
+
+}
+
+inline auto ff(bool t)
+{
+    return f<true>(t);
+}
+
 #endif //EMU_CONFIG_H
