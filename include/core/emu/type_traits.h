@@ -31,19 +31,4 @@ namespace emu
 
 }
 
-template<auto V>
-auto f2(bool t)
-{
-    if constexpr (V)
-        return t;
-    else
-        return 1;
-
-}
-
-inline auto ff2(bool t)
-{
-    return f2<true>(t);
-}
-
 #endif //EMU_TYPE_TRAITS_H

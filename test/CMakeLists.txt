@@ -27,10 +27,6 @@ if (emu_use_cuda)
         src/cuda/iterator_function_test.cu
     )
 
-    # Since cxx_std_17 is not supported for cuda project and do not produce
-    # any flag during compilation, we set the flag manually.
-    target_compile_options(emucudatest PRIVATE "-std=c++17")
-
     target_link_libraries(emucudatest PRIVATE
         GTest::GTest GTest::Main emucuda
     )
