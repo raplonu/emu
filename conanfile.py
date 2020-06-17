@@ -16,7 +16,7 @@ class EmuConan(ConanFile):
     requires = [
         'fmt/6.1.2',
         'boost/1.71.0@conan/stable',
-        'half/2.1.0@user/stable',
+        'half/2.1.0@cosmic/stable',
         'ms-gsl/3.0.1',
         'abseil/20200225.2',
         'tl-expected/1.0.0',
