@@ -1,13 +1,10 @@
 cmake_minimum_required(VERSION 3.11)
 
 option(emu_build_cuda   "Build cuda module"     ON)
-option(emu_build_python "Build python module"   ON)
 option(emu_verbose      "Print emu info"        ON)
 option(emu_build_test   "Build unit test"       OFF)
 
-if (emu_verbose)
-    message(STATUS "Emu - Configuring.")
-endif()
+message(STATUS "Emu - Configuring")
 
 set(emu_language CXX)
 
@@ -20,12 +17,13 @@ project(emu VERSION 0.1.0 LANGUAGES ${emu_language})
 set(CMAKE_INSTALL_RPATH "$ORIGIN")
 set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
 
-if (emu_verbose)
-    message(STATUS "Emu - Conan setup.")
-endif()
+
+message(CHECK_START "Emu - Conan setup")
 
 include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup(TARGETS)
+
+message(CHECK_PASS "Done")
 
 ########################################################################
 #
@@ -61,9 +59,8 @@ add_library(emu::core ALIAS emucore)
 #
 
 if (emu_build_cuda)
-    if (emu_verbose)
-        message(STATUS "Emu - CUDA support enabled.")
-    endif()
+    message(CHECK_START "Emu - Configuring CUDA support")
+
     find_package(CUDA REQUIRED)
 
     if (NOT emu_cuda_sm)
@@ -107,20 +104,7 @@ if (emu_build_cuda)
         >)
 
     add_library(emu::cuda ALIAS emucuda)
-endif()
-
-
-########################################################################
-#
-# Build Python module.
-#
-if(emu_build_python)
-    if (emu_verbose)
-        message(STATUS "Emu - Building Python.")
-    endif()
-    # This must be set in the root directory for the tests to be run by
-    # 'make test' or ctest.
-    add_subdirectory(python)
+    message(CHECK_PASS "Done")
 endif()
 
 ########################################################################
@@ -131,13 +115,12 @@ endif()
 # emu_build_test option to ON.  You can do it by running ccmake
 # or specifying the -Demu_build_test=ON flag when running cmake.
 if (emu_build_test)
-    if (emu_verbose)
-        message(STATUS "Emu - Building test.")
-    endif()
     # This must be set in the root directory for the tests to be run by
     # 'make test' or ctest.
+    message(CHECK_START "Emu - Configuring test")
     enable_testing()
     add_subdirectory(test)
+    message(CHECK_PASS "Done")
 endif()
 
 ########################################################################
@@ -154,10 +137,6 @@ if (emu_build_cuda)
     list(APPEND emu_targets emucuda)
 endif()
 
-if (emu_build_python)
-    list(APPEND emu_targets emuwrap)
-endif()
-
 install(TARGETS ${emu_targets}
     EXPORT emu-targets
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -169,10 +148,6 @@ install(DIRECTORY include/core/emu DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 if (emu_build_cuda)
     set_target_properties(emucuda PROPERTIES EXPORT_NAME Cuda)
     install(DIRECTORY include/cuda/emu DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-endif()
-
-if (emu_build_python)
-    set_target_properties(emuwrap PROPERTIES EXPORT_NAME Wrap)
 endif()
 
 install(EXPORT emu-targets
@@ -208,14 +183,14 @@ install(FILES
 # Exporting COMPILE_OPTIONS if exists for emucore and emucuda
 if(emu_export_flags)
     if (emu_verbose)
-        message(STATUS "Exporting compile flags.")
+        message(STATUS "Exporting compile flags")
     endif()
 
     get_target_property(TMP_CXX_FLAGS emucore COMPILE_OPTIONS)
 
     if(TMP_CXX_FLAGS)
         if (emu_verbose)
-            message(STATUS "Exporting Emu::Core compile flags in EmuCoreFlags.txt.")
+            message(STATUS "Exporting Emu::Core compile flags in EmuCoreFlags.txt")
         endif()
 
         configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Flags.txt.in
@@ -232,7 +207,7 @@ if(emu_export_flags)
 
         if(TMP_CXX_FLAGS)
             if (emu_verbose)
-                message(STATUS "Exporting Emu::Cuda compile flags in EmuCudaFlags.txt.")
+                message(STATUS "Exporting Emu::Cuda compile flags in EmuCudaFlags.txt")
             endif()
             configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Flags.txt.in
                 ${CMAKE_CURRENT_BINARY_DIR}/EmuCudaFlags.txt @ONLY

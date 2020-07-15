@@ -39,16 +39,12 @@ class EmuConan(ConanFile):
                #    2.0 2.1 3.0 3.2 3.5 3.7 5.0 5.2 5.3 6.0 6.2
                # For more information refer to https://cmake.org/cmake/help/latest/module/FindCUDA.html
                'cuda_sm'        : 'ANY',
-               'python'         : [True, False],
-               'python_version' : 'ANY',
                'test'           : [True, False]}
 
     default_options = {'shared'           : True,
                        'fPIC'             : True,
                        'cuda'             : False,
                        'cuda_sm'          : 'Auto',
-                       'python'           : True,
-                       'python_version'   : 'Auto',
                        'test'             : False,
                        'boost:header_only': True}
 
@@ -62,24 +58,14 @@ class EmuConan(ConanFile):
         if self.options.cuda:
             self.requires('cuda-api-wrappers/0.3.0@cosmic/stable')
 
-        if self.options.python:
-            self.requires('pybind11/2.3.0@conan/stable')
-
     def _configure(self):
         cmake = CMake(self)
 
-        cmake.definitions['emu_build_cuda'] = self.options.cuda
-        if self.options.cuda:
-            cmake.definitions['emu_cuda_sm'] = self.options.cuda_sm
-
-        cmake.definitions['emu_build_python'] = self.options.python
-        if not self.options.python_version == 'Auto':
-            cmake.definitions['PYBIND11_PYTHON_VERSION'] = self.options.python_version
-
-        cmake.definitions['emu_build_test'] = self.options.test
-
-        # The project will generate EmuCoreFlags.txt & EmuCudaFlags.txt with the flags in it.
+        # Ask the project to generate EmuCoreFlags.txt & EmuCudaFlags.txt with the C++ & CUDA flags in it.
         cmake.definitions['emu_export_flags'] = True
+        cmake.definitions['emu_build_test']   = self.options.test
+        cmake.definitions['emu_build_cuda']   = self.options.cuda
+        cmake.definitions['emu_cuda_sm']      = self.options.cuda_sm
 
         cmake.configure(source_folder='.')
         return cmake
@@ -95,10 +81,8 @@ class EmuConan(ConanFile):
 
     def package_info(self):
         self.cpp_info.libs = ['emucore']
-
         self.cpp_info.cxxflags = load(f'{self.package_folder}/lib/cmake/Emu/EmuCoreFlags.txt')
 
         if self.options.cuda:
             self.cpp_info.libs += ['emucuda']
-
             self.cpp_info.cxxflags += load(f'{self.package_folder}/lib/cmake/Emu/EmuCudaFlags.txt')

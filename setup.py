@@ -53,8 +53,7 @@ def add_channel_command(base):
     class ChannelCommand(base):
         user_options = base.user_options + [
             ('channel=', None, 'conan channel'),
-            ('conan_install_args=', None, 'conan args')]
-
+            ('conan-install-args=', None, 'conan args')]
 
         def initialize_options(self):
             base.initialize_options(self)
@@ -99,35 +98,72 @@ class ConanBuild(build_ext):
             self.build_extension(ext)
 
     def build_extension(self, ext):
+        source_dir       = ext.sourcedir
+        export_dir       = Path(os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name))))
+
+        build_dir        = source_dir if glob_editable else self.build_temp
+        cxx_build_dir    = f'{build_dir}/build'
+        python_build_dir = f'{build_dir}/python/build'
+
+        build_mode       = 'Debug' if self.debug else 'Release'
+
+        emu_ref = f'{package_name}/{package_version}@{glob_conan_channel}'
+
         conan_install_args = [
             '-o', 'emu:cuda=True',
-            '-o', 'emu:python=True',
-            '-o', f'emu:python_version={sys.version_info.major}.{sys.version_info.minor}',
-            '-s', f'build_type={"Debug" if self.debug else "Release"}',
+            '-s', f'build_type={build_mode}',
             '--build', 'missing',
             *glob_conan_install_args.split()
         ]
 
-        sourcedir   = ext.sourcedir
-        build_dir  = f'{sourcedir}/build' if glob_editable else self.build_temp
+        cmake_args = [
+            f'-DCMAKE_BUILD_TYPE={build_mode}',
+            f'-DPYTHON_EXECUTABLE={sys.executable}',
+            f'-DCMAKE_LIBRARY_OUTPUT_DIRECTORY={export_dir}'
+        ]
+
+        #######
+        # emu #
+        #######
+
+        # Building emu.
 
         # Install C++ dependencies.
-        subprocess.check_call(['conan', 'install', sourcedir, '-if', build_dir] + conan_install_args)
-        # Build C++ source.
-        subprocess.check_call(['conan', 'build', sourcedir, '-bf', build_dir])
+        subprocess.check_call(['conan', 'install', source_dir, '-if', cxx_build_dir] + conan_install_args)
+        # Configure & Build C++ sources.
+        subprocess.check_call(['conan', 'build', source_dir, '-bf', cxx_build_dir])
         # Export C++ package into conan cache.
         if glob_editable:
-            subprocess.check_call(['conan', 'editable', 'add', sourcedir, f'{package_name}/{package_version}@{glob_conan_channel}', '-l', f'{sourcedir}/layout_gcc'])
+            subprocess.check_call(['conan', 'editable', 'add', source_dir, emu_ref, '-l', f'{source_dir}/layout_gcc'])
         else:
             # Cannot export package if package already exist and is editable. Try delete it everytime.
-            subprocess.check_call(['conan', 'editable', 'remove', f'{package_name}/{package_version}@{glob_conan_channel}'])
-            subprocess.check_call(['conan', 'export-pkg', sourcedir, glob_conan_channel, '-bf', build_dir, '-f'])
+            subprocess.check_call(['conan', 'editable', 'remove', emu_ref])
+            subprocess.check_call(['conan', 'export-pkg', source_dir, glob_conan_channel, '-bf', cxx_build_dir, '-f'])
+
+        ###########
+        # emuwrap #
+        ###########
+
+        # Configuring conanfile.txt.
+
+        # Could not find a way to install emu for emuwrap without using conan file.
+        # The solution since we don't know emu package name is to configure conanfile.txt.in and set emu ref name.
+        os.makedirs(f'{build_dir}/python', exist_ok=True)
+
+        with open(f'{source_dir}/python/conanfile.txt.in') as conanfile_in:
+            with open(f'{build_dir}/python/conanfile.txt', 'w+') as conanfile_out:
+                conanfile_out.writelines(map(lambda l: l.format(emu_ref=emu_ref), conanfile_in.readlines()))
+
+        # Building emuwrap.
 
         # Retrive C++ libraries from conan cache and export then into python package.
-        subprocess.check_call(['conan', 'install', f'{package_name}/{package_version}@{glob_conan_channel}', '-g', 'json', '-if', build_dir] + conan_install_args)
-        data = json.load(open(f'{build_dir}/conanbuildinfo.json'))
+        subprocess.check_call(['conan', 'install', f'{build_dir}/python', '-if', python_build_dir] + conan_install_args)
+        subprocess.check_call(['cmake', f'{source_dir}/python'] + cmake_args, cwd=python_build_dir)
+        subprocess.check_call(['cmake', '--build', '.'], cwd=python_build_dir)
 
-        extdir = Path(os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name))))
+        # Exporting emu's libraries.
+
+        data = json.load(open(f'{python_build_dir}/conanbuildinfo.json'))
 
         # Export emu's and its dependencies libraries.
         # TODO: check when emu will depend on dynamic libraries.
@@ -136,7 +172,7 @@ class ConanBuild(build_ext):
                 if os.listdir(lib_path):
                     for lib in map(Path, glob(f'{lib_path}/*.so')):
                         # If in editable mode, export library as symbolic link, otherwise perform a plain copy.
-                        (symlink if glob_editable else copyfile)(lib, extdir / lib.name)
+                        (symlink if glob_editable else copyfile)(lib, export_dir / lib.name)
 
 setup(
     name=package_name,
