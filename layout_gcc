@@ -1,0 +1,15 @@
+[build_folder]
+build
+
+[source_folder]
+src
+
+[includedirs]
+include/core
+include/cuda
+
+[libdirs]
+build/lib
+
+[bindirs]
+build/bin

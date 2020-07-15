@@ -13,20 +13,21 @@ class EmuConan(ConanFile):
     url = 'https://gitlab.obspm.fr/jbernard/emu'
     description = 'C++/CUDA toolkit.'
 
+    build_policy = 'missing'
+
     requires = [
         'fmt/6.1.2',
         'boost/1.71.0@conan/stable',
         'half/2.1.0@cosmic/stable',
         'ms-gsl/3.0.1',
-        'abseil/20200225.2',
+        # 'abseil/20200225.2',
         'tl-expected/1.0.0',
         'tl-optional/1.0.0']
 
-    options = {'shared':  [True, False],
-               'fPIC':    [True, False],
-               'test':    [True, False],
+    options = {'shared'         : [True, False],
+               'fPIC'           : [True, False],
                # Build emu_cuda library.
-               'cuda':    [True, False],
+               'cuda'           : [True, False],
                # Specify the sm configuration used to build emu_cuda library.
                # This has no effect if cuda option is set to False.
                # cuda_sm can be set to
@@ -37,13 +38,18 @@ class EmuConan(ConanFile):
                # NUM: Any number. Only those pairs are currently accepted by NVCC though:
                #    2.0 2.1 3.0 3.2 3.5 3.7 5.0 5.2 5.3 6.0 6.2
                # For more information refer to https://cmake.org/cmake/help/latest/module/FindCUDA.html
-               'cuda_sm': 'ANY'}
+               'cuda_sm'        : 'ANY',
+               'python'         : [True, False],
+               'python_version' : 'ANY',
+               'test'           : [True, False]}
 
-    default_options = {'shared' : False,
-                       'fPIC'   : True,
-                       'test'   : False,
-                       'cuda'   : True,
-                       'cuda_sm': 'Auto',
+    default_options = {'shared'           : True,
+                       'fPIC'             : True,
+                       'cuda'             : False,
+                       'cuda_sm'          : 'Auto',
+                       'python'           : True,
+                       'python_version'   : 'Auto',
+                       'test'             : False,
                        'boost:header_only': True}
 
     settings = 'os', 'compiler', 'build_type', 'arch'
@@ -56,10 +62,20 @@ class EmuConan(ConanFile):
         if self.options.cuda:
             self.requires('cuda-api-wrappers/0.3.0@cosmic/stable')
 
+        if self.options.python:
+            self.requires('pybind11/2.3.0@conan/stable')
+
     def _configure(self):
         cmake = CMake(self)
-        cmake.definitions['emu_use_cuda'] = self.options.cuda
-        cmake.definitions['emu_cuda_sm'] = self.options.cuda_sm
+
+        cmake.definitions['emu_build_cuda'] = self.options.cuda
+        if self.options.cuda:
+            cmake.definitions['emu_cuda_sm'] = self.options.cuda_sm
+
+        cmake.definitions['emu_build_python'] = self.options.python
+        if not self.options.python_version == 'Auto':
+            cmake.definitions['PYBIND11_PYTHON_VERSION'] = self.options.python_version
+
         cmake.definitions['emu_build_test'] = self.options.test
 
         # The project will generate EmuCoreFlags.txt & EmuCudaFlags.txt with the flags in it.

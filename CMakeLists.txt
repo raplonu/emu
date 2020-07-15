@@ -1,33 +1,30 @@
 cmake_minimum_required(VERSION 3.11)
 
-option(emu_use_cuda   "Use cuda module" OFF)
-option(emu_verbose    "Print emu info"  ON)
-option(emu_build_test "Build unit test" OFF)
+option(emu_build_cuda   "Build cuda module"     ON)
+option(emu_build_python "Build python module"   ON)
+option(emu_verbose      "Print emu info"        ON)
+option(emu_build_test   "Build unit test"       OFF)
 
 if (emu_verbose)
     message(STATUS "Emu - Configuring.")
 endif()
 
-if (emu_use_cuda)
-    set(emu_language CUDA CXX)
-else()
-    set(emu_language CXX)
+set(emu_language CXX)
+
+if (emu_build_cuda)
+    list(APPEND emu_language CUDA)
 endif()
 
 project(emu VERSION 0.1.0 LANGUAGES ${emu_language})
+
+set(CMAKE_INSTALL_RPATH "$ORIGIN")
+set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
 
 if (emu_verbose)
     message(STATUS "Emu - Conan setup.")
 endif()
 
-SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
-if(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo_multi.cmake)
-    include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo_multi.cmake)
-else()
-    include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
-endif()
-
+include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup(TARGETS)
 
 ########################################################################
@@ -41,6 +38,7 @@ add_library(emucore
 target_include_directories(emucore PUBLIC
     $<INSTALL_INTERFACE:include/core>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/core>
+    ${CUDA_INCLUDE_DIRS}
 )
 
 target_compile_features(emucore PUBLIC cxx_std_14)
@@ -50,7 +48,7 @@ target_link_libraries(emucore PUBLIC
     CONAN_PKG::boost
     CONAN_PKG::half
     CONAN_PKG::ms-gsl
-    CONAN_PKG::abseil
+    # CONAN_PKG::abseil
     CONAN_PKG::tl-expected
     CONAN_PKG::tl-optional
 )
@@ -62,7 +60,7 @@ add_library(emu::core ALIAS emucore)
 # Emu CUDA.
 #
 
-if (emu_use_cuda)
+if (emu_build_cuda)
     if (emu_verbose)
         message(STATUS "Emu - CUDA support enabled.")
     endif()
@@ -111,6 +109,37 @@ if (emu_use_cuda)
     add_library(emu::cuda ALIAS emucuda)
 endif()
 
+
+########################################################################
+#
+# Build Python module.
+#
+if(emu_build_python)
+    if (emu_verbose)
+        message(STATUS "Emu - Building Python.")
+    endif()
+    # This must be set in the root directory for the tests to be run by
+    # 'make test' or ctest.
+    add_subdirectory(python)
+endif()
+
+########################################################################
+#
+# Google Test.
+#
+# The tests are not built by default.  To build them, set the
+# emu_build_test option to ON.  You can do it by running ccmake
+# or specifying the -Demu_build_test=ON flag when running cmake.
+if (emu_build_test)
+    if (emu_verbose)
+        message(STATUS "Emu - Building test.")
+    endif()
+    # This must be set in the root directory for the tests to be run by
+    # 'make test' or ctest.
+    enable_testing()
+    add_subdirectory(test)
+endif()
+
 ########################################################################
 #
 # Install.
@@ -119,10 +148,14 @@ endif()
 include(GNUInstallDirs)
 set(INSTALL_CONFIGDIR ${CMAKE_INSTALL_LIBDIR}/cmake/Emu)
 
-if (emu_use_cuda)
-    set(emu_targets emucore emucuda)
-else()
-    set(emu_targets emucore)
+set(emu_targets emucore)
+
+if (emu_build_cuda)
+    list(APPEND emu_targets emucuda)
+endif()
+
+if (emu_build_python)
+    list(APPEND emu_targets emuwrap)
 endif()
 
 install(TARGETS ${emu_targets}
@@ -133,11 +166,14 @@ install(TARGETS ${emu_targets}
 set_target_properties(emucore PROPERTIES EXPORT_NAME Core)
 install(DIRECTORY include/core/emu DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-if (emu_use_cuda)
+if (emu_build_cuda)
     set_target_properties(emucuda PROPERTIES EXPORT_NAME Cuda)
     install(DIRECTORY include/cuda/emu DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 endif()
 
+if (emu_build_python)
+    set_target_properties(emuwrap PROPERTIES EXPORT_NAME Wrap)
+endif()
 
 install(EXPORT emu-targets
     FILE
@@ -191,7 +227,7 @@ if(emu_export_flags)
         )
     endif()
 
-    if (emu_use_cuda)
+    if (emu_build_cuda)
         get_target_property(TMP_CXX_FLAGS emucuda COMPILE_OPTIONS)
 
         if(TMP_CXX_FLAGS)
@@ -217,19 +253,3 @@ export(EXPORT emu-targets
 #Register package in user's package registry
 export(PACKAGE Emu)
 
-########################################################################
-#
-# Google Test.
-#
-# The tests are not built by default.  To build them, set the
-# emu_build_test option to ON.  You can do it by running ccmake
-# or specifying the -Demu_build_test=ON flag when running cmake.
-if (emu_build_test)
-    if (emu_verbose)
-        message(STATUS "Emu - Building test.")
-    endif()
-    # This must be set in the root directory for the tests to be run by
-    # 'make test' or ctest.
-    enable_testing()
-    add_subdirectory(test)
-endif()
