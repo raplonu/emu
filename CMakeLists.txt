@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.11)
 
 option(emu_build_cuda   "Build cuda module"     ON)
-option(emu_verbose      "Print emu info"        ON)
+option(emu_verbose      "Print emu info"        OFF)
 option(emu_build_test   "Build unit test"       OFF)
 
 message(STATUS "Emu - Configuring")
@@ -52,6 +52,7 @@ target_link_libraries(emucore PUBLIC
 )
 
 add_library(emu::core ALIAS emucore)
+set(emu_targets emucore)
 
 ########################################################################
 #
@@ -85,8 +86,7 @@ if (emu_build_cuda)
 
     target_include_directories(emucuda PUBLIC
         $<INSTALL_INTERFACE:include/cuda>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/cuda>
-    )
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/cuda>)
 
     target_compile_features(emucuda PUBLIC cxx_std_14)
 
@@ -104,6 +104,8 @@ if (emu_build_cuda)
         >)
 
     add_library(emu::cuda ALIAS emucuda)
+    list(APPEND emu_targets emucuda)
+
     message(CHECK_PASS "Done")
 endif()
 
@@ -131,12 +133,6 @@ endif()
 include(GNUInstallDirs)
 set(INSTALL_CONFIGDIR ${CMAKE_INSTALL_LIBDIR}/cmake/Emu)
 
-set(emu_targets emucore)
-
-if (emu_build_cuda)
-    list(APPEND emu_targets emucuda)
-endif()
-
 install(TARGETS ${emu_targets}
     EXPORT emu-targets
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -156,20 +152,17 @@ install(EXPORT emu-targets
     NAMESPACE
       Emu::
     DESTINATION
-        ${INSTALL_CONFIGDIR}
-)
+        ${INSTALL_CONFIGDIR})
 
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
     ${CMAKE_CURRENT_BINARY_DIR}/EmuConfigVersion.cmake
     VERSION ${PROJECT_VERSION}
-    COMPATIBILITY AnyNewerVersion
-)
+    COMPATIBILITY AnyNewerVersion)
 
 configure_package_config_file(${CMAKE_CURRENT_LIST_DIR}/cmake/EmuConfig.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/EmuConfig.cmake
-    INSTALL_DESTINATION ${INSTALL_CONFIGDIR}
-)
+    INSTALL_DESTINATION ${INSTALL_CONFIGDIR})
 
 install(FILES
     ${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake
@@ -177,48 +170,28 @@ install(FILES
     ${CMAKE_CURRENT_BINARY_DIR}/conaninfo.txt
     ${CMAKE_CURRENT_BINARY_DIR}/EmuConfig.cmake
     ${CMAKE_CURRENT_BINARY_DIR}/EmuConfigVersion.cmake
-    DESTINATION ${INSTALL_CONFIGDIR}
-)
+    DESTINATION ${INSTALL_CONFIGDIR})
 
 # Exporting COMPILE_OPTIONS if exists for emucore and emucuda
 if(emu_export_flags)
-    if (emu_verbose)
-        message(STATUS "Exporting compile flags")
-    endif()
+    message(CHECK_START "Exporting compile flags")
 
-    get_target_property(TMP_CXX_FLAGS emucore COMPILE_OPTIONS)
-
-    if(TMP_CXX_FLAGS)
-        if (emu_verbose)
-            message(STATUS "Exporting Emu::Core compile flags in EmuCoreFlags.txt")
-        endif()
-
-        configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Flags.txt.in
-            ${CMAKE_CURRENT_BINARY_DIR}/EmuCoreFlags.txt @ONLY)
-
-        install(FILES
-            ${CMAKE_CURRENT_BINARY_DIR}/EmuCoreFlags.txt
-            DESTINATION ${INSTALL_CONFIGDIR}
-        )
-    endif()
-
-    if (emu_build_cuda)
-        get_target_property(TMP_CXX_FLAGS emucuda COMPILE_OPTIONS)
+    foreach(target IN LISTS emu_targets)
+        get_target_property(TMP_CXX_FLAGS ${target} COMPILE_OPTIONS)
 
         if(TMP_CXX_FLAGS)
-            if (emu_verbose)
-                message(STATUS "Exporting Emu::Cuda compile flags in EmuCudaFlags.txt")
-            endif()
-            configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Flags.txt.in
-                ${CMAKE_CURRENT_BINARY_DIR}/EmuCudaFlags.txt @ONLY
-            )
+            message(STATUS "Exporting ${target} compile flags in ${target}_flags.txt")
+
+            configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/flags.txt.in
+                ${CMAKE_CURRENT_BINARY_DIR}/${target}_flags.txt @ONLY)
 
             install(FILES
-                ${CMAKE_CURRENT_BINARY_DIR}/EmuCudaFlags.txt
-                DESTINATION ${INSTALL_CONFIGDIR}
-            )
+                ${CMAKE_CURRENT_BINARY_DIR}/${target}_flags.txt
+                DESTINATION ${INSTALL_CONFIGDIR})
         endif()
-    endif()
+    endforeach()
+
+    message(CHECK_PASS "Done")
 endif()
 
 export(EXPORT emu-targets

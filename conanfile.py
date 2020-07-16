@@ -81,8 +81,8 @@ class EmuConan(ConanFile):
 
     def package_info(self):
         self.cpp_info.libs = ['emucore']
-        self.cpp_info.cxxflags = load(f'{self.package_folder}/lib/cmake/Emu/EmuCoreFlags.txt')
+        self.cpp_info.cxxflags = load(f'{self.package_folder}/lib/cmake/Emu/emucore_flags.txt')
 
         if self.options.cuda:
             self.cpp_info.libs += ['emucuda']
-            self.cpp_info.cxxflags += load(f'{self.package_folder}/lib/cmake/Emu/EmuCudaFlags.txt')
+            self.cpp_info.cxxflags += load(f'{self.package_folder}/lib/cmake/Emu/emucuda_flags.txt')

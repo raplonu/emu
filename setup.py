@@ -44,22 +44,22 @@ def symlink(target, link_name):
 # Let develop_orig class modify it when editable mode is used
 glob_editable = False
 
-# Default conan channel. Can be override adding `--install-option=--channel=<conan channel>`
+# Default conan channel. Usage: `--install-option=--channel=<conan channel>`
 glob_conan_channel = 'user/stable'
 
-# Additional conan args. Usage: `--install-option="--glob_conan_install_args=<conan channel>"`
-glob_conan_install_args = ''
+# Additional conan args. Usage: `--install-option="--conan-args=<conan channel>"`
+glob_conan_args = ''
 
-def add_channel_command(base):
-    class ChannelCommand(base):
+def add_commands(base):
+    class HandleCommands(base):
         user_options = base.user_options + [
             ('channel=', None, 'conan channel'),
-            ('conan-install-args=', None, 'conan args')]
+            ('conan-args=', None, 'conan args')]
 
         def initialize_options(self):
             base.initialize_options(self)
             self.channel = None
-            self.conan_install_args = None
+            self.conan_args = None
 
         def finalize_options(self):
             base.finalize_options(self)
@@ -69,17 +69,17 @@ def add_channel_command(base):
             if not self.channel is None:
                 glob_conan_channel = self.channel
 
-            global glob_conan_install_args
-            if not self.conan_install_args is None:
-                glob_conan_install_args = self.conan_install_args
+            global glob_conan_args
+            if not self.conan_args is None:
+                glob_conan_args = self.conan_args
 
             base.run(self)
 
-    return ChannelCommand
+    return HandleCommands
 
-install = add_channel_command(install_orig)
+install = add_commands(install_orig)
 
-develop_orig = add_channel_command(develop_orig)
+develop_orig = add_commands(develop_orig)
 
 class develop(develop_orig):
     def run(self):
@@ -110,10 +110,10 @@ class ConanBuild(build_ext):
 
         conan_ref = f'{package_name}/{package_version}@{glob_conan_channel}'
 
-        conan_install_args = [
+        conan_args = [
             '-s', f'build_type={build_mode}',
             '--build', 'missing',
-            *glob_conan_install_args.split()
+            *glob_conan_args.split()
         ]
 
         cmake_args = [
@@ -129,7 +129,7 @@ class ConanBuild(build_ext):
         # Building C++.
 
         # Install C++ dependencies.
-        subprocess.check_call(['conan', 'install', source_dir, '-if', cxx_build_dir] + conan_install_args)
+        subprocess.check_call(['conan', 'install', source_dir, '-if', cxx_build_dir] + conan_args)
         # Configure & Build C++ sources.
         subprocess.check_call(['conan', 'build', source_dir, '-bf', cxx_build_dir])
         # Export C++ package into conan cache.
@@ -157,7 +157,7 @@ class ConanBuild(build_ext):
         # Building emuwrap.
 
         # Retrive C++ libraries from conan cache and export then into python package.
-        subprocess.check_call(['conan', 'install', f'{build_dir}/python', '-if', python_build_dir] + conan_install_args)
+        subprocess.check_call(['conan', 'install', f'{build_dir}/python', '-if', python_build_dir] + conan_args)
         subprocess.check_call(['cmake', f'{source_dir}/python'] + cmake_args, cwd=python_build_dir)
         subprocess.check_call(['cmake', '--build', '.'], cwd=python_build_dir)
 
