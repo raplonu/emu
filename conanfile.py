@@ -43,7 +43,7 @@ class EmuConan(ConanFile):
 
     default_options = {'shared'           : True,
                        'fPIC'             : True,
-                       'cuda'             : False,
+                       'cuda'             : True,
                        'cuda_sm'          : 'Auto',
                        'test'             : False,
                        'boost:header_only': True}

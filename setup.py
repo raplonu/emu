@@ -47,6 +47,7 @@ glob_editable = False
 # Default conan channel. Can be override adding `--install-option=--channel=<conan channel>`
 glob_conan_channel = 'user/stable'
 
+# Additional conan args. Usage: `--install-option="--glob_conan_install_args=<conan channel>"`
 glob_conan_install_args = ''
 
 def add_channel_command(base):
@@ -107,10 +108,9 @@ class ConanBuild(build_ext):
 
         build_mode       = 'Debug' if self.debug else 'Release'
 
-        emu_ref = f'{package_name}/{package_version}@{glob_conan_channel}'
+        conan_ref = f'{package_name}/{package_version}@{glob_conan_channel}'
 
         conan_install_args = [
-            '-o', 'emu:cuda=True',
             '-s', f'build_type={build_mode}',
             '--build', 'missing',
             *glob_conan_install_args.split()
@@ -123,10 +123,10 @@ class ConanBuild(build_ext):
         ]
 
         #######
-        # emu #
+        # C++ #
         #######
 
-        # Building emu.
+        # Building C++.
 
         # Install C++ dependencies.
         subprocess.check_call(['conan', 'install', source_dir, '-if', cxx_build_dir] + conan_install_args)
@@ -134,25 +134,25 @@ class ConanBuild(build_ext):
         subprocess.check_call(['conan', 'build', source_dir, '-bf', cxx_build_dir])
         # Export C++ package into conan cache.
         if glob_editable:
-            subprocess.check_call(['conan', 'editable', 'add', source_dir, emu_ref, '-l', f'{source_dir}/layout_gcc'])
+            subprocess.check_call(['conan', 'editable', 'add', source_dir, conan_ref, '-l', f'{source_dir}/layout_gcc'])
         else:
             # Cannot export package if package already exist and is editable. Try delete it everytime.
-            subprocess.check_call(['conan', 'editable', 'remove', emu_ref])
+            subprocess.check_call(['conan', 'editable', 'remove', conan_ref])
             subprocess.check_call(['conan', 'export-pkg', source_dir, glob_conan_channel, '-bf', cxx_build_dir, '-f'])
 
-        ###########
-        # emuwrap #
-        ###########
+        ############
+        # C++ wrap #
+        ############
 
         # Configuring conanfile.txt.
 
-        # Could not find a way to install emu for emuwrap without using conan file.
-        # The solution since we don't know emu package name is to configure conanfile.txt.in and set emu ref name.
+        # Could not find a way to install the conan package for the wrapper without using conan file.
+        # The solution since we don't know conan package name is to configure conanfile.txt.in and set package ref name.
         os.makedirs(f'{build_dir}/python', exist_ok=True)
 
         with open(f'{source_dir}/python/conanfile.txt.in') as conanfile_in:
             with open(f'{build_dir}/python/conanfile.txt', 'w+') as conanfile_out:
-                conanfile_out.writelines(map(lambda l: l.format(emu_ref=emu_ref), conanfile_in.readlines()))
+                conanfile_out.writelines(map(lambda l: l.format(conan_ref=conan_ref), conanfile_in.readlines()))
 
         # Building emuwrap.
 
