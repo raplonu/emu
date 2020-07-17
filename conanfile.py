@@ -10,7 +10,7 @@ class EmuConan(ConanFile):
     version = '0.1'
     license = 'MIT'
     author = 'Julien Bernard jbernard@obspm.fr'
-    url = 'https://gitlab.obspm.fr/jbernard/emu'
+    url = 'https://gitlab.obspm.fr/cosmic/tools/emu'
     description = 'C++/CUDA toolkit.'
 
     build_policy = 'missing'

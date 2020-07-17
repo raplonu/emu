@@ -1,7 +1,0 @@
-[requires]
-{conan_ref}
-pybind11/2.3.0@conan/stable
-
-[generators]
-cmake
-json

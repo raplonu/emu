@@ -1,0 +1,14 @@
+[build_folder]
+build
+
+[source_folder]
+src
+
+[includedirs]
+include
+
+[libdirs]
+build/lib
+
+[bindirs]
+build/bin

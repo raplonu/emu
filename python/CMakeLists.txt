@@ -10,7 +10,7 @@ set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
 message(CHECK_START "Emu - Conan setup")
 
 include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(TARGETS NO_OUTPUT_DIRS)
+conan_basic_setup(TARGETS)
 
 message(CHECK_PASS "Done")
 
