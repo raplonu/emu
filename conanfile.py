@@ -1,9 +1,9 @@
-from conans import ConanFile, CMake, tools
 import os
+from conans import ConanFile, CMake, tools
 
 def load(filename):
-    # Delete the return trail using [0:-1].
-    return [tools.load(filename)[0:-1]] if os.path.exists(filename) else []
+    # Delete the return trail using [:-1].
+    return [tools.load(filename)[:-1]] if os.path.exists(filename) else []
 
 class EmuConan(ConanFile):
     name = 'emu'
@@ -58,31 +58,37 @@ class EmuConan(ConanFile):
         if self.options.cuda:
             self.requires('cuda-api-wrappers/0.3.0@cosmic/stable')
 
-    def _configure(self):
+    def build(self):
         cmake = CMake(self)
 
-        # Ask the project to generate EmuCoreFlags.txt & EmuCudaFlags.txt with the C++ & CUDA flags in it.
+        # Ask the project to generate {target}_flags.txt with the C++ & CUDA flags in it if any.
         cmake.definitions['emu_export_flags'] = True
         cmake.definitions['emu_build_test']   = self.options.test
         cmake.definitions['emu_build_cuda']   = self.options.cuda
         cmake.definitions['emu_cuda_sm']      = self.options.cuda_sm
 
         cmake.configure(source_folder='.')
-        return cmake
-
-    def build(self):
-        cmake = self._configure()
         cmake.build()
         if self.options.test:
             cmake.test()
 
     def package(self):
-        self._configure().install()
+        self.copy("*.so", dst="lib", keep_path=False)
+        self.copy("*.a" , dst="lib", keep_path=False)
+
+        self.copy("*.h" , dst="include", src="include/core")
+
+        if self.options.cuda:
+            self.copy("*.cuh", dst="include", src="include/cuda")
+
+        # Each target export its public flags in {target}_flags.txt if there is any flags.
+        # Flags are exported in package in order to be used by consumer.
+        self.copy("*_flags.txt", dst="data", keep_path=False)
 
     def package_info(self):
         self.cpp_info.libs = ['emucore']
-        self.cpp_info.cxxflags = load(f'{self.package_folder}/lib/cmake/Emu/emucore_flags.txt')
+        self.cpp_info.cxxflags = load(f'{self.package_folder}/data/emucore_flags.txt')
 
         if self.options.cuda:
             self.cpp_info.libs += ['emucuda']
-            self.cpp_info.cxxflags += load(f'{self.package_folder}/lib/cmake/Emu/emucuda_flags.txt')
+            self.cpp_info.cxxflags += load(f'{self.package_folder}/data/emucuda_flags.txt')

@@ -127,50 +127,8 @@ endif()
 
 ########################################################################
 #
-# Install.
+# Export public compile flags.
 #
-
-include(GNUInstallDirs)
-set(INSTALL_CONFIGDIR ${CMAKE_INSTALL_LIBDIR}/cmake/Emu)
-
-install(TARGETS ${emu_targets}
-    EXPORT emu-targets
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
-
-set_target_properties(emucore PROPERTIES EXPORT_NAME Core)
-install(DIRECTORY include/core/emu DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-
-if (emu_build_cuda)
-    set_target_properties(emucuda PROPERTIES EXPORT_NAME Cuda)
-    install(DIRECTORY include/cuda/emu DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-endif()
-
-install(EXPORT emu-targets
-    FILE
-      EmuTargets.cmake
-    NAMESPACE
-      Emu::
-    DESTINATION
-        ${INSTALL_CONFIGDIR})
-
-include(CMakePackageConfigHelpers)
-write_basic_package_version_file(
-    ${CMAKE_CURRENT_BINARY_DIR}/EmuConfigVersion.cmake
-    VERSION ${PROJECT_VERSION}
-    COMPATIBILITY AnyNewerVersion)
-
-configure_package_config_file(${CMAKE_CURRENT_LIST_DIR}/cmake/EmuConfig.cmake.in
-    ${CMAKE_CURRENT_BINARY_DIR}/EmuConfig.cmake
-    INSTALL_DESTINATION ${INSTALL_CONFIGDIR})
-
-install(FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake
-    ${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.txt
-    ${CMAKE_CURRENT_BINARY_DIR}/conaninfo.txt
-    ${CMAKE_CURRENT_BINARY_DIR}/EmuConfig.cmake
-    ${CMAKE_CURRENT_BINARY_DIR}/EmuConfigVersion.cmake
-    DESTINATION ${INSTALL_CONFIGDIR})
 
 # Exporting COMPILE_OPTIONS if exists for emucore and emucuda
 if(emu_export_flags)
@@ -184,20 +142,8 @@ if(emu_export_flags)
 
             configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/flags.txt.in
                 ${CMAKE_CURRENT_BINARY_DIR}/${target}_flags.txt @ONLY)
-
-            install(FILES
-                ${CMAKE_CURRENT_BINARY_DIR}/${target}_flags.txt
-                DESTINATION ${INSTALL_CONFIGDIR})
         endif()
     endforeach()
 
     message(CHECK_PASS "Done")
 endif()
-
-export(EXPORT emu-targets
-    FILE ${CMAKE_CURRENT_BINARY_DIR}/EmuTargets.cmake
-    NAMESPACE Emu::)
-
-#Register package in user's package registry
-export(PACKAGE Emu)
-
