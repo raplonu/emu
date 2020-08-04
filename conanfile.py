@@ -41,7 +41,7 @@ class EmuConan(ConanFile):
                'cuda_sm'        : 'ANY',
                'test'           : [True, False]}
 
-    default_options = {'shared'           : True,
+    default_options = {'shared'           : False,
                        'fPIC'             : True,
                        'cuda'             : True,
                        'cuda_sm'          : 'Auto',
