@@ -39,7 +39,7 @@ class EmuConan(ConanFile):
                # For more information refer to https://cmake.org/cmake/help/latest/module/FindCUDA.html
                'cuda_sm': 'ANY'}
 
-    default_options = {'shared' : True,
+    default_options = {'shared' : False,
                        'fPIC'   : True,
                        'test'   : False,
                        'cuda'   : True,
@@ -53,6 +53,8 @@ class EmuConan(ConanFile):
     def requirements(self):
         if self.options.test:
             self.requires('gtest/1.8.1@bincrafters/stable')
+        if self.options.cuda:
+            self.requires('cuda-api-wrappers/0.3.0@cosmic/stable')
 
     def _configure(self):
         cmake = CMake(self)

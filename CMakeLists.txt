@@ -35,7 +35,7 @@ conan_basic_setup(TARGETS)
 # Emu Core.
 #
 
-add_library(emucore SHARED
+add_library(emucore
     src/core/fun.cpp)
 
 target_include_directories(emucore PUBLIC
@@ -84,7 +84,7 @@ if (emu_use_cuda)
     # This way it became unique and avoids difficulties using spaces.
     string(REPLACE "-gencode;" "--generate-code=" ARCH_FLAGS "${ARCH_FLAGS}")
 
-    add_library(emucuda SHARED
+    add_library(emucuda
         src/cuda/funu.cu
     )
 
@@ -98,6 +98,7 @@ if (emu_use_cuda)
     target_link_libraries(emucuda PUBLIC
         emucore
         ${CUDA_LIBRARIES}
+        CONAN_PKG::cuda-api-wrappers
     )
 
     target_compile_options(emucuda PUBLIC
