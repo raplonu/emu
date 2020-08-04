@@ -126,6 +126,8 @@ class ConanBuild(build_ext):
         cxx_ref = f'{cxx_name}/{package_version}'
         cxx_args = f'-s build_type={build_mode} {glob_conan_args}'
 
+        call(f'./configure.sh')
+
         build_conan(cxx_source_dir, cxx_build_dir, cxx_ref, channel, cxx_args, editable)
 
         # Package wrap
