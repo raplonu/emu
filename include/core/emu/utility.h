@@ -11,6 +11,9 @@
 #if EMU_CUDA
 #include <thrust/tuple.h>
 #endif
+
+#define FWD(v) emu::fwd<decltype(v)>(v)
+
 namespace emu
 {
     template<typename T>

@@ -6,6 +6,16 @@
 
 namespace emu
 {
+    template<bool B>
+    constexpr auto EnableIf = std::enable_if_t<B, bool>{true};
+
+    template<typename T1, typename T2>
+    constexpr bool Equivalent = std::is_same<std::decay_t<T1>, std::decay_t<T2>>::value;
+
+    // Behave exactly as the std::remove_cvref_t of C++20.
+    template< class T >
+    using RemoveCVRef = typename std::remove_cv_t<std::remove_reference_t<T>>;
+
     template<typename It>
     using IteratorValue = typename std::iterator_traits<It>::value_type;
 
