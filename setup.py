@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import subprocess
 from glob import glob
@@ -113,6 +114,9 @@ class ConanBuild(build_ext):
 
 
     def build_extension(self, ext):
+        p_version = sys.version_info
+        version = f'{p_version.major}.{p_version.minor}.{p_version.micro}'
+
         editable   = glob_editable
         channel    = glob_conan_channel
 
@@ -134,7 +138,7 @@ class ConanBuild(build_ext):
         py_source_dir  = f'{ext.sourcedir}/python'
         py_build_dir   = f'{build_dir}/python/build'
         py_ref  = f'{py_name}/{package_version}'
-        py_args  = f'{cxx_args} -o {py_name}:cxx_ref={cxx_ref}@{channel}'
+        py_args  = f'{cxx_args} -o {py_name}:cxx_ref={cxx_ref}@{channel} -o {py_name}:python_version={version}'
 
         build_conan(py_source_dir, py_build_dir, py_ref, channel, py_args, editable)
 
