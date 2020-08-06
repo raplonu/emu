@@ -62,6 +62,7 @@ set(emu_targets emucore)
 if (emu_build_cuda)
     message(CHECK_START "Emu - Configuring CUDA support")
 
+    # Only rely on CUDA package for `cuda_select_nvcc_arch_flags`
     find_package(CUDA REQUIRED)
 
     if (NOT emu_cuda_sm)
@@ -80,8 +81,12 @@ if (emu_build_cuda)
     # This way it became unique and avoids difficulties using spaces.
     string(REPLACE "-gencode;" "--generate-code=" ARCH_FLAGS "${ARCH_FLAGS}")
 
+    find_package(CUDAToolkit REQUIRED)
+
     add_library(emucuda
         src/cuda/funu.cu
+        src/cuda/cublas/handle.cpp
+        src/cuda/detail/cublas/error.cpp
     )
 
     target_include_directories(emucuda PUBLIC
@@ -92,7 +97,8 @@ if (emu_build_cuda)
 
     target_link_libraries(emucuda PUBLIC
         emucore
-        ${CUDA_LIBRARIES}
+        CUDA::cublas
+        CUDA::cudart
         CONAN_PKG::cuda-api-wrappers
     )
 
