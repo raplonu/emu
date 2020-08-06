@@ -1,0 +1,84 @@
+#include <gtest/gtest.h>
+
+#include <emu/scoped.h>
+
+#include <sstream>
+
+namespace
+{
+    struct resource_t {
+        bool open;
+    };
+
+    resource_t open_resource() {
+        return {true};
+    }
+
+    void close_resource(resource_t& x) {
+        x.open = false;
+    }
+
+    struct Closer{
+        void operator()(resource_t& x) const {
+            close_resource(x);
+        }
+    };
+
+    /// This is the canonical example of scoped_t as a RAII resource owner.
+    TEST(scoped_test, free_resource) {
+        using namespace emu;
+        resource_t r = open_resource();
+        {
+            auto s = scoped(std::ref(r), close_resource);
+            EXPECT_TRUE(r.open);
+        }
+        EXPECT_FALSE(r.open);
+    }
+
+    /// This is the canonical example of scoped_t as a RAII resource owner.
+    TEST(scoped_test, dont_free_resource) {
+        using namespace emu;
+        resource_t r = open_resource();
+        {
+            auto s = wrap_scoped(std::ref(r), close_resource);
+            EXPECT_TRUE(r.open);
+        }
+        EXPECT_TRUE(r.open);
+    }
+
+    /// Here, scoped_t is used not to free a resource, but to restore an initial state.
+    /// We want to restore the io flags on scope exit.
+    TEST(scoped_test, restore_state) {
+        using namespace emu;
+        using namespace std;
+        ostringstream ss;
+        ss.setf(ios::dec);
+        {
+            // setf() returns the old flags and we store them in the scoped_t object.
+            // The lambda will set them again.
+            auto s = scoped(ss.setf(ios::hex, ios::basefield), [&](ios::fmtflags previous) {
+            ss.setf(previous, ios::basefield);
+            });
+            ss << 255;
+            EXPECT_EQ("ff", ss.str());
+        }
+        ss.str("");
+        ss << 255;
+        EXPECT_EQ("255", ss.str());
+    }
+
+    /// Sometimes, we don't have a value and just want something to be done on
+    /// scope exit.
+    TEST(scoped_test, scoped_void) {
+        using namespace emu;
+        using namespace std;
+        ostringstream ss;
+        {
+            auto s = scoped([&]{ss << "out of scope";});
+            ss << "in scope - ";
+            EXPECT_EQ("in scope - ", ss.str());
+        }
+        EXPECT_EQ("in scope - out of scope", ss.str());
+    }
+}
+

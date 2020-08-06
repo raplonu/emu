@@ -20,20 +20,20 @@ namespace emu
         constexpr scoped_t() = default;
 
         template<typename T1, bool = EnableIfNotBase<scoped_t, T1>>
-        constexpr scoped_t(T1 value, bool owning = true):
-            value_(FWD(value)), function(), owning_(owning)
+        constexpr scoped_t(T1 value, bool owning):
+            value(FWD(value)), function(), owning_(owning)
         {}
 
-        template<typename T1, typename F1, bool = EnableIf<not Equivalent<F1, bool>>>
-        constexpr scoped_t(T1 value, F1 function, bool owning = true):
-            value_(FWD(value)), function(FWD(function)), owning_(owning)
+        template<typename T1, typename F1>
+        constexpr scoped_t(T1 value, F1 function, bool owning):
+            value(FWD(value)), function(FWD(function)), owning_(owning)
         {}
 
         scoped_t(const scoped_t & oc) = delete;
 
         constexpr scoped_t(scoped_t && oc):
-            value_(mv(oc.value)), function(mv(oc.function)),
-            owning_(std::exange(oc.owning_, false))
+            value(mv(oc.value)), function(mv(oc.function)),
+            owning_(std::exchange(oc.owning_, false))
         {}
 
         scoped_t& operator=(const scoped_t & oc) = delete;
@@ -60,7 +60,7 @@ namespace emu
         constexpr scoped_t() = default;
 
         template<typename F1, bool = EnableIfNotBase<scoped_t, F1>>
-        constexpr scoped_t(F1 function, bool owning = true):
+        constexpr scoped_t(F1 function, bool owning):
             function(FWD(function)), owning_(owning)
         {}
 
@@ -68,7 +68,7 @@ namespace emu
 
         constexpr scoped_t(scoped_t && oc):
             function(mv(oc.function)),
-            owning_(std::exange(oc.owning_, false))
+            owning_(std::exchange(oc.owning_, false))
         {}
 
         scoped_t& operator=(const scoped_t & oc) = delete;
@@ -92,8 +92,8 @@ namespace emu
     ///
     /// Regular T, FunctionObject<U (T)> F where U is not constrained
     template<typename T, typename F>
-    constexpr scoped_t<std::decay_t<T>, std::decay_t<F>> scope(T&& value, F&& f) {
-        return scoped_t<std::decay_t<T>, std::decay_t<F>>{FWD(value), FWD(f)};
+    constexpr scoped_t<std::decay_t<T>, std::decay_t<F>> scoped(T&& value, F&& f) {
+        return scoped_t<std::decay_t<T>, std::decay_t<F>>{FWD(value), FWD(f), true};
     }
 
     /// Returns a scoped_t for the given function.
@@ -101,9 +101,20 @@ namespace emu
     ///
     /// FunctionObject<U (T)> F where U is not constrained
     template<typename F>
-    constexpr scoped_t<void, std::decay_t<F>> scope(F&& f) {
-        return scoped_t<void, std::decay_t<F>>{FWD(f)};
+    constexpr scoped_t<void, std::decay_t<F>> scoped(F&& f) {
+        return scoped_t<void, std::decay_t<F>>{FWD(f),  true};
     }
+
+    template<typename T, typename F>
+    constexpr scoped_t<std::decay_t<T>, std::decay_t<F>> wrap_scoped(T&& value, F&& f) {
+        return scoped_t<std::decay_t<T>, std::decay_t<F>>{FWD(value), FWD(f), false};
+    }
+
+    template<typename F>
+    constexpr scoped_t<void, std::decay_t<F>> wrap_scoped(F&& f) {
+        return scoped_t<void, std::decay_t<F>>{FWD(f), false};
+    }
+
 
 }
 

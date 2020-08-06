@@ -8,6 +8,7 @@ add_executable(emucoretest
     src/core/span_test.cpp
     src/core/range_test.cpp
     src/core/expected_test.cpp
+    src/core/scoped_test.cpp
 )
 
 target_link_libraries(emucoretest PRIVATE
@@ -21,7 +22,7 @@ add_test(NAME emucoretest
     COMMAND emucoretest
 )
 
-if (emu_use_cuda)
+if (emu_build_cuda)
     add_executable(emucudatest
         src/cuda/test.cu
         src/cuda/iterator_function_test.cu
