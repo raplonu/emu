@@ -9,7 +9,7 @@
 namespace emu
 {
     template<typename Base, typename Derive>
-    constexpr bool EnableIfNotBase = EnableIf<not std::is_base_of<RemoveCVRef<Base>, RemoveCVRef<Derive>>::value>;
+    using EnableIfNotBase = EnableIf<not std::is_base_of<RemoveCVRef<Base>, RemoveCVRef<Derive>>::value>;
 
     template<typename T, typename F>
     struct scoped_t
@@ -19,13 +19,13 @@ namespace emu
 
         constexpr scoped_t() = default;
 
-        template<typename T1, bool = EnableIfNotBase<scoped_t, T1>>
-        constexpr scoped_t(T1 value, bool owning):
+        template<typename T1, bool = EnableIfNotBase<scoped_t, T1>{}>
+        constexpr scoped_t(T1 value, bool owning = true):
             value(FWD(value)), function(), owning_(owning)
         {}
 
-        template<typename T1, typename F1>
-        constexpr scoped_t(T1 value, F1 function, bool owning):
+        template<typename T1, typename F1, bool = EnableIf<not Equivalent<F1, bool>::value>{}>
+        constexpr scoped_t(T1 value, F1 function, bool owning = true):
             value(FWD(value)), function(FWD(function)), owning_(owning)
         {}
 
@@ -59,8 +59,8 @@ namespace emu
 
         constexpr scoped_t() = default;
 
-        template<typename F1, bool = EnableIfNotBase<scoped_t, F1>>
-        constexpr scoped_t(F1 function, bool owning):
+        template<typename F1, bool = EnableIfNotBase<scoped_t, F1>{}>
+        constexpr scoped_t(F1 function, bool owning = true):
             function(FWD(function)), owning_(owning)
         {}
 
@@ -93,7 +93,7 @@ namespace emu
     /// Regular T, FunctionObject<U (T)> F where U is not constrained
     template<typename T, typename F>
     constexpr scoped_t<std::decay_t<T>, std::decay_t<F>> scoped(T&& value, F&& f) {
-        return scoped_t<std::decay_t<T>, std::decay_t<F>>{FWD(value), FWD(f), true};
+        return scoped_t<std::decay_t<T>, std::decay_t<F>>{FWD(value), FWD(f)};
     }
 
     /// Returns a scoped_t for the given function.
@@ -102,7 +102,7 @@ namespace emu
     /// FunctionObject<U (T)> F where U is not constrained
     template<typename F>
     constexpr scoped_t<void, std::decay_t<F>> scoped(F&& f) {
-        return scoped_t<void, std::decay_t<F>>{FWD(f),  true};
+        return scoped_t<void, std::decay_t<F>>{FWD(f)};
     }
 
     template<typename T, typename F>
