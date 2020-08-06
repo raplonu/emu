@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.17)
 
 option(emu_build_cuda   "Build cuda module"     ON)
 option(emu_verbose      "Print emu info"        OFF)
