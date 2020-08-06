@@ -35,5 +35,14 @@
 
 #endif
 
+#if defined __GNUC__ or defined __CUDACC__
+#define COLD_PATH __attribute__((noinline,cold))
+
+#else // compilator is neither gcc nor nvcc
+#define COLD_PATH
+#error
+
+#endif
+
 
 #endif //EMU_MACRO_H

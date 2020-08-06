@@ -5,6 +5,10 @@
 
 namespace emu
 {
+    void make_current(cuda::device::id_t device_id)
+    {
+        cuda::device::current::set(cuda::device::get(device_id));
+    }
 
     template<typename T>
     T set_and_forward(cuda::device_t device, T&& t)
@@ -14,16 +18,26 @@ namespace emu
     }
 
     template<typename T>
-    T set_and_forward(uda::device::id_t device, T&& t)
+    T set_and_forward(cuda::device::id_t device_id, T&& t)
     {
-        cuda::device::current::set(device);
+        make_current(device_id);
         return FWD(t);
     }
 
-    void make_current(cuda::device::id_t device_id)
+    template<typename F>
+    decltype(auto) set_and_invoke(cuda::device_t device, F&& f)
     {
-        cuda::device::current::set(cuda::device::get(id_t));
+        cuda::device::current::set(device);
+        return FWD(f)();
     }
+
+    template<typename F>
+    decltype(auto) set_and_invoke(cuda::device::id_t device_id, F&& f)
+    {
+        make_current(device_id);
+        return FWD(f)();
+    }
+
 
 }
 
