@@ -65,7 +65,8 @@ class EmuConan(ConanFile):
         cmake.definitions['emu_export_flags'] = True
         cmake.definitions['emu_build_test']   = self.options.test
         cmake.definitions['emu_build_cuda']   = self.options.cuda
-        cmake.definitions['emu_cuda_sm']      = self.options.cuda_sm
+        if self.options.cuda:
+            cmake.definitions['emu_cuda_sm']      = self.options.cuda_sm
 
         cmake.configure(source_folder='.')
         cmake.build()
@@ -79,7 +80,7 @@ class EmuConan(ConanFile):
         self.copy("*.h" , dst="include", src="include/core")
 
         if self.options.cuda:
-            self.copy("*.cuh", dst="include", src="include/cuda")
+            self.copy("*.*h", dst="include", src="include/cuda")
 
         # Each target export its public flags in {target}_flags.txt if there is any flags.
         # Flags are exported in package in order to be used by consumer.

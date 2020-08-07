@@ -2,6 +2,7 @@
 #define EMU_CUBLAS_H
 
 #include <emu/cublas/handle.h>
+#include <emu/cublas/type.h>
 
 #include <cublas_v2.h>
 
@@ -11,29 +12,19 @@ namespace emu
 namespace cublas
 {
 
-    enum class Operation {
-        N,
-        T,
-        C,
-        Hermitan,
-        Conjg
-    };
+namespace detail
+{
+    template<typename T> struct AssociatedType;
 
-    enum class SideMode {
-        Left,
-        Right
-    };
+    template<> struct AssociatedType<float>           { using type = float;  };
+    template<> struct AssociatedType<double>          { using type = double; };
+    template<> struct AssociatedType<cuComplex>       { using type = float;  };
+    template<> struct AssociatedType<cuDoubleComplex> { using type = double; };
 
-    enum class FillMode {
-        Lower,
-        Upper,
-        Full
-    };
+} // namespace detail
 
-    enum class DiagonalType {
-        NonUnit,
-        Unit
-    };
+    template<typename T>
+    using AssociatedT = typename detail::AssociatedType<T>::type;
 
     // Blas level 1
 
@@ -44,7 +35,7 @@ namespace cublas
     void amin(handle_t handle, int n, const T *x, int incx, int *result);
 
     template<typename T>
-    void asum(handle_t handle, int n, const T *x, int incx, T  *result);
+    void asum(handle_t handle, int n, const T *x, int incx, AssociatedT<T> *result);
 
     template<typename T>
     void axpy(handle_t handle, int n, const T *alpha, const T *x, int incx, T *y, int incy);
@@ -56,10 +47,16 @@ namespace cublas
     void dot (handle_t handle, int n, const T *x, int incx, const T *y, int incy, T *result);
 
     template<typename T>
-    void nrm2(handle_t handle, int n, const T *x, int incx, T  *result);
+    void dotu(handle_t handle, int n, const T *x, int incx, const T *y, int incy, T *result);
 
     template<typename T>
-    void rot (handle_t handle, int n, T *x, int incx, T *y, int incy, const T  *c, const T *s);
+    void dotc(handle_t handle, int n, const T *x, int incx, const T *y, int incy, T *result);
+
+    template<typename T>
+    void nrm2(handle_t handle, int n, const T *x, int incx, T  *result);
+
+    // template<typename TIn, typename TOut>
+    // void rot (handle_t handle, int n, TOut *x, int incx, TOut *y, int incy, const TIn *c, const TIn *s);
 
     template<typename T>
     void rotg(handle_t handle, T *a, T *b, T  *c, T *s);
@@ -127,7 +124,7 @@ namespace cublas
     void trsv(handle_t handle, FillMode uplo, Operation trans, DiagonalType diag, int n, const T *A, int lda, T *x, int incx);
 
     template<typename T>
-    void hemv(handle_t handle, FillMode uplo int n, const T *alpha const T *A, int lda const T *x, int incx const T *beta T *y, int incy);
+    void hemv(handle_t handle, FillMode uplo, int n, const T *alpha, const T *A, int lda, const T *x, int incx, const T *beta, T *y, int incy);
 
     template<typename T>
     void hbmv(handle_t handle, FillMode uplo, int n, int k, const T *alpha, const T *A, int lda, const T *x, int incx, const T *beta, T *y, int incy);
@@ -147,114 +144,56 @@ namespace cublas
     template<typename T>
     void hpr2(handle_t handle, FillMode uplo, int n, const T *alpha, const T *x, int incx, const T *y, int incy, T *AP);
 
+    // Blas level 2
 
+    template<typename T>
+    void gemm(handle_t handle, Operation transa, Operation transb, int m, int n, int k, const T *alpha, const T *A, int lda, const T *B, int ldb, const T *beta, T *C, int ldc);
 
+    template<typename T>
+    void gemm3m(handle_t handle, Operation transa, Operation transb, int m, int n, int k, const T *alpha, const T *A, int lda, const T *B, int ldb, const T *beta, T *C, int ldc);
 
+    template<typename T>
+    void gemmBatched(handle_t handle, Operation transa, Operation transb, int m, int n, int k, const T *alpha, const T *Aarray[], int lda, const T *Barray[], int ldb, const T *beta, T *Carray[], int ldc, int batchCount);
 
+    template<typename T>
+    void tridedBatched(handle_t handle, Operation transa, Operation transb, int m, int n, int k, const T *alpha, const T *A, int lda, long long int strideA, const T *B, int ldb, long long int strideB, const T *beta, T *C, int ldc, long long int strideC, int batchCount);
 
+    template<typename T>
+    void symm(handle_t handle, SideMode side, FillMode uplo, int m, int n, const T *alpha, const T *A, int lda, const T *B, int ldb, const T *beta, T *C, int ldc);
 
+    template<typename T>
+    void syrk(handle_t handle, FillMode uplo, Operation trans, int n, int k, const T *alpha, const T *A, int lda, const T *beta, T *C, int ldc);
 
+    template<typename T>
+    void syr2k(handle_t handle, FillMode uplo, Operation trans, int n, int k, const T *alpha, const T *A, int lda, const T *B, int ldb, const T *beta, T *C, int ldc);
 
+    template<typename T>
+    void syrkx(handle_t handle, FillMode uplo, Operation trans, int n, int k, const T *alpha, const T *A, int lda, const T *B, int ldb, const T *beta, T *C, int ldc);
 
+    template<typename T>
+    void trmm(handle_t handle, SideMode side, FillMode uplo, Operation trans, DiagonalType diag, int m, int n, const T *alpha, const T *A, int lda, const T *B, int ldb, T *C, int ldc);
 
+    template<typename T>
+    void trsm(handle_t handle, SideMode side, FillMode uplo, Operation trans, DiagonalType diag, int m, int n, const T *alpha, const T *A, int lda, T *B, int ldb);
 
+    template<typename T>
+    void trsmBatched(handle_t handle, SideMode  side, FillMode uplo, Operation trans, DiagonalType  diag, int m, int n, const T *alpha, T *A[], int lda, T *B[], int ldb, int batchCount);
 
+    template<typename T>
+    void hemm(handle_t handle, SideMode side, FillMode uplo, int m, int n, const T *alpha, const T *A, int lda, const T *B, int ldb, const T *beta, T *C, int ldc);
 
+    template<typename T>
+    void herk(handle_t handle, FillMode uplo, Operation trans, int n, int k, const T *alpha, const T *A, int lda, const T *beta, T *C, int ldc);
 
+    template<typename T>
+    void her2k(handle_t handle, FillMode uplo, Operation trans, int n, int k, const T *alpha, const T *A, int lda, const T *B, int ldb, const T *beta, T *C, int ldc);
 
+    template<typename T>
+    void herkx(handle_t handle, FillMode uplo, Operation trans, int n, int k, const T *alpha, const T *A, int lda, const T *B, int ldb, const T  *beta, T *C, int ldc);
 
+    // Blas like extension
 
-template <class T_data>
-int where_amax(cublasHandle_t cublas_handle, int n, const T_data *vect,
-                     int incx);
-
-template <class T_data>
-int where_amin(cublasHandle_t cublas_handle, int n, const T_data *vect,
-                     int incx);
-
-template <class T_data>
-T_data getasum(cublasHandle_t cublas_handle, int n, const T_data *vect,
-                     int incx);
-
-template <class T_data>
-cublasStatus_t axpy(cublasHandle_t cublas_handle, int n,
-                          const T_data alpha, const T_data *vectx, int incx,
-                          T_data *vecty, int incy);
-
-template <class T_data>
-T_data dot(cublasHandle_t cublas_handle, int n, T_data *vectx, int incx,
-                 T_data *vecty, int incy);
-
-template <class T_data>
-T_data nrm2(cublasHandle_t cublas_handle, int n, T_data *vect, int incx);
-
-template <class T_data>
-cublasStatus_t rot(cublasHandle_t cublas_handle, int n, T_data *vectx,
-                         int incx, T_data *vecty, int incy, T_data sc,
-                         T_data ss);
-
-template <class T_data>
-cublasStatus_t scal(cublasHandle_t cublas_handle, int n, T_data alpha,
-                          T_data *vectx, int incx);
-
-template <class T_data>
-cublasStatus_t swap(cublasHandle_t cublas_handle, int n, T_data *vectx,
-                          int incx, T_data *vecty, int incy);
-
-template <class T_data>
-cublasStatus_t copy(cublasHandle_t cublas_handle, int n,
-                          const T_data *vectx, int incx, T_data *vecty,
-                          int incy);
-
-template <class T_data>
-cublasStatus_t gemv(cublasHandle_t cublas_handle, char trans, int m,
-                          int n, T_data alpha, T_data *matA, int lda,
-                          T_data *vectx, int incx, T_data beta, T_data *vecty,
-                          int incy);
-
-template <class T_data>
-cublasStatus_t symv(cublasHandle_t cublas_handle, char uplo, int n,
-                          T_data alpha, T_data *matA, int lda, T_data *vectx,
-                          int incx, T_data beta, T_data *vecty, int incy);
-
-template <class T_data>
-cublasStatus_t ger(cublasHandle_t cublas_handle, int m, int n,
-                         T_data alpha, T_data *vectx, int incx, T_data *vecty,
-                         int incy, T_data *matA, int lda);
-
-template <class T_data>
-cublasStatus_t gemm(cublasHandle_t cublas_handle, char transa,
-                          char transb, int m, int n, int k, T_data alpha,
-                          T_data *matA, int lda, T_data *matB, int ldb,
-                          T_data beta, T_data *matC, int ldc);
-
-template <class T_data>
-cublasStatus_t symm(cublasHandle_t cublas_handle, char side, char uplo,
-                          int m, int n, T_data alpha, T_data *matA, int lda,
-                          T_data *matB, int ldb, T_data beta, T_data *matC,
-                          int ldc);
-
-template <class T_data>
-cublasStatus_t syrk(cublasHandle_t cublas_handle, char uplo, char transa,
-                          int n, int k, T_data alpha, T_data *matA, int lda,
-                          T_data beta, T_data *matC, int ldc);
-
-template <class T_data>
-cublasStatus_t syrkx(cublasHandle_t cublas_handle, char uplo, char transa,
-                           int n, int k, T_data alpha, T_data *matA, int lda,
-                           T_data *matB, int ldb, T_data beta, T_data *matC,
-                           int ldc);
-
-template <class T_data>
-cublasStatus_t geam(cublasHandle_t cublas_handle, char transa,
-                          char transb, int m, int n, T_data alpha, T_data *matA,
-                          int lda, T_data beta, T_data *matB, int ldb,
-                          T_data *matC, int ldc);
-
-template <class T_data>
-cublasStatus_t dgmm(cublasHandle_t cublas_handle, char side, int m, int n,
-                          const T_data *matA, int lda, const T_data *vectx,
-                          int incx, T_data *matC, int ldc);
+    // Coming soon...
 
 } // namespace cublas
 
