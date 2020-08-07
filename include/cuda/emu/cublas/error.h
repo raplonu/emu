@@ -78,7 +78,7 @@ inline void throw_if_error(cublas::status_t status, std::string message) noexcep
 {
 	if (is_failure(status))
         // Put the throw code in another function with cold path.
-        [&] () COLD_PATH { throw runtime_error(status, message); }();
+        [&] () EMU_COLD_PATH { throw runtime_error(status, message); }();
 }
 
 /**
@@ -91,11 +91,11 @@ inline void throw_if_error(cublas::status_t status) noexcept(false)
 {
 	if (is_failure(status))
         // Put the throw code in another function with cold path.
-        [&] () COLD_PATH { throw runtime_error(status); }();
+        [&] () EMU_COLD_PATH { throw runtime_error(status); }();
 }
 
-}
+} // namespace cublas
 
-}
+} // namespace emu
 
 #endif //EMU_DETAIL_CUBLAS_ERROR_H

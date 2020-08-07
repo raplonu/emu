@@ -1,7 +1,7 @@
 #ifndef EMU_CUBLAS_HANDLE_H
 #define EMU_CUBLAS_HANDLE_H
 
-#include <emu/detail/cublas/error.h>
+#include <emu/cublas/error.h>
 
 #include <cuda/api_wrappers.hpp>
 
