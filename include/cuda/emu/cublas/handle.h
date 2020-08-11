@@ -43,7 +43,7 @@ namespace handle
         void set_pointer_mode(id_t handle, cublasPointerMode_t mode);
     }
 
-    using ScopedHandle = emu::scoped_t<id_t, detail::Destroyer>;
+    using ScopedHandle = emu::scoped_t<const id_t, detail::Destroyer>;
 }
 
 struct handle_t
@@ -53,6 +53,12 @@ struct handle_t
     handle_t(handle::id_t id, cuda::device::id_t device_id, bool owning);
 
     handle_t(cuda::device::id_t device_id);
+
+    constexpr handle_t(handle_t && o) = default;
+    handle_t(const handle_t &&) = delete;
+
+    constexpr handle_t& operator=(handle_t &&) = default;
+    handle_t& operator=(const handle_t &) = delete;
 
     handle::id_t id() const noexcept { return id_.value; }
 
@@ -71,7 +77,7 @@ struct handle_t
     ~handle_t() = default;
 
 private:
-    const handle::ScopedHandle id_;
+    handle::ScopedHandle id_;
     const cuda::device::id_t device_id_;
 };
 
