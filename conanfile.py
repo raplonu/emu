@@ -80,7 +80,8 @@ class EmuConan(ConanFile):
         self.copy("*.h" , dst="include", src="include/core")
 
         if self.options.cuda:
-            self.copy("*.*h", dst="include", src="include/cuda")
+            self.copy("*.h"  , dst="include", src="include/cuda")
+            self.copy("*.cuh", dst="include", src="include/cuda")
 
         # Each target export its public flags in {target}_flags.txt if there is any flags.
         # Flags are exported in package in order to be used by consumer.

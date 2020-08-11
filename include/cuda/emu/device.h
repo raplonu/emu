@@ -5,7 +5,7 @@
 
 namespace emu
 {
-    void make_current(cuda::device::id_t device_id)
+    inline void make_current(cuda::device::id_t device_id)
     {
         cuda::device::current::set(cuda::device::get(device_id));
     }
