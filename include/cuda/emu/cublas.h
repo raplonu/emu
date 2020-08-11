@@ -29,167 +29,167 @@ namespace detail
     // Blas level 1
 
     template<typename T>
-    void amax(handle_t handle, int n, const T *x, int incx, int *result);
+    void amax(const handle_t & handle, int n, const T *x, int incx, int *result);
 
     template<typename T>
-    void amin(handle_t handle, int n, const T *x, int incx, int *result);
+    void amin(const handle_t & handle, int n, const T *x, int incx, int *result);
 
     template<typename T>
-    void asum(handle_t handle, int n, const T *x, int incx, AssociatedT<T> *result);
+    void asum(const handle_t & handle, int n, const T *x, int incx, AssociatedT<T> *result);
 
     template<typename T>
-    void axpy(handle_t handle, int n, const T *alpha, const T *x, int incx, T *y, int incy);
+    void axpy(const handle_t & handle, int n, const T *alpha, const T *x, int incx, T *y, int incy);
 
     template<typename T>
-    void copy(handle_t handle, int n, const T *x, int incx, T *y, int incy);
+    void copy(const handle_t & handle, int n, const T *x, int incx, T *y, int incy);
 
     template<typename T>
-    void dot (handle_t handle, int n, const T *x, int incx, const T *y, int incy, T *result);
+    void dot (const handle_t & handle, int n, const T *x, int incx, const T *y, int incy, T *result);
 
     template<typename T>
-    void dotu(handle_t handle, int n, const T *x, int incx, const T *y, int incy, T *result);
+    void dotu(const handle_t & handle, int n, const T *x, int incx, const T *y, int incy, T *result);
 
     template<typename T>
-    void dotc(handle_t handle, int n, const T *x, int incx, const T *y, int incy, T *result);
+    void dotc(const handle_t & handle, int n, const T *x, int incx, const T *y, int incy, T *result);
 
     template<typename T>
-    void nrm2(handle_t handle, int n, const T *x, int incx, T  *result);
+    void nrm2(const handle_t & handle, int n, const T *x, int incx, T  *result);
 
     // template<typename TIn, typename TOut>
-    // void rot (handle_t handle, int n, TOut *x, int incx, TOut *y, int incy, const TIn *c, const TIn *s);
+    // void rot (const handle_t & handle, int n, TOut *x, int incx, TOut *y, int incy, const TIn *c, const TIn *s);
 
     template<typename T>
-    void rotg(handle_t handle, T *a, T *b, T  *c, T *s);
+    void rotg(const handle_t & handle, T *a, T *b, T  *c, T *s);
 
     template<typename T>
-    void rotm(handle_t handle, int n, T  *x, int incx, T  *y, int incy, const T*  param);
+    void rotm(const handle_t & handle, int n, T  *x, int incx, T  *y, int incy, const T*  param);
 
     template<typename T>
-    void rotmg(handle_t handle, T  *d1, T  *d2, T  *x1, const T  *y1, T  *param);
+    void rotmg(const handle_t & handle, T  *d1, T  *d2, T  *x1, const T  *y1, T  *param);
 
     template<typename T>
-    void scal(handle_t handle, int n, const T *alpha, T *x, int incx);
+    void scal(const handle_t & handle, int n, const T *alpha, T *x, int incx);
 
     template<typename T>
-    void swap(handle_t handle, int n, T *x, int incx, T *y, int incy);
+    void swap(const handle_t & handle, int n, T *x, int incx, T *y, int incy);
 
     // Blas level 2
 
     template<typename T>
-    void gbmv(handle_t handle, Operation trans, int m, int n, int kl, int ku, const T *alpha, const T *A, int lda, const T *x, int incx, const T *beta, T *y, int incy);
+    void gbmv(const handle_t & handle, Operation trans, int m, int n, int kl, int ku, const T *alpha, const T *A, int lda, const T *x, int incx, const T *beta, T *y, int incy);
 
     template<typename T>
-    void gemv(handle_t handle, Operation trans, int m, int n, const T *alpha, const T *A, int lda, const T *x, int incx, const T *beta, T *y, int incy);
+    void gemv(const handle_t & handle, Operation trans, int m, int n, const T *alpha, const T *A, int lda, const T *x, int incx, const T *beta, T *y, int incy);
 
     template<typename T>
-    void ger (handle_t handle, int m, int n, const T *alpha, const T *x, int incx, const T *y, int incy, T *A, int lda);
+    void ger (const handle_t & handle, int m, int n, const T *alpha, const T *x, int incx, const T *y, int incy, T *A, int lda);
 
     template<typename T>
-    void sbmv(handle_t handle, FillMode uplo, int n, int k, const T  *alpha, const T  *A, int lda, const T  *x, int incx, const T  *beta, T *y, int incy);
+    void sbmv(const handle_t & handle, FillMode uplo, int n, int k, const T  *alpha, const T  *A, int lda, const T  *x, int incx, const T  *beta, T *y, int incy);
 
     template<typename T>
-    void spmv(handle_t handle, FillMode uplo, int n, const T  *alpha, const T  *AP, const T  *x, int incx, const T  *beta, T  *y, int incy);
+    void spmv(const handle_t & handle, FillMode uplo, int n, const T  *alpha, const T  *AP, const T  *x, int incx, const T  *beta, T  *y, int incy);
 
     template<typename T>
-    void spr (handle_t handle, FillMode uplo, int n, const T  *alpha, const T  *x, int incx, T  *AP);
+    void spr (const handle_t & handle, FillMode uplo, int n, const T  *alpha, const T  *x, int incx, T  *AP);
 
     template<typename T>
-    void spr2(handle_t handle, FillMode uplo, int n, const T  *alpha, const T  *x, int incx, const T  *y, int incy, T  *AP);
+    void spr2(const handle_t & handle, FillMode uplo, int n, const T  *alpha, const T  *x, int incx, const T  *y, int incy, T  *AP);
 
     template<typename T>
-    void symv(handle_t handle, FillMode uplo, int n, const T *alpha, const T *A, int lda, const T *x, int incx, const T *beta, T *y, int incy);
+    void symv(const handle_t & handle, FillMode uplo, int n, const T *alpha, const T *A, int lda, const T *x, int incx, const T *beta, T *y, int incy);
 
     template<typename T>
-    void syr (handle_t handle, FillMode uplo, int n, const T *alpha, const T *x, int incx, T *A, int lda);
+    void syr (const handle_t & handle, FillMode uplo, int n, const T *alpha, const T *x, int incx, T *A, int lda);
 
     template<typename T>
-    void syr2(handle_t handle, FillMode uplo, int n, const T *alpha, const T *x, int incx, const T *y, int incy, T *A, int lda);
+    void syr2(const handle_t & handle, FillMode uplo, int n, const T *alpha, const T *x, int incx, const T *y, int incy, T *A, int lda);
 
     template<typename T>
-    void tbmv(handle_t handle, FillMode uplo, Operation trans, DiagonalType diag, int n, int k, const T *A, int lda, T *x, int incx);
+    void tbmv(const handle_t & handle, FillMode uplo, Operation trans, DiagonalType diag, int n, int k, const T *A, int lda, T *x, int incx);
 
     template<typename T>
-    void tbsv(handle_t handle, FillMode uplo, Operation trans, DiagonalType diag, int n, int k, const T *A, int lda, T *x, int incx);
+    void tbsv(const handle_t & handle, FillMode uplo, Operation trans, DiagonalType diag, int n, int k, const T *A, int lda, T *x, int incx);
 
     template<typename T>
-    void tpmv(handle_t handle, FillMode uplo, Operation trans, DiagonalType diag, int n, const T *AP, T *x, int incx);
+    void tpmv(const handle_t & handle, FillMode uplo, Operation trans, DiagonalType diag, int n, const T *AP, T *x, int incx);
 
     template<typename T>
-    void tpsv(handle_t handle, FillMode uplo, Operation trans, DiagonalType diag, int n, const T *AP, T *x, int incx);
+    void tpsv(const handle_t & handle, FillMode uplo, Operation trans, DiagonalType diag, int n, const T *AP, T *x, int incx);
 
     template<typename T>
-    void trmv(handle_t handle, FillMode uplo, Operation trans, DiagonalType diag, int n, const T *A, int lda, T *x, int incx);
+    void trmv(const handle_t & handle, FillMode uplo, Operation trans, DiagonalType diag, int n, const T *A, int lda, T *x, int incx);
 
     template<typename T>
-    void trsv(handle_t handle, FillMode uplo, Operation trans, DiagonalType diag, int n, const T *A, int lda, T *x, int incx);
+    void trsv(const handle_t & handle, FillMode uplo, Operation trans, DiagonalType diag, int n, const T *A, int lda, T *x, int incx);
 
     template<typename T>
-    void hemv(handle_t handle, FillMode uplo, int n, const T *alpha, const T *A, int lda, const T *x, int incx, const T *beta, T *y, int incy);
+    void hemv(const handle_t & handle, FillMode uplo, int n, const T *alpha, const T *A, int lda, const T *x, int incx, const T *beta, T *y, int incy);
 
     template<typename T>
-    void hbmv(handle_t handle, FillMode uplo, int n, int k, const T *alpha, const T *A, int lda, const T *x, int incx, const T *beta, T *y, int incy);
+    void hbmv(const handle_t & handle, FillMode uplo, int n, int k, const T *alpha, const T *A, int lda, const T *x, int incx, const T *beta, T *y, int incy);
 
     template<typename T>
-    void hpmv(handle_t handle, FillMode uplo, int n, const T *alpha, const T *AP, const T *x, int incx, const T *beta, T *y, int incy);
+    void hpmv(const handle_t & handle, FillMode uplo, int n, const T *alpha, const T *AP, const T *x, int incx, const T *beta, T *y, int incy);
 
     template<typename T>
-    void her (handle_t handle, FillMode uplo, int n, const T  *alpha, const T *x, int incx, T *A, int lda);
+    void her (const handle_t & handle, FillMode uplo, int n, const T  *alpha, const T *x, int incx, T *A, int lda);
 
     template<typename T>
-    void her2(handle_t handle, FillMode uplo, int n, const T *alpha, const T *x, int incx, const T *y, int incy, T *A, int lda);
+    void her2(const handle_t & handle, FillMode uplo, int n, const T *alpha, const T *x, int incx, const T *y, int incy, T *A, int lda);
 
     template<typename T>
-    void hpr(handle_t handle, FillMode uplo, int n, const T *alpha, const T *x, int incx, T *AP);
+    void hpr(const handle_t & handle, FillMode uplo, int n, const T *alpha, const T *x, int incx, T *AP);
 
     template<typename T>
-    void hpr2(handle_t handle, FillMode uplo, int n, const T *alpha, const T *x, int incx, const T *y, int incy, T *AP);
+    void hpr2(const handle_t & handle, FillMode uplo, int n, const T *alpha, const T *x, int incx, const T *y, int incy, T *AP);
 
     // Blas level 2
 
     template<typename T>
-    void gemm(handle_t handle, Operation transa, Operation transb, int m, int n, int k, const T *alpha, const T *A, int lda, const T *B, int ldb, const T *beta, T *C, int ldc);
+    void gemm(const handle_t & handle, Operation transa, Operation transb, int m, int n, int k, const T *alpha, const T *A, int lda, const T *B, int ldb, const T *beta, T *C, int ldc);
 
     template<typename T>
-    void gemm3m(handle_t handle, Operation transa, Operation transb, int m, int n, int k, const T *alpha, const T *A, int lda, const T *B, int ldb, const T *beta, T *C, int ldc);
+    void gemm3m(const handle_t & handle, Operation transa, Operation transb, int m, int n, int k, const T *alpha, const T *A, int lda, const T *B, int ldb, const T *beta, T *C, int ldc);
 
     template<typename T>
-    void gemmBatched(handle_t handle, Operation transa, Operation transb, int m, int n, int k, const T *alpha, const T *Aarray[], int lda, const T *Barray[], int ldb, const T *beta, T *Carray[], int ldc, int batchCount);
+    void gemmBatched(const handle_t & handle, Operation transa, Operation transb, int m, int n, int k, const T *alpha, const T *Aarray[], int lda, const T *Barray[], int ldb, const T *beta, T *Carray[], int ldc, int batchCount);
 
     template<typename T>
-    void tridedBatched(handle_t handle, Operation transa, Operation transb, int m, int n, int k, const T *alpha, const T *A, int lda, long long int strideA, const T *B, int ldb, long long int strideB, const T *beta, T *C, int ldc, long long int strideC, int batchCount);
+    void tridedBatched(const handle_t & handle, Operation transa, Operation transb, int m, int n, int k, const T *alpha, const T *A, int lda, long long int strideA, const T *B, int ldb, long long int strideB, const T *beta, T *C, int ldc, long long int strideC, int batchCount);
 
     template<typename T>
-    void symm(handle_t handle, SideMode side, FillMode uplo, int m, int n, const T *alpha, const T *A, int lda, const T *B, int ldb, const T *beta, T *C, int ldc);
+    void symm(const handle_t & handle, SideMode side, FillMode uplo, int m, int n, const T *alpha, const T *A, int lda, const T *B, int ldb, const T *beta, T *C, int ldc);
 
     template<typename T>
-    void syrk(handle_t handle, FillMode uplo, Operation trans, int n, int k, const T *alpha, const T *A, int lda, const T *beta, T *C, int ldc);
+    void syrk(const handle_t & handle, FillMode uplo, Operation trans, int n, int k, const T *alpha, const T *A, int lda, const T *beta, T *C, int ldc);
 
     template<typename T>
-    void syr2k(handle_t handle, FillMode uplo, Operation trans, int n, int k, const T *alpha, const T *A, int lda, const T *B, int ldb, const T *beta, T *C, int ldc);
+    void syr2k(const handle_t & handle, FillMode uplo, Operation trans, int n, int k, const T *alpha, const T *A, int lda, const T *B, int ldb, const T *beta, T *C, int ldc);
 
     template<typename T>
-    void syrkx(handle_t handle, FillMode uplo, Operation trans, int n, int k, const T *alpha, const T *A, int lda, const T *B, int ldb, const T *beta, T *C, int ldc);
+    void syrkx(const handle_t & handle, FillMode uplo, Operation trans, int n, int k, const T *alpha, const T *A, int lda, const T *B, int ldb, const T *beta, T *C, int ldc);
 
     template<typename T>
-    void trmm(handle_t handle, SideMode side, FillMode uplo, Operation trans, DiagonalType diag, int m, int n, const T *alpha, const T *A, int lda, const T *B, int ldb, T *C, int ldc);
+    void trmm(const handle_t & handle, SideMode side, FillMode uplo, Operation trans, DiagonalType diag, int m, int n, const T *alpha, const T *A, int lda, const T *B, int ldb, T *C, int ldc);
 
     template<typename T>
-    void trsm(handle_t handle, SideMode side, FillMode uplo, Operation trans, DiagonalType diag, int m, int n, const T *alpha, const T *A, int lda, T *B, int ldb);
+    void trsm(const handle_t & handle, SideMode side, FillMode uplo, Operation trans, DiagonalType diag, int m, int n, const T *alpha, const T *A, int lda, T *B, int ldb);
 
     template<typename T>
-    void trsmBatched(handle_t handle, SideMode  side, FillMode uplo, Operation trans, DiagonalType  diag, int m, int n, const T *alpha, T *A[], int lda, T *B[], int ldb, int batchCount);
+    void trsmBatched(const handle_t & handle, SideMode  side, FillMode uplo, Operation trans, DiagonalType  diag, int m, int n, const T *alpha, T *A[], int lda, T *B[], int ldb, int batchCount);
 
     template<typename T>
-    void hemm(handle_t handle, SideMode side, FillMode uplo, int m, int n, const T *alpha, const T *A, int lda, const T *B, int ldb, const T *beta, T *C, int ldc);
+    void hemm(const handle_t & handle, SideMode side, FillMode uplo, int m, int n, const T *alpha, const T *A, int lda, const T *B, int ldb, const T *beta, T *C, int ldc);
 
     template<typename T>
-    void herk(handle_t handle, FillMode uplo, Operation trans, int n, int k, const T *alpha, const T *A, int lda, const T *beta, T *C, int ldc);
+    void herk(const handle_t & handle, FillMode uplo, Operation trans, int n, int k, const T *alpha, const T *A, int lda, const T *beta, T *C, int ldc);
 
     template<typename T>
-    void her2k(handle_t handle, FillMode uplo, Operation trans, int n, int k, const T *alpha, const T *A, int lda, const T *B, int ldb, const T *beta, T *C, int ldc);
+    void her2k(const handle_t & handle, FillMode uplo, Operation trans, int n, int k, const T *alpha, const T *A, int lda, const T *B, int ldb, const T *beta, T *C, int ldc);
 
     template<typename T>
-    void herkx(handle_t handle, FillMode uplo, Operation trans, int n, int k, const T *alpha, const T *A, int lda, const T *B, int ldb, const T  *beta, T *C, int ldc);
+    void herkx(const handle_t & handle, FillMode uplo, Operation trans, int n, int k, const T *alpha, const T *A, int lda, const T *B, int ldb, const T  *beta, T *C, int ldc);
 
     // Blas like extension
 

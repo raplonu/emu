@@ -6,6 +6,8 @@ namespace emu
 namespace cublas
 {
 
+    // gemm syrk trsm potrf (cusolver)
+
     template<typename T> struct CuBLAS;
 
     template<>
@@ -59,56 +61,56 @@ namespace cublas
 
 
     template<typename T>
-    void amax(handle_t handle, int n, const T *x, int incx, int *result) {
+    void amax(const handle_t & handle, int n, const T *x, int incx, int *result) {
         throw_if_error(CuBLAS<T>::amax(handle.id(), n, x, incx, result));
     }
 
-    template void amax<float>          (handle_t handle, int n, const float           *x, int incx, int *result);
-    template void amax<double>         (handle_t handle, int n, const double          *x, int incx, int *result);
-    template void amax<cuComplex>      (handle_t handle, int n, const cuComplex       *x, int incx, int *result);
-    template void amax<cuDoubleComplex>(handle_t handle, int n, const cuDoubleComplex *x, int incx, int *result);
+    template void amax<float>          (const handle_t & handle, int n, const float           *x, int incx, int *result);
+    template void amax<double>         (const handle_t & handle, int n, const double          *x, int incx, int *result);
+    template void amax<cuComplex>      (const handle_t & handle, int n, const cuComplex       *x, int incx, int *result);
+    template void amax<cuDoubleComplex>(const handle_t & handle, int n, const cuDoubleComplex *x, int incx, int *result);
 
     template<typename T>
-    void amin(handle_t handle, int n, const T *x, int incx, int *result) {
+    void amin(const handle_t & handle, int n, const T *x, int incx, int *result) {
         throw_if_error(CuBLAS<T>::amin(handle.id(), n, x, incx, result));
     }
 
-    template void amin<float>          (handle_t handle, int n, const float           *x, int incx, int *result);
-    template void amin<double>         (handle_t handle, int n, const double          *x, int incx, int *result);
-    template void amin<cuComplex>      (handle_t handle, int n, const cuComplex       *x, int incx, int *result);
-    template void amin<cuDoubleComplex>(handle_t handle, int n, const cuDoubleComplex *x, int incx, int *result);
+    template void amin<float>          (const handle_t & handle, int n, const float           *x, int incx, int *result);
+    template void amin<double>         (const handle_t & handle, int n, const double          *x, int incx, int *result);
+    template void amin<cuComplex>      (const handle_t & handle, int n, const cuComplex       *x, int incx, int *result);
+    template void amin<cuDoubleComplex>(const handle_t & handle, int n, const cuDoubleComplex *x, int incx, int *result);
 
     template<typename T>
-    void asum(handle_t handle, int n, const T *x, int incx, AssociatedT<T> *result) {
+    void asum(const handle_t & handle, int n, const T *x, int incx, AssociatedT<T> *result) {
         throw_if_error(CuBLAS<T>::asum(handle.id(), n, x, incx, result));
     }
 
-    template void asum<float>          (handle_t handle, int n, const float           *x, int incx, float  *result);
-    template void asum<double>         (handle_t handle, int n, const double          *x, int incx, double *result);
-    template void asum<cuComplex>      (handle_t handle, int n, const cuComplex       *x, int incx, float  *result);
-    template void asum<cuDoubleComplex>(handle_t handle, int n, const cuDoubleComplex *x, int incx, double *result);
+    template void asum<float>          (const handle_t & handle, int n, const float           *x, int incx, float  *result);
+    template void asum<double>         (const handle_t & handle, int n, const double          *x, int incx, double *result);
+    template void asum<cuComplex>      (const handle_t & handle, int n, const cuComplex       *x, int incx, float  *result);
+    template void asum<cuDoubleComplex>(const handle_t & handle, int n, const cuDoubleComplex *x, int incx, double *result);
 
     template<typename T>
-    void axpy(handle_t handle, int n, const T *alpha, const T *x, int incx, T *y, int incy) {
+    void axpy(const handle_t & handle, int n, const T *alpha, const T *x, int incx, T *y, int incy) {
         throw_if_error(CuBLAS<T>::axpy(handle.id(), n, alpha, x, incx, y, incy));
     }
 
-    template void axpy<float>          (handle_t handle, int n, const float           *alpha, const float           *x, int incx, float           *y, int incy);
-    template void axpy<double>         (handle_t handle, int n, const double          *alpha, const double          *x, int incx, double          *y, int incy);
-    template void axpy<cuComplex>      (handle_t handle, int n, const cuComplex       *alpha, const cuComplex       *x, int incx, cuComplex       *y, int incy);
-    template void axpy<cuDoubleComplex>(handle_t handle, int n, const cuDoubleComplex *alpha, const cuDoubleComplex *x, int incx, cuDoubleComplex *y, int incy);
+    template void axpy<float>          (const handle_t & handle, int n, const float           *alpha, const float           *x, int incx, float           *y, int incy);
+    template void axpy<double>         (const handle_t & handle, int n, const double          *alpha, const double          *x, int incx, double          *y, int incy);
+    template void axpy<cuComplex>      (const handle_t & handle, int n, const cuComplex       *alpha, const cuComplex       *x, int incx, cuComplex       *y, int incy);
+    template void axpy<cuDoubleComplex>(const handle_t & handle, int n, const cuDoubleComplex *alpha, const cuDoubleComplex *x, int incx, cuDoubleComplex *y, int incy);
 
 
 
     template<typename T>
-    void gemv(handle_t handle, Operation trans, int m, int n, const T *alpha, const T *A, int lda, const T *x, int incx, const T *beta, T *y, int incy) {
+    void gemv(const handle_t & handle, Operation trans, int m, int n, const T *alpha, const T *A, int lda, const T *x, int incx, const T *beta, T *y, int incy) {
         throw_if_error(CuBLAS<T>::gemv(handle.id(), convert(trans), m, n, alpha, A, lda, x, incx, beta, y, incy));
     }
 
-    template void gemv<float>          (handle_t handle, Operation trans, int m, int n, const float           *alpha, const float           *A, int lda, const float           *x, int incx, const float           *beta, float           *y, int incy);
-    template void gemv<double>         (handle_t handle, Operation trans, int m, int n, const double          *alpha, const double          *A, int lda, const double          *x, int incx, const double          *beta, double          *y, int incy);
-    template void gemv<cuComplex>      (handle_t handle, Operation trans, int m, int n, const cuComplex       *alpha, const cuComplex       *A, int lda, const cuComplex       *x, int incx, const cuComplex       *beta, cuComplex       *y, int incy);
-    template void gemv<cuDoubleComplex>(handle_t handle, Operation trans, int m, int n, const cuDoubleComplex *alpha, const cuDoubleComplex *A, int lda, const cuDoubleComplex *x, int incx, const cuDoubleComplex *beta, cuDoubleComplex *y, int incy);
+    template void gemv<float>          (const handle_t & handle, Operation trans, int m, int n, const float           *alpha, const float           *A, int lda, const float           *x, int incx, const float           *beta, float           *y, int incy);
+    template void gemv<double>         (const handle_t & handle, Operation trans, int m, int n, const double          *alpha, const double          *A, int lda, const double          *x, int incx, const double          *beta, double          *y, int incy);
+    template void gemv<cuComplex>      (const handle_t & handle, Operation trans, int m, int n, const cuComplex       *alpha, const cuComplex       *A, int lda, const cuComplex       *x, int incx, const cuComplex       *beta, cuComplex       *y, int incy);
+    template void gemv<cuDoubleComplex>(const handle_t & handle, Operation trans, int m, int n, const cuDoubleComplex *alpha, const cuDoubleComplex *A, int lda, const cuDoubleComplex *x, int incx, const cuDoubleComplex *beta, cuDoubleComplex *y, int incy);
 
 
 
