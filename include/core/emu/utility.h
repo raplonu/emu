@@ -4,6 +4,7 @@
 #include <emu/macro.h>
 
 #include <type_traits>
+#include <algorithm>
 #include <functional>
 #include <utility>
 #include <tuple>
@@ -112,6 +113,112 @@ namespace emu
         return detail::apply_impl(
             fwd<F>(f), fwd<Tuple>(t),
             std::make_index_sequence<s>{});
+    }
+
+
+    /**
+    * Calculate the ceil result of a / b
+    * @param  a numerator
+    * @param  b denominator
+    * @return   ceil division of a / b
+    */
+    template <typename T>
+    EMU_HODE constexpr T ceil(T a, T b) noexcept { return (a + b - 1) / b; }
+
+    template<typename T>
+    EMU_HODE constexpr T next_mul(T a, T b) { return ( (a-1) / b + 1) * b; }
+
+    template <typename T>
+    EMU_HODE constexpr T align(T size) noexcept { return next_mul(size, 32); }
+
+    template <typename T>
+    EMU_HODE constexpr const T & min(const T & a, const T & b)
+        EMU_NOEXCEPT_EXPR((a < b) ? a : b)
+    {
+        return (a < b) ? a : b;
+    }
+
+    template<typename T, class Compare>
+    EMU_HODE constexpr const T& min(const T & a, const T& b, Compare comp)
+        EMU_NOEXCEPT_EXPR((comp(a, b)) ? a : b)
+    {
+        return (comp(a, b)) ? a : b;
+    }
+
+    template<typename T>
+    EMU_HODE constexpr T min(std::initializer_list<T> ilist)
+        EMU_NOEXCEPT_EXPR(*std::min_element(ilist.begin(), ilist.end()))
+    {
+        return *std::min_element(ilist.begin(), ilist.end());
+    }
+
+    template<class T, class Compare>
+    EMU_HODE constexpr T min(std::initializer_list<T> ilist, Compare comp)
+        EMU_NOEXCEPT_EXPR(*std::min_element(ilist.begin(), ilist.end(), comp))
+    {
+        return *std::min_element(ilist.begin(), ilist.end(), comp);
+    }
+
+    template <typename T>
+    EMU_HODE constexpr const T & max(const T & a, const T & b)
+        EMU_NOEXCEPT_EXPR((a < b) ? b : a)
+    {
+        return (a < b) ? b : a;
+    }
+
+    template<typename T, class Compare>
+    EMU_HODE constexpr const T& max(const T & a, const T& b, Compare comp)
+        EMU_NOEXCEPT_EXPR((comp(a, b)) ? b : a)
+    {
+        return (comp(a, b)) ? b : a;
+    }
+
+    template<typename T>
+    EMU_HODE constexpr T max(std::initializer_list<T> ilist)
+        EMU_NOEXCEPT_EXPR(*std::max_element(ilist.begin(), ilist.end()))
+    {
+        return *std::max_element(ilist.begin(), ilist.end());
+    }
+
+    template<class T, class Compare>
+    EMU_HODE constexpr T max(std::initializer_list<T> ilist, Compare comp)
+        EMU_NOEXCEPT_EXPR(*std::max_element(ilist.begin(), ilist.end(), comp))
+    {
+        return *std::max_element(ilist.begin(), ilist.end(), comp);
+    }
+
+    /**
+     * @brief Return the generalized number of item per group. This number is the same for every group.
+     * The sum of the result for every block may be equal or superior of item_nb
+     * Esamples :
+     * item_per_group_local_nb(100, 10) -> 10
+     * item_per_group_local_nb(89, 10) -> 9
+     * @param item_nb
+     * @param group_size
+     * @return int item_per_group_nb
+     */
+    EMU_HODE inline int item_per_group_nb(int item_nb, int group_size) { return ceil(item_nb, group_size); }
+
+    /**
+     * @brief Share a resource between a group. Guaranty to minimize the number of resource
+     * for each group element and to handle exactly the right number of available item
+     * Examples :
+     * Item are perfectly shared between all groups
+     * item_per_group_local_nb(100, [0, .., 9], 10) -> [10, .., 10]
+     * The last group handle only 1 element to unsure item is not handled two times
+     * item_per_group_local_nb(7, [0, 1, 2, 3], 4) -> [2, 2, 2, 1]
+     * The last group remain idle because the is not element at all to handle
+     * item_per_group_local_nb(5, [0, 1, 2, 3], 4) -> [2, 2, 1, 0]
+     *
+     * @param item_nb Total number of item to handle
+     * @param group_id The id of the current group
+     * @param group_size The number of element in the group
+     * @return int item_per_group_local_nb
+     */
+    EMU_HODE inline int item_per_group_local_nb(int item_nb, int group_id, int group_size) {
+        int item_pg = item_per_group_nb(item_nb, group_size);
+
+        return max(0, min(item_nb, (group_id + 1) * item_pg) - group_id * item_pg);
     }
 }
 
