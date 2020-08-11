@@ -38,13 +38,26 @@ namespace emu
 
         scoped_t& operator=(const scoped_t & oc) = delete;
 
-        // Disable for now.
-        scoped_t& operator=(scoped_t && oc) = delete;
+        scoped_t& operator=(scoped_t && oc) {
+            invoke();
+
+            value    = mv(oc.value);
+            function = mv(oc.function);
+            owning_ = std::exchange(oc.owning_, false);
+
+            return *this;
+        };
 
         ~scoped_t() {
+            invoke();
+        }
+
+    private:
+        void invoke() {
             if (owning_) function(value);
         }
 
+    public:
         value_type value;
         function_type function;
 
@@ -73,13 +86,25 @@ namespace emu
 
         scoped_t& operator=(const scoped_t & oc) = delete;
 
-        // Disable for now.
-        scoped_t& operator=(scoped_t && oc) = delete;
+        scoped_t& operator=(scoped_t && oc) {
+            invoke();
+
+            function = mv(oc.function);
+            owning_ = std::exchange(oc.owning_, false);
+
+            return *this;
+        };
 
         ~scoped_t() {
-            if (owning_)
-                function();
+            invoke();
         }
+
+    private:
+        void invoke() {
+            if (owning_) function();
+        }
+
+    public:
 
         function_type function;
 
