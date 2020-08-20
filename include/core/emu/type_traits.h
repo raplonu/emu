@@ -6,6 +6,12 @@
 
 namespace emu
 {
+
+    struct use_default{};
+
+    template<typename T, typename Other>
+    using NotDefaultOr = std::conditional_t<std::is_same<T, use_default>::value, Other, T>;
+
     template<bool B>
     using EnableIf = std::enable_if_t<B, bool>;
 
@@ -18,6 +24,12 @@ namespace emu
 
     template<typename It>
     using IteratorValue = typename std::iterator_traits<It>::value_type;
+
+    template<typename It>
+    using IteratorDifference = typename std::iterator_traits<It>::difference_type ;
+
+    template<typename It>
+    using IteratorCategory = typename std::iterator_traits<It>::category ;
 
     namespace detail
     {

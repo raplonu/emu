@@ -45,13 +45,13 @@ namespace detail
 namespace detail
 {
 
-    void copy_2d(void *destination, std::size_t d_pitch, const void * source, std::size_t s_pitch, std::size_t width, std::size_t height) {
+    inline void copy_2d(void *destination, std::size_t d_pitch, const void * source, std::size_t s_pitch, std::size_t width, std::size_t height) {
         auto result = cudaMemcpy2D(destination, d_pitch, source, s_pitch, width, height, cudaMemcpyDefault);
 
     	::cuda::throw_if_error(result, "Synchronously copying data");
     }
 
-    void copy_2d(void *destination, std::size_t d_pitch, const void * source, std::size_t s_pitch, std::size_t width, std::size_t height, ::cuda::stream::id_t stream_id) {
+    inline void copy_2d(void *destination, std::size_t d_pitch, const void * source, std::size_t s_pitch, std::size_t width, std::size_t height, ::cuda::stream::id_t stream_id) {
         auto result = cudaMemcpy2DAsync(destination, d_pitch, source, s_pitch, width, height, cudaMemcpyDefault, stream_id);
 
     	::cuda::throw_if_error(result, "Scheduling a memory copy on stream " + ::cuda::detail::ptr_as_hex(stream_id));
