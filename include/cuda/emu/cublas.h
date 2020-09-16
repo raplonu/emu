@@ -144,7 +144,7 @@ namespace detail
     template<typename T>
     void hpr2(const handle_t & handle, FillMode uplo, int n, const T *alpha, const T *x, int incx, const T *y, int incy, T *AP);
 
-    // Blas level 2
+    // Blas level 3
 
     template<typename T>
     void gemm(const handle_t & handle, Operation transa, Operation transb, int m, int n, int k, const T *alpha, const T *A, int lda, const T *B, int ldb, const T *beta, T *C, int ldc);

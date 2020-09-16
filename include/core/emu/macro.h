@@ -12,6 +12,7 @@
 
 #if EMU_CUDA
 
+#define EMU_GLOB __global__
 #define EMU_HOST __host__
 #define EMU_DEVICE __device__
 #define EMU_HODE __host__ __device__
@@ -29,6 +30,7 @@
 #define DEVICE_CONTEXT     0
 #define HOST_CONTEXT       1
 
+#define EMU_GLOB
 #define EMU_HOST
 #define EMU_DEVICE
 #define EMU_HODE

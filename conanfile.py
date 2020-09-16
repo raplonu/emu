@@ -16,7 +16,7 @@ class EmuConan(ConanFile):
     build_policy = 'missing'
 
     requires = [
-        'fmt/6.1.2',
+        'fmt/7.0.3',
         'boost/1.71.0@conan/stable',
         'half/2.1.0@cosmic/stable',
         'ms-gsl/3.0.1',

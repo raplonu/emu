@@ -4,6 +4,7 @@
 #include <cuda/api/error.hpp>
 #include <cuda/api/stream.hpp>
 #include <cuda/api/device.hpp>
+#include <cuda/api/memory.hpp>
 
 #include <cuda_runtime_api.h>
 
@@ -59,7 +60,6 @@ namespace detail
 
 } // namespace detail
 
-
 template<typename T>
 void copy_2d(T *destination, std::size_t d_pitch, const T * source, std::size_t s_pitch, std::size_t width, std::size_t height) {
     detail::copy_2d(destination, d_pitch * sizeof(T), source, s_pitch * sizeof(T), width * sizeof(T), height * sizeof(T));
@@ -68,6 +68,16 @@ void copy_2d(T *destination, std::size_t d_pitch, const T * source, std::size_t 
 template<typename T>
 void copy_2d(T *destination, std::size_t d_pitch, const T * source, std::size_t s_pitch, std::size_t width, std::size_t height, const ::cuda::stream_t & stream) {
     detail::copy_2d(destination, d_pitch * sizeof(T), source, s_pitch * sizeof(T), width * sizeof(T), height * sizeof(T), stream.id());
+}
+
+template<typename T>
+void copy(T * destination, const T * source, std::size_t size) {
+    ::cuda::memory::copy((void*)destination, (const void*)source, size * sizeof(T));
+}
+
+template<typename T>
+void copy(T * destination, const T * source, std::size_t size, ::cuda::stream_t & stream) {
+    ::cuda::memory::async::copy((void*)destination, (const void*)source, size * sizeof(T), stream);
 }
 
 } // namespace cuda
