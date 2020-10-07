@@ -13,15 +13,11 @@ class EmuwrapConan(ConanFile):
 
     requires = ['pybind11/2.3.0@conan/stable']
 
-    options = {'shared'         : [True, False],
-               'fPIC'           : [True, False],
-               'python_version' : 'ANY',
-               'cxx_ref'        : 'ANY'}
+    options = {'python_version': 'ANY',
+               'cxx_ref'       : 'ANY'}
 
-    default_options = {'shared'         : True,
-                       'fPIC'           : True,
-                       'python_version' : '3.8',
-                       'cxx_ref'        : f'emu/{version}@user/stable'}
+    default_options = {'python_version': '3.8',
+                       'cxx_ref'       : f'emu/{version}@user/stable'}
 
     settings = 'os', 'compiler', 'build_type', 'arch'
     generators = 'cmake'
