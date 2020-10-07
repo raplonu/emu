@@ -146,16 +146,14 @@ class ConanBuild(build_ext):
         call(f'conan install {py_ref}@{channel} -g json -if {py_build_dir} {py_args}')
 
         # Exporting wrapper and its dependencies libraries.
-
         data = json.load(open(f'{py_build_dir}/conanbuildinfo.json'))
 
-        # TODO: check when cxx libs will depend on dynamic libraries.
-        for dep in data['dependencies']:
-            for lib_path in dep['lib_paths']:
-                if os.listdir(lib_path):
-                    for lib in map(Path, glob(f'{lib_path}/*.so')):
-                        # If in editable mode, export library as symbolic link, otherwise perform a plain copy.
-                        (symlink if editable else copy2)(lib, export_dir / lib.name)
+        py_dep = next(filter(lambda d: d['name'] == py_name, data['dependencies']))
+        for lib_path in py_dep['lib_paths']:
+            if os.listdir(lib_path):
+                for lib in map(Path, glob(f'{lib_path}/*.so')):
+                    # If in editable mode, export library as symbolic link, otherwise perform a plain copy.
+                    (symlink if editable else copy2)(lib, export_dir / lib.name)
 
 setup(
     name=package_name,

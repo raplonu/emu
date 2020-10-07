@@ -4,8 +4,7 @@ message(STATUS "EmuWrap - Configuring")
 
 project(emuwrap VERSION 0.1.0 LANGUAGES CXX)
 
-set(CMAKE_INSTALL_RPATH "$ORIGIN")
-set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 message(CHECK_START "Emu - Conan setup")
 
