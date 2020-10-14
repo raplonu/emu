@@ -11,21 +11,6 @@ namespace emu
 
 namespace cublas
 {
-
-namespace detail
-{
-    template<typename T> struct AssociatedType;
-
-    template<> struct AssociatedType<float>           { using type = float;  };
-    template<> struct AssociatedType<double>          { using type = double; };
-    template<> struct AssociatedType<cuComplex>       { using type = float;  };
-    template<> struct AssociatedType<cuDoubleComplex> { using type = double; };
-
-} // namespace detail
-
-    template<typename T>
-    using AssociatedT = typename detail::AssociatedType<T>::type;
-
     // Blas level 1
 
     template<typename T>

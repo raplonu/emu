@@ -83,9 +83,14 @@ if (emu_build_cuda)
 
     add_library(emucuda
         src/cuda/funu.cu
+
         src/cuda/cublas/handle.cpp
         src/cuda/cublas/error.cpp
         src/cuda/cublas.cpp
+
+        src/cuda/cusolver/handle.cpp
+        src/cuda/cusolver/error.cpp
+        src/cuda/cusolver.cpp
     )
 
     target_include_directories(emucuda PUBLIC
