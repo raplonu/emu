@@ -1,5 +1,5 @@
-#ifndef EMU_DETAIL_CUBLAS_ERROR_H
-#define EMU_DETAIL_CUBLAS_ERROR_H
+#ifndef EMU_CUBLAS_ERROR_H
+#define EMU_CUBLAS_ERROR_H
 
 #include <emu/macro.h>
 
@@ -98,4 +98,4 @@ inline void throw_if_error(cublas::status_t status) noexcept(false)
 
 } // namespace emu
 
-#endif //EMU_DETAIL_CUBLAS_ERROR_H
+#endif //EMU_CUBLAS_ERROR_H

@@ -78,7 +78,7 @@ struct handle_t
 
 private:
     handle::ScopedHandle id_;
-    const cuda::device::id_t device_id_;
+    cuda::device::id_t device_id_;
 };
 
 
