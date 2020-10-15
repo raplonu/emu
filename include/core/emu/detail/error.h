@@ -44,7 +44,7 @@ inline void throw_if_error(STATUS_T status) noexcept(false) {                   
 	if (is_failure(status))                                                                                              \
         [&] () EMU_COLD_PATH { throw EXCEPTION_T(status); }();                                                           \
 }                                                                                                                        \
-inline void throw_if_error(STATUS_T status) noexcept(false) {                                                            \
+inline void throw_if_error(STATUS_T status, std::string message) noexcept(false) {                                       \
 	if (is_failure(status))                                                                                              \
         [&] () EMU_COLD_PATH { throw EXCEPTION_T(status, message); }();                                                  \
 }
