@@ -1,9 +1,8 @@
 #ifndef EMU_CUBLAS_ERROR_H
 #define EMU_CUBLAS_ERROR_H
 
-#include <emu/macro.h>
+#include <emu/detail/error.h>
 
-#include <fmt/core.h>
 #include <cublas_v2.h>
 
 namespace emu
@@ -32,67 +31,9 @@ namespace cublas
         license_error    = CUBLAS_STATUS_LICENSE_ERROR
     };
 
-    constexpr inline bool is_success(status_t error_code)  { return error_code == static_cast<status_t>(status::success); }
-    constexpr inline bool is_failure(status_t error_code)  { return error_code != static_cast<status_t>(status::success); }
-
     std::string describe(status_t error_code);
 
-    class runtime_error : public std::runtime_error
-    {
-    public:
-        runtime_error(status_t error_code) :
-            std::runtime_error(fmt::format("Cublas error : {}", describe(error_code))),
-            code_(error_code)
-        {}
-
-        runtime_error(status_t error_code, const std::string& what_arg) :
-            std::runtime_error(fmt::format("Cublas error : {}; {}", describe(error_code), what_arg)),
-            code_(error_code)
-        {}
-
-        runtime_error(status error_code) :
-            runtime_error(static_cast<status_t>(error_code))
-        {}
-
-        runtime_error(status error_code, const std::string& what_arg) :
-            runtime_error(static_cast<status_t>(error_code), what_arg)
-        {}
-
-        /**
-         * Obtain the CUDA status code which resulted in this error being thrown.
-         */
-        status_t code() const { return code_; }
-
-    private:
-        status_t code_;
-    };
-
-/**
- * Do nothing... unless the status indicates an error, in which case
- * a @ref cublas::runtime_error exception is thrown
- *
- * @param status should be @ref cublas::status::success - otherwise an exception is thrown
- * @param message An extra description message to add to the exception
- */
-inline void throw_if_error(cublas::status_t status, std::string message) noexcept(false)
-{
-	if (is_failure(status))
-        // Put the throw code in another function with cold path.
-        [&] () EMU_COLD_PATH { throw runtime_error(status, message); }();
-}
-
-/**
- * Does nothing - unless the status indicates an error, in which case
- * a @ref cublas::runtime_error exception is thrown
- *
- * @param status should be @ref cublas::status::success - otherwise an exception is thrown
- */
-inline void throw_if_error(cublas::status_t status) noexcept(false)
-{
-	if (is_failure(status))
-        // Put the throw code in another function with cold path.
-        [&] () EMU_COLD_PATH { throw runtime_error(status); }();
-}
+    EMU_GENERATE_ERROR_HANDLER("Cublas", runtime_error, std::runtime_error, status_t, status::success, describe)
 
 } // namespace cublas
 

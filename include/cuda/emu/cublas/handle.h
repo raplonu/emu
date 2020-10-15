@@ -57,7 +57,7 @@ struct handle_t
     constexpr handle_t(handle_t && o) = default;
     handle_t(const handle_t &) = delete;
 
-    constexpr handle_t& operator=(handle_t &&) = default;
+    handle_t& operator=(handle_t &&) = default;
     handle_t& operator=(const handle_t &) = delete;
 
     handle::id_t id() const noexcept { return id_.value; }
