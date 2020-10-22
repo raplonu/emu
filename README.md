@@ -7,7 +7,7 @@ emu is a library that gather a set of utilities for C++, CUDA and python.
 To install emu both in your python & conan cache execute:
 
 ```bash
-git clone git@gitlab.obspm.fr:jbernard/emu.git
+git clone git@gitlab.obspm.fr:cosmic/tools/emu.git
 pip install ./emu
 ```
 
@@ -41,7 +41,7 @@ conan build . -bf build
 
 ## Conan
 
-By default, pip will install the emu C++ package in conan with `user/stable` channel.
+By default, pip will install the emu C++ package in conan with `cosmic/stable` channel.
 
 You can edit this channel using the following command:
 

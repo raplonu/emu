@@ -12,7 +12,7 @@ if (emu_build_cuda)
     list(APPEND emu_language CUDA)
 endif()
 
-project(emu VERSION 0.1.0 LANGUAGES ${emu_language})
+project(emu VERSION ${emu_version} LANGUAGES ${emu_language})
 
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 

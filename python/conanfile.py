@@ -1,9 +1,17 @@
 from conans import ConanFile, CMake, tools
-import os
+
+def try_load(filename):
+    try:
+        return tools.load(filename)
+    except FileNotFoundError:
+        return None
+
+def load_first_exiting(*files):
+    # Try read files until one exists.
+    return next(filter(None.__ne__, map(try_load, files)))
 
 class EmuwrapConan(ConanFile):
     name = 'emuwrap'
-    version = '0.1'
     license = 'MIT'
     author = 'Julien Bernard jbernard@obspm.fr'
     url = 'https://gitlab.obspm.fr/cosmic/tools/emu'
@@ -16,12 +24,14 @@ class EmuwrapConan(ConanFile):
     options = {'python_version': 'ANY',
                'cxx_ref'       : 'ANY'}
 
-    default_options = {'python_version': '3.8',
-                       'cxx_ref'       : f'emu/{version}@user/stable'}
+    default_options = {'python_version': '3.8'}
 
     settings = 'os', 'compiler', 'build_type', 'arch'
     generators = 'cmake'
-    exports_sources = '*'
+    exports_sources = 'src/*', 'CMakeLists.txt', '../version.txt'
+
+    def set_version(self):
+        self.version = load_first_exiting('../version.txt', 'version.txt')
 
     def requirements(self):
         self.requires(str(self.options.cxx_ref))
@@ -29,6 +39,7 @@ class EmuwrapConan(ConanFile):
     def _configure(self):
         cmake = CMake(self)
 
+        cmake.definitions['emuwrap_version']         = self.version
         cmake.definitions['PYBIND11_PYTHON_VERSION'] = self.options.python_version
 
         cmake.configure(source_folder='.')

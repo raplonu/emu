@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.17)
 
 message(STATUS "EmuWrap - Configuring")
 
-project(emuwrap VERSION 0.1.0 LANGUAGES CXX)
+project(emuwrap VERSION ${emuwrap_version} LANGUAGES CXX)
 
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 

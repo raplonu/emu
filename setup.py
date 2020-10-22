@@ -15,9 +15,9 @@ package_name = 'emu'
 cxx_name = package_name
 py_name = f'{package_name}wrap'
 
-package_version = '0.1'
-
 here = Path(__file__).parent.resolve()
+
+package_version = (here / 'version.txt').read_text(encoding='utf-8')
 
 # Get the long description from the README file
 long_description = (here / 'README.md').read_text(encoding='utf-8')
@@ -42,7 +42,7 @@ def symlink(target, link_name):
 glob_editable = False
 
 # Default conan channel. Usage: `--install-option=--channel=<conan channel>`
-glob_conan_channel = 'user/stable'
+glob_conan_channel = 'cosmic/stable'
 
 # Additional conan args. Usage: `--install-option="--conan-args=<conan channel>"`
 glob_conan_args = ''

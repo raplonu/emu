@@ -7,7 +7,6 @@ def load(filename):
 
 class EmuConan(ConanFile):
     name = 'emu'
-    version = '0.1'
     license = 'MIT'
     author = 'Julien Bernard jbernard@obspm.fr'
     url = 'https://gitlab.obspm.fr/cosmic/tools/emu'
@@ -20,7 +19,6 @@ class EmuConan(ConanFile):
         'boost/1.71.0@conan/stable',
         'half/2.1.0@cosmic/stable',
         'ms-gsl/3.0.1',
-        # 'abseil/20200225.2',
         'tl-expected/1.0.0',
         'tl-optional/1.0.0',
         'range-v3/0.11.0@ericniebler/stable']
@@ -51,7 +49,10 @@ class EmuConan(ConanFile):
 
     settings = 'os', 'compiler', 'build_type', 'arch'
     generators = 'cmake'
-    exports_sources = '*'
+    exports_sources = 'cmake/*', 'include/*', 'src/*', 'test/*', 'CMakeLists.txt', 'version.txt'
+
+    def set_version(self):
+        self.version = tools.load('version.txt')
 
     def requirements(self):
         if self.options.test:
@@ -63,11 +64,12 @@ class EmuConan(ConanFile):
         cmake = CMake(self)
 
         # Ask the project to generate {target}_flags.txt with the C++ & CUDA flags in it if any.
+        cmake.definitions['emu_version']      = self.version
         cmake.definitions['emu_export_flags'] = True
         cmake.definitions['emu_build_test']   = self.options.test
         cmake.definitions['emu_build_cuda']   = self.options.cuda
         if self.options.cuda:
-            cmake.definitions['emu_cuda_sm']      = self.options.cuda_sm
+            cmake.definitions['emu_cuda_sm']  = self.options.cuda_sm
 
         cmake.configure(source_folder='.')
         cmake.build()
