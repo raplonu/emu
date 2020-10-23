@@ -26,6 +26,8 @@ namespace cublas
         constexpr static auto gemm = cublasSgemm;
         constexpr static auto syrk = cublasSsyrk;
         constexpr static auto trsm = cublasStrsm;
+        constexpr static auto getrf = cublasSgetrfBatched;
+        constexpr static auto getri = cublasSgetriBatched;
 
     };
 
@@ -40,6 +42,8 @@ namespace cublas
         constexpr static auto gemm = cublasDgemm;
         constexpr static auto syrk = cublasDsyrk;
         constexpr static auto trsm = cublasDtrsm;
+        constexpr static auto getrf = cublasDgetrfBatched;
+        constexpr static auto getri = cublasDgetriBatched;
 
     };
 
@@ -54,6 +58,8 @@ namespace cublas
         constexpr static auto gemm = cublasCgemm;
         constexpr static auto syrk = cublasCsyrk;
         constexpr static auto trsm = cublasCtrsm;
+        constexpr static auto getrf = cublasCgetrfBatched;
+        constexpr static auto getri = cublasCgetriBatched;
 
     };
 
@@ -68,6 +74,8 @@ namespace cublas
         constexpr static auto gemm = cublasZgemm;
         constexpr static auto syrk = cublasZsyrk;
         constexpr static auto trsm = cublasZtrsm;
+        constexpr static auto getrf = cublasZgetrfBatched;
+        constexpr static auto getri = cublasZgetriBatched;
 
     };
 
@@ -167,6 +175,35 @@ namespace cublas
     template void trsm<double>(const handle_t & handle, SideMode side, FillMode uplo,
         Operation trans, DiagonalType diag, int m, int n, const double *alpha, const double *A,
         int lda, double *B, int ldb);
+
+
+    template<typename T>
+    void getrf_batched(const handle_t & handle, int n, T *Aarray[], int lda, int *PivotArray, int *infoArray, int batchSize){
+        throw_if_error(CuBLAS<T>::getrf(handle.id(), n, Aarray, lda, PivotArray,infoArray, batchSize));
+    }
+    template void getrf_batched<float>(const handle_t & handle, int n, float *Aarray[], int lda, int *PivotArray, int *infoArray, int batchSize);
+    template void getrf_batched<double>(const handle_t & handle, int n, double *Aarray[], int lda, int *PivotArray, int *infoArray, int batchSize);
+
+    template<typename T>
+    void getrf(const handle_t & handle, int n, T *A, int lda, int *Pivot, int *info){
+        throw_if_error(CuBLAS<T>::getrf(handle.id(), n, &A, lda, Pivot, info, 1));
+    }
+    template void getrf<float>(const handle_t & handle, int n, float *A, int lda, int *Pivot, int *info);
+    template void getrf<double>(const handle_t & handle, int n, double *A, int lda, int *Pivot, int *info);
+
+    template<typename T>
+    void getri_batched(const handle_t & handle, int n, T *Aarray[], int lda, int *PivotArray, T *Carray[], int ldc, int *infoArray, int batchSize){
+         throw_if_error(CuBLAS<T>::getri(handle.id(), n, Aarray, lda, PivotArray, Carray, ldc, infoArray, batchSize));
+    }
+    template void getri_batched<float>(const handle_t & handle, int n, float *Aarray[], int lda, int *PivotArray, float *Carray[], int ldc, int *infoArray, int batchSize);
+    template void getri_batched<double>(const handle_t & handle, int n, double *Aarray[], int lda, int *PivotArray, double *Carray[], int ldc, int *infoArray, int batchSize);
+
+    template<typename T>
+    void getri(const handle_t & handle, int n, T *A, int lda, int *Pivot, T *C, int ldc, int *info){
+         throw_if_error(CuBLAS<T>::getri(handle.id(), n, &A, lda, Pivot, &C, ldc, info, 1));
+    }
+    template void getri<float>(const handle_t & handle, int n, float *A, int lda, int *Pivot, float *C, int ldc, int *info );
+    template void getri<double>(const handle_t & handle, int n, double *A, int lda, int *Pivot, double *C, int ldc, int *info);
 
 } // namespace cublas
 
