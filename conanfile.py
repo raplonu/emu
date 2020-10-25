@@ -58,7 +58,7 @@ class EmuConan(ConanFile):
         if self.options.test:
             self.requires('gtest/1.8.1@bincrafters/stable')
         if self.options.cuda:
-            self.requires('cuda-api-wrappers/0.3.0@cosmic/stable')
+            self.requires('cuda-api-wrappers/0.3.3@cosmic/stable')
 
     def build(self):
         cmake = CMake(self)
