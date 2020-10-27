@@ -185,25 +185,11 @@ namespace cublas
     template void getrf_batched<double>(const handle_t & handle, int n, double *Aarray[], int lda, int *PivotArray, int *infoArray, int batchSize);
 
     template<typename T>
-    void getrf(const handle_t & handle, int n, T *A, int lda, int *Pivot, int *info){
-        throw_if_error(CuBLAS<T>::getrf(handle.id(), n, &A, lda, Pivot, info, 1));
-    }
-    template void getrf<float>(const handle_t & handle, int n, float *A, int lda, int *Pivot, int *info);
-    template void getrf<double>(const handle_t & handle, int n, double *A, int lda, int *Pivot, int *info);
-
-    template<typename T>
     void getri_batched(const handle_t & handle, int n, T *Aarray[], int lda, int *PivotArray, T *Carray[], int ldc, int *infoArray, int batchSize){
          throw_if_error(CuBLAS<T>::getri(handle.id(), n, Aarray, lda, PivotArray, Carray, ldc, infoArray, batchSize));
     }
     template void getri_batched<float>(const handle_t & handle, int n, float *Aarray[], int lda, int *PivotArray, float *Carray[], int ldc, int *infoArray, int batchSize);
     template void getri_batched<double>(const handle_t & handle, int n, double *Aarray[], int lda, int *PivotArray, double *Carray[], int ldc, int *infoArray, int batchSize);
-
-    template<typename T>
-    void getri(const handle_t & handle, int n, T *A, int lda, int *Pivot, T *C, int ldc, int *info){
-         throw_if_error(CuBLAS<T>::getri(handle.id(), n, &A, lda, Pivot, &C, ldc, info, 1));
-    }
-    template void getri<float>(const handle_t & handle, int n, float *A, int lda, int *Pivot, float *C, int ldc, int *info );
-    template void getri<double>(const handle_t & handle, int n, double *A, int lda, int *Pivot, double *C, int ldc, int *info);
 
 } // namespace cublas
 
