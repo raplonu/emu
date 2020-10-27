@@ -25,6 +25,15 @@ namespace cusolver
     void potrf(const handle_t & handle, FillMode uplo, int N, T *A, int lda, T *workspace, int lwork, int *devInfo);
 
 
+    template<typename T>
+    void getrf_bufferSize(const handle_t & handle, int m, int n, T *A, int lda, int *Lwork );
+
+    template<typename T>
+    void getrf(const handle_t & handle, int m, int n, T *A, int lda, T *Workspace, int *devIpiv, int *devInfo);
+
+    template<typename T>
+    void getrs(const handle_t & handle, cublas::Operation uplo,int n, int nrhs, const T *A, int lda, const int *devIpiv, T *B, int ldb, int *devInfo);
+
 } // namespace cusolver
 
 } // namespace emu
