@@ -70,9 +70,6 @@ namespace cusolver
     template<typename T>
     void potrf(const handle_t & handle, cublas::FillMode uplo, int N, T *A, int lda, T *workspace, int lwork, int *devInfo) {
         throw_if_error(CuSolver<T>::potrf(handle.id(), convert(uplo), N, A, lda, workspace, lwork, devInfo));
-        int err=0;
-        cuda::memory::copy_single(&err,devInfo);
-        throw_if_error((cusolver::status_t)err);
     }
 
     template void potrf<float>          (const handle_t & handle, cublas::FillMode uplo, int N, float           *A, int lda, float           *workspace, int lwork, int *devInfo);
@@ -94,9 +91,6 @@ namespace cusolver
     template<typename T>
     void getrf(const handle_t & handle, int m, int n, T *A, int lda, T *Workspace, int *devIpiv, int *devInfo){
         throw_if_error(CuSolver<T>::getrf(handle.id(), m, n, A, lda, Workspace, devIpiv, devInfo));
-        int err=0;
-        cuda::memory::copy_single(&err,devInfo);
-        throw_if_error((cusolver::status_t)err);
     }
     template void  getrf<float>(const handle_t & handle, int m, int n, float *A, int lda, float *Workspace, int *devIpiv, int *devInfo);
     template void  getrf<double>(const handle_t & handle, int m, int n, double *A, int lda, double *Workspace, int *devIpiv, int *devInfo);
@@ -107,9 +101,6 @@ namespace cusolver
     template<typename T>
     void getrs(const handle_t & handle, cublas::Operation uplo,int n, int nrhs, const T *A, int lda, const int *devIpiv, T *B, int ldb, int *devInfo){
         throw_if_error(CuSolver<T>::getrs(handle.id(),convert(uplo), n, nrhs, A, lda, devIpiv, B, ldb, devInfo));
-        int err=0;
-        cuda::memory::copy_single(&err,devInfo);
-        throw_if_error((cusolver::status_t)err);
     }
 
     template void getrs<float>(const handle_t & handle, cublas::Operation uplo,int n, int nrhs, const float *A, int lda, const int *devIpiv, float *B, int ldb, int *devInfo);
