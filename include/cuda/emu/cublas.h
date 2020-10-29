@@ -155,6 +155,8 @@ namespace cublas
     template<typename T>
     void syrkx(const handle_t & handle, FillMode uplo, Operation trans, int n, int k, const T *alpha, const T *A, int lda, const T *B, int ldb, const T *beta, T *C, int ldc);
 
+    // Blas-like extension
+
     template<typename T>
     void trmm(const handle_t & handle, SideMode side, FillMode uplo, Operation trans, DiagonalType diag, int m, int n, const T *alpha, const T *A, int lda, const T *B, int ldb, T *C, int ldc);
 
@@ -178,17 +180,9 @@ namespace cublas
 
     template<typename T>
     void getrf_batched(const handle_t & handle, int n, T *Aarray[], int lda, int *PivotArray, int *infoArray, int batchSize);
-    template<typename T>
-    void getrf(const handle_t & handle, int n, T *A, int lda, int *Pivot, int *info);
 
     template<typename T>
     void getri_batched(const handle_t & handle, int n, T *Aarray[], int lda, int *PivotArray, T *Carray[], int ldc, int *infoArray, int batchSize);
-    template<typename T>
-    void getri(const handle_t & handle, int n, T *A, int lda, int *Pivot, T *C, int ldc, int *info);
-
-    // Blas like extension
-
-    // Coming soon...
 
 } // namespace cublas
 
