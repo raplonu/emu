@@ -157,7 +157,7 @@ class ConanBuild(build_ext):
 
 setup(
     name=package_name,
-    version='0.0.1',
+    version=package_version,
     author='Julien Bernard',
     author_email='raplonu.jb@gmail.com',
     description='Python & C++ toolkit.',
