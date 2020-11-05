@@ -21,12 +21,12 @@ namespace functional
     template<std::size_t KeyId>
     EMU_HODE constexpr
     auto max_at() noexcept {
-        return max_at<KeyId>{};
+        return max_at_t<KeyId>{};
     }
 
 
     template<std::size_t KeyId>
-    struct min_at {
+    struct min_at_t {
         template<typename Tuple>
         EMU_HODE constexpr
         const Tuple & operator()(const Tuple & t1, const Tuple & t2) const noexcept {
@@ -37,7 +37,7 @@ namespace functional
     template<std::size_t KeyId>
     EMU_HODE constexpr
     auto min_at() noexcept {
-        return min_at<KeyId>{};
+        return min_at_t<KeyId>{};
     }
     template<typename T>
     struct div_by_t {
@@ -87,6 +87,16 @@ namespace functional
         std::size_t operator()(std::size_t x, std::size_t y) const noexcept {
             return x + y * frame_size;
         }
+    };
+
+    template<typename Dest>
+    struct cast_to {
+        template<typename Src>
+        EMU_HODE constexpr
+        Dest operator()(Src src) const noexcept {
+            return static_cast<Dest>(src);
+        }
+
     };
 
 } // namespace functional
