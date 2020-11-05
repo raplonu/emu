@@ -224,7 +224,8 @@ namespace emu
      * @param group_size
      * @return int item_per_group_nb
      */
-    EMU_HODE inline int item_per_group_nb(int item_nb, int group_size) { return ceil(item_nb, group_size); }
+    EMU_HODE inline
+    int item_per_group_nb(int item_nb, int group_size) { return ceil(item_nb, group_size); }
 
     /**
      * @brief Share a resource between a group. Guaranty to minimize the number of resource
@@ -242,7 +243,8 @@ namespace emu
      * @param group_size The number of element in the group
      * @return int item_per_group_local_nb
      */
-    EMU_HODE inline int item_per_group_local_nb(int item_nb, int group_id, int group_size) {
+    EMU_HODE inline
+    int item_per_group_local_nb(int item_nb, int group_id, int group_size) {
         int item_pg = item_per_group_nb(item_nb, group_size);
 
         return max(0, min(item_nb, (group_id + 1) * item_pg) - group_id * item_pg);

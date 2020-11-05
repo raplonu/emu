@@ -15,8 +15,6 @@ namespace functional
     struct apply_t {
         F fn;
 
-        // using result_type = decltype(apply(fn, std::declval<thrust::tuple<Ts...>>()));
-
         template<typename Tuple>
         constexpr EMU_HODE
         auto operator()(Tuple && t)

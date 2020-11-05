@@ -82,8 +82,6 @@ if (emu_build_cuda)
     find_package(CUDAToolkit REQUIRED)
 
     add_library(emucuda
-        src/cuda/funu.cu
-
         src/cuda/cublas/handle.cpp
         src/cuda/cublas/error.cpp
         src/cuda/cublas.cpp

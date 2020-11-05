@@ -9,24 +9,36 @@ namespace emu
 
 namespace functional
 {
-    template<std::size_t key_id>
-    struct max_at {
+    template<std::size_t KeyId>
+    struct max_at_t {
         template<typename Tuple>
         EMU_HODE constexpr
         const Tuple & operator()(const Tuple & t1, const Tuple & t2) const noexcept {
-            return max<key_id>(t1, t2);
+            return max<KeyId>(t1, t2);
         }
     };
 
-    template<std::size_t key_id>
+    template<std::size_t KeyId>
+    EMU_HODE constexpr
+    auto max_at() noexcept {
+        return max_at<KeyId>{};
+    }
+
+
+    template<std::size_t KeyId>
     struct min_at {
         template<typename Tuple>
         EMU_HODE constexpr
         const Tuple & operator()(const Tuple & t1, const Tuple & t2) const noexcept {
-            return min<key_id>(t1, t2);
+            return min<KeyId>(t1, t2);
         }
     };
 
+    template<std::size_t KeyId>
+    EMU_HODE constexpr
+    auto min_at() noexcept {
+        return min_at<KeyId>{};
+    }
     template<typename T>
     struct div_by_t {
         T n;
