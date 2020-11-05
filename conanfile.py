@@ -1,9 +1,12 @@
 import os
 from conans import ConanFile, CMake, tools
 
-def load(filename):
-    # Delete the return trail using [:-1].
-    return [tools.load(filename)[:-1]] if os.path.exists(filename) else []
+def load(*filenames):
+    for filename in filenames:
+        if os.path.exists(filename):
+            # Delete the return trail using [:-1].
+            return [tools.load(filename)[:-1]]
+    return []
 
 class EmuConan(ConanFile):
     name = 'emu'
@@ -43,7 +46,7 @@ class EmuConan(ConanFile):
     default_options = {'shared'           : False,
                        'fPIC'             : True,
                        'cuda'             : True,
-                       'cuda_sm'          : 'Auto',
+                       'cuda_sm'          : '6.0 6.1 6.2 7.0 7.2 7.5 8.0 8.6',
                        'test'             : False,
                        'boost:header_only': True}
 
@@ -73,6 +76,8 @@ class EmuConan(ConanFile):
 
         cmake.configure(source_folder='.')
         cmake.build()
+
+        # We did not use `self.should_test` since it is enable by default.
         if self.options.test:
             cmake.test()
 
@@ -92,8 +97,8 @@ class EmuConan(ConanFile):
 
     def package_info(self):
         self.cpp_info.libs = ['emucore']
-        self.cpp_info.cxxflags = load(f'{self.package_folder}/data/emucore_flags.txt')
+        self.cpp_info.cxxflags = load(f'{self.package_folder}/data/emucore_flags.txt', f'{self.package_folder}/build/emucore_flags.txt')
 
         if self.options.cuda:
             self.cpp_info.libs += ['emucuda']
-            self.cpp_info.cxxflags += load(f'{self.package_folder}/data/emucuda_flags.txt')
+            self.cpp_info.cxxflags += load(f'{self.package_folder}/data/emucuda_flags.txt', f'{self.package_folder}/build/emucuda_flags.txt')
