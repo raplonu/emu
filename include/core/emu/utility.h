@@ -2,6 +2,7 @@
 #define EMU_UTILITY_H
 
 #include <emu/macro.h>
+#include <emu/type_traits.h>
 
 #include <type_traits>
 #include <algorithm>
@@ -82,17 +83,24 @@ namespace emu
         return fwd<Fn>(f)(fwd<Args>(args)...);
     }
 
+    // template<std::size_t I, typename T>
+    // constexpr EMU_HODE
+    // decltype(auto) get(T&& t) noexcept {
+    //     using std::get;
+    //     return get<I>::(FWD(t));
+    // }
+
     //###################### APPLY ######################
 
     namespace detail {
         template <class F, class Tuple, std::size_t... I>
         EMU_HODE constexpr decltype(auto) apply_impl(F&& f, Tuple&& t, std::index_sequence<I...>)
         {
-            #ifdef __CUDA_ARCH__
-                using thrust::get;
-            #else
-                using std::get;
-            #endif
+            // #ifdef __CUDA_ARCH__
+            //     using thrust::get;
+            // #else
+            // #endif
+            using std::get;
             return invoke(fwd<F>(f), get<I>(fwd<Tuple>(t))...);
         }
     }  // namespace detail
@@ -101,18 +109,14 @@ namespace emu
     // Implementation: https://en.cppreference.com/w/cpp/utility/apply.
     // TODO : Delete when C++17 and cuda std provide it.
     template <class F, class Tuple>
-    EMU_HODE constexpr decltype(auto) apply(F&& f, Tuple&& t)
+    EMU_HODE constexpr
+    decltype(auto) apply(F&& f, Tuple&& t)
     {
-        #if EMU_CUDA
-            constexpr auto s = thrust::tuple_size<std::remove_reference_t<Tuple>>::value;
-        #else
-            constexpr auto s = std::tuple_size<std::remove_reference_t<Tuple>>::value;
-        #endif
-
+        constexpr auto size = TupleSize<RemoveCVRef<Tuple>>::value;
 
         return detail::apply_impl(
             fwd<F>(f), fwd<Tuple>(t),
-            std::make_index_sequence<s>{});
+            std::make_index_sequence<size>{});
     }
 
 
@@ -123,68 +127,91 @@ namespace emu
     * @return   ceil division of a / b
     */
     template <typename T>
-    EMU_HODE constexpr T ceil(T a, T b) noexcept { return (a + b - 1) / b; }
+    EMU_HODE constexpr
+    T ceil(T a, T b) noexcept { return (a + b - 1) / b; }
 
     template<typename T>
-    EMU_HODE constexpr T next_mul(T a, T b) { return ( (a-1) / b + 1) * b; }
+    EMU_HODE constexpr
+    T next_mul(T a, T b) { return ( (a-1) / b + 1) * b; }
 
     template <typename T>
-    EMU_HODE constexpr T align(T size) noexcept { return next_mul(size, 32); }
+    EMU_HODE constexpr
+    T align(T size) noexcept { return next_mul(size, 32); }
 
     template <typename T>
-    EMU_HODE constexpr const T & min(const T & a, const T & b)
-        EMU_NOEXCEPT_EXPR((a < b) ? a : b)
-    {
+    EMU_HODE constexpr
+    const T & min(const T & a, const T & b) noexcept {
         return (a < b) ? a : b;
     }
 
     template<typename T, class Compare>
-    EMU_HODE constexpr const T& min(const T & a, const T& b, Compare comp)
+    EMU_HODE constexpr
+    const T& min(const T & a, const T& b, Compare comp)
         EMU_NOEXCEPT_EXPR((comp(a, b)) ? a : b)
     {
         return (comp(a, b)) ? a : b;
     }
 
     template<typename T>
-    EMU_HODE constexpr T min(std::initializer_list<T> ilist)
+    EMU_HODE constexpr
+    T min(std::initializer_list<T> ilist)
         EMU_NOEXCEPT_EXPR(*std::min_element(ilist.begin(), ilist.end()))
     {
         return *std::min_element(ilist.begin(), ilist.end());
     }
 
     template<class T, class Compare>
-    EMU_HODE constexpr T min(std::initializer_list<T> ilist, Compare comp)
+    EMU_HODE constexpr
+    T min(std::initializer_list<T> ilist, Compare comp)
         EMU_NOEXCEPT_EXPR(*std::min_element(ilist.begin(), ilist.end(), comp))
     {
         return *std::min_element(ilist.begin(), ilist.end(), comp);
     }
 
+    template<std::size_t key_id, typename Tuple>
+    EMU_HODE constexpr
+    const Tuple & min(const Tuple & t1, const Tuple & t2) noexcept {
+        using std::get;
+        return get<key_id>(t1) < get<key_id>(t2) ? t1 : t2;
+    }
+
     template <typename T>
-    EMU_HODE constexpr const T & max(const T & a, const T & b)
+    EMU_HODE constexpr
+    const T & max(const T & a, const T & b)
         EMU_NOEXCEPT_EXPR((a < b) ? b : a)
     {
         return (a < b) ? b : a;
     }
 
     template<typename T, class Compare>
-    EMU_HODE constexpr const T& max(const T & a, const T& b, Compare comp)
+    EMU_HODE constexpr
+    const T& max(const T & a, const T& b, Compare comp)
         EMU_NOEXCEPT_EXPR((comp(a, b)) ? b : a)
     {
         return (comp(a, b)) ? b : a;
     }
 
     template<typename T>
-    EMU_HODE constexpr T max(std::initializer_list<T> ilist)
+    EMU_HODE constexpr
+    T max(std::initializer_list<T> ilist)
         EMU_NOEXCEPT_EXPR(*std::max_element(ilist.begin(), ilist.end()))
     {
         return *std::max_element(ilist.begin(), ilist.end());
     }
 
     template<class T, class Compare>
-    EMU_HODE constexpr T max(std::initializer_list<T> ilist, Compare comp)
+    EMU_HODE constexpr
+    T max(std::initializer_list<T> ilist, Compare comp)
         EMU_NOEXCEPT_EXPR(*std::max_element(ilist.begin(), ilist.end(), comp))
     {
         return *std::max_element(ilist.begin(), ilist.end(), comp);
+    }
+
+    template<std::size_t key_id, typename Tuple>
+    EMU_HODE constexpr
+    const Tuple & max(const Tuple & t1, const Tuple & t2) noexcept {
+        using std::get;
+        return get<key_id>(t1) < get<key_id>(t2) ? t2 : t1;
     }
 
     /**

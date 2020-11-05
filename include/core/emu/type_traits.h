@@ -1,6 +1,12 @@
 #ifndef EMU_TYPE_TRAITS_H
 #define EMU_TYPE_TRAITS_H
 
+#include <emu/macro.h>
+
+#if EMU_CUDA
+#include <thrust/tuple.h>
+#endif
+
 #include <type_traits>
 #include <iterator>
 
@@ -18,7 +24,7 @@ namespace emu
     template<typename T1, typename T2>
     using Equivalent = std::is_same<std::decay_t<T1>, std::decay_t<T2>>;
 
-    // Behave exactly as the std::remove_cvref_t of C++20.
+    // Behave exactly as the  std::remove_cvref_t of C++20.
     template< class T >
     using RemoveCVRef = typename std::remove_cv_t<std::remove_reference_t<T>>;
 
@@ -50,6 +56,25 @@ namespace emu
 
     template<typename T, typename U>
     using IfNotAutoOr = std::conditional_t<IsAutoTag<T>::value, U, T>;
+
+namespace detail
+{
+    template<typename T>
+    struct TupleSizeImpl {
+        static constexpr std::size_t value = std::tuple_size<T>();
+    };
+
+#if EMU_CUDA
+    template<typename... Ts>
+    struct TupleSizeImpl<thrust::tuple<Ts...>> {
+        static constexpr std::size_t value = thrust::tuple_size<thrust::tuple<Ts...>>::value;
+    };
+#endif
+} // namespace detail
+
+    template<typename T>
+    using TupleSize = detail::TupleSizeImpl<T>;
+
 
 }
 

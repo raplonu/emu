@@ -6,7 +6,7 @@
 #include <thrust/device_vector.h>
 #include <thrust/functional.h>
 
-#include <emu/iterator_function.cuh>
+#include <emu/iterator/function.cuh>
 
 template<typename T> void f()
 {
@@ -18,7 +18,7 @@ namespace
 
     TEST(BinaryTransform, Simple)
     {
-        using emu::make_transform_iterator;
+        using emu::iterator::make_transform_iterator;
         std::array<int, 3> arr1{1, 2, 3}, arr2{2, 3, 4};
 
         auto it = make_transform_iterator(thrust::plus<int>{}, arr1.begin(), arr2.begin());
@@ -30,7 +30,7 @@ namespace
 
     TEST(BinaryTransform, SimpleCopy)
     {
-        using emu::make_transform_iterator;
+        using emu::iterator::make_transform_iterator;
         std::vector<int> arr1{1, 2, 3}, arr2{2, 3, 4}, res(3);
         // thrust::device_vector<int> d_arr1(arr1), d_arr2(arr2);
 
@@ -45,7 +45,7 @@ namespace
 
     TEST(BinaryTransform, Cuda)
     {
-        using emu::make_transform_iterator;
+        using emu::iterator::make_transform_iterator;
         thrust::device_vector<int> arr1(3), arr2(3);
         arr1[0] = 1; arr1[1] = 2; arr1[2] = 3;
         arr2[0] = 2; arr2[1] = 3; arr2[2] = 4;
@@ -59,7 +59,7 @@ namespace
 
     TEST(BinaryTransform, CudaCopy)
     {
-        using emu::make_transform_iterator;
+        using emu::iterator::make_transform_iterator;
         thrust::device_vector<int> arr1(3), arr2(3), res(3);
         arr1[0] = 1; arr1[1] = 2; arr1[2] = 3;
         arr2[0] = 2; arr2[1] = 3; arr2[2] = 4;

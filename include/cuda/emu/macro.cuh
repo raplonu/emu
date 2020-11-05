@@ -5,18 +5,18 @@
 
 #include <emu/config.cuh>
 
-#define TID (threadIdx.x)
-#define TID0 (!threadIdx.x)
+#define EMU_TID (threadIdx.x)
+#define EMU_TID0 (!threadIdx.x)
 
-#define BID (blockIdx.x)
-#define BID0 (!blockIdx.x)
+#define EMU_BID (blockIdx.x)
+#define EMU_BID0 (!blockIdx.x)
 
-#define ID (threadIdx.x + blockIdx.x * blockDim.x)
-#define ID0 (!(threadIdx.x || blockIdx.x))
+#define EMU_ID (threadIdx.x + blockIdx.x * blockDim.x)
+#define EMU_ID0 (!(threadIdx.x || blockIdx.x))
 
-#define SIZE_B (blockDim.x)
-#define SIZE_G (gridDim.x)
+#define EMU_SIZE_B (blockDim.x)
+#define EMU_SIZE_G (gridDim.x)
 
-#define SIZE_TOT (blockDim.x * gridDim.x)
+#define EMU_SIZE_TOT (blockDim.x * gridDim.x)
 
 #endif //EMU_MACRO_CUH
