@@ -17,17 +17,12 @@ py_name = f'{package_name}wrap'
 
 here = Path(__file__).parent.resolve()
 
-package_version = (here / 'version.txt').read_text(encoding='utf-8')
+package_version = '0.1'
 
 # Get the long description from the README file
 long_description = (here / 'README.md').read_text(encoding='utf-8')
 
 extra_requires = []
-
-try:
-    out = subprocess.check_output(['conan', '--version'])
-except OSError:
-    extra_requires.append('conan')
 
 def symlink(target, link_name):
     while True:

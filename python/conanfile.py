@@ -1,17 +1,8 @@
-from conans import ConanFile, CMake, tools
-
-def try_load(filename):
-    try:
-        return tools.load(filename)
-    except FileNotFoundError:
-        return None
-
-def load_first_exiting(*files):
-    # Try read files until one exists.
-    return next(filter(None.__ne__, map(try_load, files)))
+from conans import ConanFile, CMake
 
 class EmuwrapConan(ConanFile):
     name = 'emuwrap'
+    version = '0.1'
     license = 'MIT'
     author = 'Julien Bernard jbernard@obspm.fr'
     url = 'https://gitlab.obspm.fr/cosmic/tools/emu'
@@ -28,10 +19,7 @@ class EmuwrapConan(ConanFile):
 
     settings = 'os', 'compiler', 'build_type', 'arch'
     generators = 'cmake'
-    exports_sources = 'src/*', 'CMakeLists.txt', '../version.txt'
-
-    def set_version(self):
-        self.version = load_first_exiting('../version.txt', 'version.txt')
+    exports_sources = 'src/*'
 
     def requirements(self):
         self.requires(str(self.options.cxx_ref))

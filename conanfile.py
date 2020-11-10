@@ -10,15 +10,17 @@ def load(*filenames):
 
 class EmuConan(ConanFile):
     name = 'emu'
+    version = '0.1'
     license = 'MIT'
     author = 'Julien Bernard jbernard@obspm.fr'
     url = 'https://gitlab.obspm.fr/cosmic/tools/emu'
     description = 'C++/CUDA toolkit.'
 
     build_policy = 'missing'
+    no_copy_source = True
 
     requires = [
-        'fmt/7.0.3',
+        'fmt/7.1.2',
         'boost/1.71.0@conan/stable',
         'half/2.1.0@cosmic/stable',
         'ms-gsl/3.0.1',
@@ -52,10 +54,7 @@ class EmuConan(ConanFile):
 
     settings = 'os', 'compiler', 'build_type', 'arch'
     generators = 'cmake'
-    exports_sources = 'cmake/*', 'include/*', 'src/*', 'test/*', 'CMakeLists.txt', 'version.txt'
-
-    def set_version(self):
-        self.version = tools.load('version.txt')
+    exports_sources = 'cmake*', 'include*', 'src*', 'test*'
 
     def requirements(self):
         if self.options.test:
