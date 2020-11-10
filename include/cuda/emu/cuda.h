@@ -1,10 +1,7 @@
 #ifndef EMU_CUDA_H
 #define EMU_CUDA_H
 
-#include <cuda/api/error.hpp>
-#include <cuda/api/stream.hpp>
-#include <cuda/api/device.hpp>
-#include <cuda/api/memory.hpp>
+#include <cuda/api_wrappers.hpp>
 
 #include <cuda_runtime_api.h>
 
