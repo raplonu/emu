@@ -3,12 +3,14 @@
 
 #include <emu/macro.h>
 
+#include <type_traits>
+#include <iterator>
+
+#include <tuple>
+
 #if EMU_CUDA
 #include <thrust/tuple.h>
 #endif
-
-#include <type_traits>
-#include <iterator>
 
 namespace emu
 {
@@ -60,22 +62,20 @@ namespace emu
 namespace detail
 {
     template<typename T>
-    struct TupleSizeImpl {
-        static constexpr std::size_t value = std::tuple_size<T>();
+    struct SizeImpl {
+        static constexpr std::size_t value = std::tuple_size<T>::value;
     };
 
 #if EMU_CUDA
     template<typename... Ts>
-    struct TupleSizeImpl<thrust::tuple<Ts...>> {
+    struct SizeImpl<thrust::tuple<Ts...>> {
         static constexpr std::size_t value = thrust::tuple_size<thrust::tuple<Ts...>>::value;
     };
 #endif
 } // namespace detail
 
     template<typename T>
-    using TupleSize = detail::TupleSizeImpl<T>;
-
-
+    using Size = detail::SizeImpl<RemoveCVRef<T>>;
 }
 
 #endif //EMU_TYPE_TRAITS_H

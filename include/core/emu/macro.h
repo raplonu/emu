@@ -30,7 +30,6 @@
 #define DEVICE_CONTEXT     0
 #define HOST_CONTEXT       1
 
-#define EMU_GLOB
 #define EMU_HOST
 #define EMU_DEVICE
 #define EMU_HODE

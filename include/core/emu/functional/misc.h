@@ -2,6 +2,7 @@
 #define EMU_FUNCTIONAL_MISC_H
 
 #include <emu/macro.h>
+#include <emu/tuple.h>
 #include <emu/utility.h>
 
 namespace emu
@@ -80,6 +81,14 @@ namespace functional
         }
     };
 
+    struct Mult {
+        template<typename T1, typename T2>
+        EMU_HODE constexpr
+        auto operator()(const T1 & t1, const T2 & t2) const noexcept {
+            return t1 * t2;
+        }
+    };
+
     struct xy_to_pixel_pos {
         std::size_t frame_size;
 
@@ -97,6 +106,15 @@ namespace functional
             return static_cast<Dest>(src);
         }
 
+    };
+
+    struct TupleAdd
+    {
+        template<typename Tuple>
+        constexpr EMU_HODE
+        auto operator()(const Tuple & t1, const Tuple & t2) const noexcept {
+            return tuple::transform(Adder{}, t1, t2);
+        }
     };
 
 } // namespace functional

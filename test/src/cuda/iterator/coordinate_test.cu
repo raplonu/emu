@@ -2,16 +2,9 @@
 
 #include <emu/iterator/coordinate.cuh>
 
-#include <iostream>
-#include <cstdio>
 #include <cuda_runtime_api.h>
 
-
-// __global__ void ker()
-// {
-// }
-
-EMU_HODE constexpr
+constexpr EMU_HODE
 std::size_t operator "" _sz ( unsigned long long n ) noexcept { return n; }
 
 namespace
