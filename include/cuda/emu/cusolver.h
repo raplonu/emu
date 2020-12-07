@@ -25,6 +25,9 @@ namespace cusolver
     void potrf(const handle_t & handle, FillMode uplo, int N, T *A, int lda, T *workspace, int lwork, int *devInfo);
 
     template<typename T>
+    void potrs(const handle_t & handle, FillMode uplo, int N, int nrhs, T *A, int lda, T *B, int ldb, int *devInfo);
+
+    template<typename T>
     void getrf_bufferSize(const handle_t & handle, int m, int n, T *A, int lda, int *Lwork );
 
     template<typename T>
