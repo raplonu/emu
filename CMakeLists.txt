@@ -89,6 +89,8 @@ if (emu_build_cuda)
         src/cuda/cusolver/handle.cpp
         src/cuda/cusolver/error.cpp
         src/cuda/cusolver.cpp
+
+        src/cuda/thrust/execution_policy.cu
     )
 
     target_include_directories(emucuda PUBLIC

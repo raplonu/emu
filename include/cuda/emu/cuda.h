@@ -36,7 +36,7 @@ namespace detail
 
     template<typename T>
     inline T* allocate(::cuda::device_t device, std::size_t size) {
-        return ::cuda::memory::device::allocate(device, size * sizeof(T));
+        return static_cast<T*>(::cuda::memory::device::allocate(device, size * sizeof(T)));
     }
 
 

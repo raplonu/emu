@@ -74,6 +74,10 @@ struct handle_t
 
     cublasPointerMode_t pointer_mode() const;
 
+    handle_t & enable();
+
+    const handle_t & enable() const;
+
     ~handle_t() = default;
 
 private:

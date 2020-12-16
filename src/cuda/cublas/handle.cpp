@@ -1,5 +1,7 @@
 #include <emu/cublas/handle.h>
 
+#include <emu/device.h>
+
 namespace emu
 {
 
@@ -92,6 +94,18 @@ void handle_t::set_pointer_mode(cublasPointerMode_t mode) {
 
 cublasPointerMode_t handle_t::pointer_mode() const {
     return handle::detail::get_pointer_mode(id());
+}
+
+handle_t & handle_t::enable() {
+    make_current(device_id_);
+
+    return *this;
+}
+
+const handle_t & handle_t::enable() const {
+    make_current(device_id_);
+
+    return *this;
 }
 
 namespace handle
