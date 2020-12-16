@@ -34,14 +34,14 @@ namespace detail
 
 #if EMU_CUDA
     template<typename... Ts>
-    struct MakeBased<thrust::tuple<Ts...>> {
+    struct MakeBased<::thrust::tuple<Ts...>> {
 
         template<typename... Types >
         static constexpr EMU_HODE
         auto make( Types&&... args )
-            EMU_NOEXCEPT_EXPR( thrust::make_tuple(FWD(args)...) )
+            EMU_NOEXCEPT_EXPR( ::thrust::make_tuple(FWD(args)...) )
         {
-            return thrust::make_tuple(FWD(args)...);
+            return ::thrust::make_tuple(FWD(args)...);
         }
     };
 #endif

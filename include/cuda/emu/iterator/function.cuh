@@ -24,8 +24,8 @@ namespace iterator
     template<typename... Its, typename F>
     constexpr EMU_HODE
     auto make_transform_iterator(F fn, Its... its) noexcept {
-        return thrust::make_transform_iterator(
-            thrust::make_zip_iterator(thrust::make_tuple(its...)),
+        return ::thrust::make_transform_iterator(
+            ::thrust::make_zip_iterator(::thrust::make_tuple(its...)),
             functional::make_apply(fwd<F>(fn))
         );
     }

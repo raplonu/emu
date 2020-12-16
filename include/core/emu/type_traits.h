@@ -30,14 +30,19 @@ namespace emu
     template< class T >
     using RemoveCVRef = typename std::remove_cv_t<std::remove_reference_t<T>>;
 
-    template<typename It>
-    using IteratorValue = typename std::iterator_traits<It>::value_type;
+    template<typename T>
+    using ValueType      = typename RemoveCVRef<T>::value_type;
+    template<typename T>
+    using DifferenceType = typename RemoveCVRef<T>::difference_type;
+    template<typename T>
+    using Category       = typename RemoveCVRef<T>::category;
 
     template<typename It>
-    using IteratorDifference = typename std::iterator_traits<It>::difference_type ;
-
+    using IteratorValue      = ValueType<std::iterator_traits<RemoveCVRef<It>>>;
     template<typename It>
-    using IteratorCategory = typename std::iterator_traits<It>::category ;
+    using IteratorDifference = DifferenceType<std::iterator_traits<RemoveCVRef<It>>>;
+    template<typename It>
+    using IteratorCategory   = Category<std::iterator_traits<RemoveCVRef<It>>>;
 
     namespace detail
     {
@@ -68,8 +73,8 @@ namespace detail
 
 #if EMU_CUDA
     template<typename... Ts>
-    struct SizeImpl<thrust::tuple<Ts...>> {
-        static constexpr std::size_t value = thrust::tuple_size<thrust::tuple<Ts...>>::value;
+    struct SizeImpl<::thrust::tuple<Ts...>> {
+        static constexpr std::size_t value = ::thrust::tuple_size<::thrust::tuple<Ts...>>::value;
     };
 #endif
 } // namespace detail
