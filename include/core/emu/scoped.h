@@ -52,6 +52,10 @@ namespace emu
             invoke();
         }
 
+        constexpr bool owning() const noexcept {
+            return owning_;
+        }
+
     private:
         void invoke() {
             if (owning_) function(value);

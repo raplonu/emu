@@ -9,6 +9,8 @@ namespace emu
 {
     //TODO: Addsdocumentation.
     using tl::optional;
+    using tl::nullopt_t;
+    using tl::nullopt;
 
 
     /**

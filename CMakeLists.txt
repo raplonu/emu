@@ -109,7 +109,7 @@ if (emu_build_cuda)
     target_compile_options(emucuda PUBLIC
         $<$<COMPILE_LANGUAGE:CUDA>:
             ${ARCH_FLAGS}
-            --expt-extended-lambda
+            --extended-lambda
             --expt-relaxed-constexpr
         >)
 

@@ -3,7 +3,8 @@
 
 #include <emu/cublas/error.h>
 
-#include <cuda/api_wrappers.hpp>
+#include <cuda/api/device.hpp>
+#include <cuda/api/stream.hpp>
 
 #include <emu/scoped.h>
 #include <emu/device.h>

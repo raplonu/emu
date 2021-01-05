@@ -54,4 +54,3 @@ Also, it is possible to pass argument to the conan install command using the fol
 ```bash
 pip install ./emu --install-option=--conan-args=="<conan args>"
 ```
-
