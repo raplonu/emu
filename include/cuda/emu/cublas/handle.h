@@ -31,9 +31,9 @@ namespace handle
             void operator()(id_t id) const { destroy(id); }
         };
 
-        cuda::stream::id_t get_stream(id_t handle);
+        ::cuda::stream::id_t get_stream(id_t handle);
 
-        void set_stream(id_t handle, cuda::stream::id_t mode);
+        void set_stream(id_t handle, ::cuda::stream::id_t mode);
 
         cublasMath_t get_math_mode(id_t handle);
 
@@ -51,9 +51,9 @@ struct handle_t
 {
     handle_t();
 
-    handle_t(handle::id_t id, cuda::device::id_t device_id, bool owning);
+    handle_t(handle::id_t id, ::cuda::device::id_t device_id, bool owning);
 
-    handle_t(cuda::device::id_t device_id);
+    handle_t(::cuda::device::id_t device_id);
 
     constexpr handle_t(handle_t && o) = default;
     handle_t(const handle_t &) = delete;
@@ -63,9 +63,9 @@ struct handle_t
 
     handle::id_t id() const noexcept { return id_.value; }
 
-    void set_stream(const cuda::stream_t & stream);
+    void set_stream(const ::cuda::stream_t & stream);
 
-    cuda::stream_t stream() const;
+    ::cuda::stream_t stream() const;
 
     void set_math_mode(cublasMath_t mode);
 
@@ -83,7 +83,7 @@ struct handle_t
 
 private:
     handle::ScopedHandle id_;
-    cuda::device::id_t device_id_;
+    ::cuda::device::id_t device_id_;
 };
 
 
@@ -97,9 +97,9 @@ namespace handle
     /**
      * Create cublas handle_t on current device.
      */
-    handle_t create(cuda::device_t device);
+    handle_t create(::cuda::device_t device);
 
-    handle_t wrap(id_t id, cuda::device_t device, bool take_ownership);
+    handle_t wrap(id_t id, ::cuda::device_t device, bool take_ownership);
 }
 
 }
