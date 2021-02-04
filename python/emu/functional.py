@@ -2,7 +2,7 @@ import functools as ft
 import funcy as fc
 from funcy import partial, compose, rcompose
 
-import  boltons.cacheutils as cu
+import boltons.cacheutils as cu
 # from cachetools.keys import hashkey
 
 import operator
@@ -392,3 +392,4 @@ def tail(range):
     return last
 
 transpose = unpack << (b_list * zip)
+

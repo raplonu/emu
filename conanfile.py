@@ -54,7 +54,7 @@ class EmuConan(ConanFile):
 
     settings = 'os', 'compiler', 'build_type', 'arch'
     generators = 'cmake'
-    exports_sources = 'cmake*', 'include*', 'src*', 'test*'
+    exports_sources = 'CMakeLists.txt', 'cmake*', 'include*', 'src*', 'test*'
 
     def requirements(self):
         if self.options.test:
