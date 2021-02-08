@@ -1,9 +1,10 @@
 #ifndef EMU_OPTIONAL_H
 #define EMU_OPTIONAL_H
 
-#include <tl/optional.hpp>
-
 #include <emu/macro.h>
+#include <emu/type_traits.h>
+
+#include <tl/optional.hpp>
 
 namespace emu
 {
