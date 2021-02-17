@@ -120,6 +120,10 @@ class Function:
         '''>= operator'''
         return Function(rpartial_apply(self.__fn, fun))
 
+    def __pow__(self, arg):
+        '''** operator'''
+        return map(self.__fn, arg)
+
     @staticmethod
     def filter_fn(fn):
         return fn.__fn if isinstance(fn, Function) else fn
