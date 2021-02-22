@@ -14,13 +14,13 @@ namespace cuda
 namespace detail
 {
 
-    inline std::pair<void*, std::size_t> allocate_pitch(std::size_t width_bytes, std::size_t height_bytes)
+    inline std::pair<void*, std::size_t> allocate_pitch(::cuda::device_t device, std::size_t width_bytes, std::size_t height_bytes)
     {
-        void* allocated = nullptr;
-        std::size_t pitch;
-        ::cuda::throw_if_error(cudaMallocPitch(&allocated, &pitch, width_bytes, height_bytes));
+        std::pair<void*, std::size_t> result{nullptr, 0};
+    	CUDA_DEVICE_FOR_THIS_SCOPE(device);
+        ::cuda::throw_if_error(cudaMallocPitch(&result.first, &result.second, width_bytes, height_bytes));
 
-        return std::make_pair(allocated, pitch);
+        return result;
     }
 
     // using ScopedMemory = emu::scoped_t<id_t, detail::Destroyer>;
@@ -29,8 +29,8 @@ namespace detail
 
 
     template<typename T>
-    inline std::pair<T*, std::size_t> allocate_pitch(std::size_t width, std::size_t height) {
-        auto result = detail::allocate_pitch(width * sizeof(T), height * sizeof(T));
+    inline std::pair<T*, std::size_t> allocate_pitch(::cuda::device_t device, std::size_t width, std::size_t height) {
+        auto result = detail::allocate_pitch(device, width * sizeof(T), height * sizeof(T));
         return std::make_pair(static_cast<T*>(result.first), result.second);
     }
 
