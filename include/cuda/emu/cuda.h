@@ -11,6 +11,9 @@ namespace emu
 namespace cuda
 {
 
+    using stream_ref_t  =       ::cuda::stream_t &;
+    using stream_cref_t = const ::cuda::stream_t &;
+
 namespace detail
 {
 
@@ -68,13 +71,13 @@ void copy_2d(T *destination, std::size_t d_pitch, const T * source, std::size_t 
 }
 
 template<typename T>
-void copy(T * destination, const T * source, std::size_t size) {
-    ::cuda::memory::copy((void*)destination, (const void*)source, size * sizeof(T));
+void copy(T * destination, const T * source, std::size_t count) {
+    ::cuda::memory::copy((void*)destination, (const void*)source, count * sizeof(T));
 }
 
 template<typename T>
-void copy(T * destination, const T * source, std::size_t size, ::cuda::stream_t & stream) {
-    ::cuda::memory::async::copy((void*)destination, (const void*)source, size * sizeof(T), stream);
+void copy(T * destination, const T * source, std::size_t count, ::cuda::stream_t & stream) {
+    ::cuda::memory::async::copy((void*)destination, (const void*)source, count * sizeof(T), stream);
 }
 
 } // namespace cuda
