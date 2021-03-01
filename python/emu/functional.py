@@ -2,6 +2,7 @@ import functools as ft
 import funcy as fc
 from funcy import partial, compose, rcompose
 
+import operator
 import boltons.cacheutils as cu
 # from cachetools.keys import hashkey
 
@@ -120,9 +121,14 @@ class Function:
         '''>= operator'''
         return Function(rpartial_apply(self.__fn, fun))
 
-    def __pow__(self, arg):
-        '''** operator'''
+    def map(self, arg):
         return map(self.__fn, arg)
+
+    def reduce(self, arg):
+        return ft.reduce(self.__fn, arg)
+
+    def filter(self, arg):
+        return filter(self.__fn, arg)
 
     @staticmethod
     def filter_fn(fn):
@@ -256,6 +262,8 @@ b_tuple =        bf(tuple)
 b_type =         bf(type)
 b_vars =         bf(vars)
 b_zip =          bf(zip)
+
+
 
 ### Boosted version of functional components
 b_first = bf(fc.first)
