@@ -15,6 +15,18 @@
 namespace emu
 {
 
+namespace detail
+{
+
+    template<typename T>
+    struct IdentityImpl { using type = T; };
+
+} // namespace detail
+
+
+    template<typename T>
+    using Identity = typename detail::IdentityImpl<T>::type;
+
     struct use_default{};
 
     template<typename T, typename Other>
