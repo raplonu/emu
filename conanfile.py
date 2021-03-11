@@ -26,7 +26,7 @@ class EmuConan(ConanFile):
         'ms-gsl/3.0.1',
         'tl-expected/1.0.0',
         'tl-optional/1.0.0',
-        'range-v3/0.11.0@ericniebler/stable']
+        'abseil/20200923.3']
 
     options = {'shared'         : [True, False],
                'fPIC'           : [True, False],

@@ -1,24 +1,14 @@
 #ifndef EMU_SPAN_H
 #define EMU_SPAN_H
 
-#include <gsl/span>
+#include <emu/type_traits.h>
 #include <emu/byte.h>
+
+#include <gsl/span>
+
 
 namespace emu
 {
-    /**
-     * @brief The class template span describes an object that can refer to a contiguous sequence of objects
-     * with the first element of the sequence at position zero.
-     *
-     * A span can either have a static extent, in which case the number of elements in the sequence is known
-     * and encoded in the type, or a dynamic extent.
-     * Please refer to https://en.cppreference.com/w/cpp/container/span for more detail.
-     *
-     * @note Use span from gsl library since it is the closest implementation of c++20 std::span.
-     */
-    //TODO: replace gsl::span by std::span when c++20.
-    using gsl::span;
-
     /**
      * @brief std::dynamic_extent is a constant of type std::size_t that is used to differentiate std::span of static and dynamic extent.
      *
@@ -32,6 +22,35 @@ namespace emu
 
     //TODO: replace gsl::as_writable_bytes by std::as_writable_bytes when c++20.
     using gsl::as_writable_bytes;
+
+
+    /**
+     * @brief The class template span describes an object that can refer to a contiguous sequence of objects
+     * with the first element of the sequence at position zero.
+     *
+     * A span can either have a static extent, in which case the number of elements in the sequence is known
+     * and encoded in the type, or a dynamic extent.
+     * Please refer to https://en.cppreference.com/w/cpp/container/span for more detail.
+     *
+     * @note Use span from gsl library since it is the closest implementation of c++20 std::span.
+     */
+    //TODO: replace gsl::span by std::span when c++20.
+    template<typename T, std::size_t Extend = dynamic_extent>
+    using span_t = gsl::span<T, Extend>;
+
+namespace span
+{
+    template<std::size_t Extend = dynamic_extent, typename Rg>
+    constexpr auto create(Rg && range) noexcept
+    {
+        using value_type = RangeValue<Rg>;
+        using std::begin; using std::end;
+        return span_t<value_type, Extend>(begin(range), end(range));
+    }
+
+
+} // namespace span
+
 }
 
 #endif //EMU_SPAN_H

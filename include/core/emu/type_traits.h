@@ -3,14 +3,13 @@
 
 #include <emu/macro.h>
 
-#include <type_traits>
-#include <iterator>
-
-#include <tuple>
-
 #if EMU_CUDA
 #include <thrust/tuple.h>
 #endif
+
+#include <type_traits>
+#include <iterator>
+#include <tuple>
 
 namespace emu
 {
@@ -56,17 +55,24 @@ namespace detail
     template<typename It>
     using IteratorCategory   = Category<std::iterator_traits<RemoveCVRef<It>>>;
 
-    namespace detail
-    {
-        template<typename R>
-        auto RangeValueTypeImpl(R r) {
-            using std::begin;
-            return *begin(r);
-        }
-    }
+// use a specific namespace name in order to avoid namespace polution with `using std::begin;`
+namespace detail_begin
+{
+    using std::begin;
+    template<typename Rg>
+    using IteratorTypeImpl = decltype(begin(std::declval<Rg>()));
 
-    template<typename R>
-    using RangeValueType = decltype(detail::RangeValueTypeImpl(std::declval<R>()));
+} // namespace detail_begin
+
+    template<typename Rg>
+    using IteratorType = detail_begin::IteratorTypeImpl<Rg>;
+
+    template<typename Rg>
+    using RangeValue      = IteratorValue<IteratorType<RemoveCVRef<Rg>>>;
+    template<typename Rg>
+    using RangeDifference = IteratorDifference<IteratorType<RemoveCVRef<Rg>>>;
+    template<typename Rg>
+    using RangeCategory   = IteratorCategory<IteratorType<RemoveCVRef<Rg>>>;
 
     struct AutoTag{};
 

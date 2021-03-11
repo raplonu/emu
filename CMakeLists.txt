@@ -29,7 +29,8 @@ message(CHECK_PASS "Done")
 #
 
 add_library(emucore
-    src/core/fun.cpp)
+    src/core/fun.cpp
+)
 
 target_include_directories(emucore PUBLIC
     $<INSTALL_INTERFACE:include/core>
@@ -44,7 +45,7 @@ target_link_libraries(emucore PUBLIC
     CONAN_PKG::boost
     CONAN_PKG::half
     CONAN_PKG::ms-gsl
-    # CONAN_PKG::abseil
+    CONAN_PKG::abseil
     CONAN_PKG::tl-expected
     CONAN_PKG::tl-optional
 )

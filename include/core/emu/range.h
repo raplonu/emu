@@ -17,9 +17,9 @@ namespace emu
      * the fist template parameter.
      */
     template<typename T = AutoTag, typename R>
-    auto as_vector(R && range)
+    constexpr auto as_vector(R && range)
     {
-        using value_type = IfNotAutoOr<T, std::remove_cv_t<RangeValueType<R>>>;
+        using value_type = IfNotAutoOr<T, std::remove_cv_t<RangeValue<R>>>;
         using std::begin; using std::end;
         return std::vector<value_type>(begin(range), end(range));
     }
@@ -32,7 +32,7 @@ namespace emu
      * the fist template parameter.
      */
     template<typename T = AutoTag, typename R, std::size_t N>
-    auto as_vector(R (&range)[N])
+    constexpr auto as_vector(R (&range)[N])
     {
         using value_type = IfNotAutoOr<T, std::remove_cv_t<R>>;
         using std::begin; using std::end;
@@ -45,7 +45,7 @@ namespace emu
      * This version allow to avoid copy if the required type correspond to the input type.
      */
     template<typename T>
-    auto as_vector(std::vector<T> && range)
+    constexpr auto as_vector(std::vector<T> && range) noexcept
     {
         return emu::mv(range);
     }

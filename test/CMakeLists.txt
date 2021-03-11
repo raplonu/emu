@@ -4,6 +4,7 @@ find_package(GTest REQUIRED)
 
 add_executable(emucoretest
     src/core/test.cpp
+    src/core/string_test.cpp
     src/core/byte_test.cpp
     src/core/span_test.cpp
     src/core/range_test.cpp
