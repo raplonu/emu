@@ -46,6 +46,7 @@ target_link_libraries(emucore PUBLIC
     CONAN_PKG::half
     CONAN_PKG::ms-gsl
     CONAN_PKG::abseil
+    CONAN_PKG::range-v3
     CONAN_PKG::tl-expected
     CONAN_PKG::tl-optional
 )
