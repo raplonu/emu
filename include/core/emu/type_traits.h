@@ -10,6 +10,7 @@
 #include <type_traits>
 #include <iterator>
 #include <tuple>
+#include <cstdint>
 
 namespace emu
 {
@@ -31,8 +32,8 @@ namespace detail
     template<typename T, typename Other>
     using NotDefaultOr = std::conditional_t<std::is_same<T, use_default>::value, Other, T>;
 
-    template<bool B>
-    using EnableIf = std::enable_if_t<B, bool>;
+    template<bool B, typename T = bool>
+    using EnableIf = std::enable_if_t<B, T>;
 
     template<typename T1, typename T2>
     using Equivalent = std::is_same<std::decay_t<T1>, std::decay_t<T2>>;
@@ -99,6 +100,28 @@ namespace detail
 
     template<typename T>
     using Size = detail::SizeImpl<RemoveCVRef<T>>;
+
+    template<typename T>
+    constexpr bool IsIntegral = std::is_integral<T>::value;
+
+namespace detail
+{
+    template<std::size_t S>
+    struct matching_word;
+
+#define EMU_MATCH_SIZE(TYPE, SIZE)                               \
+    template<> struct matching_word<SIZE> { using type = TYPE; }
+
+    EMU_MATCH_SIZE(std::uint8_t,  1);
+    EMU_MATCH_SIZE(std::uint16_t, 2);
+    EMU_MATCH_SIZE(std::uint32_t, 4);
+    EMU_MATCH_SIZE(std::uint64_t, 8);
+
+} // namespace detail
+
+template<typename T>
+using matching_word = typename detail::matching_word<sizeof(T)>::type;
+
 }
 
 #endif //EMU_TYPE_TRAITS_H

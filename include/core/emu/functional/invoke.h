@@ -14,7 +14,7 @@ namespace functional
     // C++14 workaround from https://stackoverflow.com/questions/38288042/c11-14-invoke-workaround
     // TODO : Delete when C++17 and cuda std provide it.
     template<typename Fn, typename... Args,
-        std::enable_if_t<std::is_member_pointer<std::decay_t<Fn>>{}, int> = 0
+        EnableIf<std::is_member_pointer<std::decay_t<Fn>>{}> = true
     >
     EMU_HODE constexpr
     decltype(auto) invoke(Fn&& f, Args&&... args)
@@ -24,7 +24,7 @@ namespace functional
     }
 
     template<typename Fn, typename... Args,
-        std::enable_if_t<!std::is_member_pointer<std::decay_t<Fn>>{}, int> = 0
+        EnableIf<!std::is_member_pointer<std::decay_t<Fn>>{}> = true
     >
     EMU_HODE constexpr
     decltype(auto) invoke(Fn&& f, Args&&... args)

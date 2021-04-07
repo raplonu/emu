@@ -13,6 +13,31 @@
 
 namespace emu
 {
+
+namespace detail
+{
+
+    template<typename To>
+    struct as_t {
+
+        template<typename From>
+        constexpr EMU_HODE To operator()(From && from) const
+            EMU_NOEXCEPT_EXPR( static_cast<To>(std::forward<From>(from)) )
+        {
+            return static_cast<To>(std::forward<From>(from));
+        }
+    };
+
+} // namespace detail
+
+    /**
+     * @brief Functional equivalent of static_cast.
+     *
+     * @tparam To The destination type.
+     */
+    template<typename To>
+    EMU_HODE_CONSTEXPR auto as = detail::as_t<To>{};
+
     template<typename T>
     EMU_HODE constexpr T&& fwd(std::remove_reference_t<T>& t) noexcept {
         return static_cast<T&&>(t);
@@ -70,7 +95,7 @@ namespace emu
 
     template<typename T>
     EMU_HODE constexpr
-    T next_mul(T a, T b) { return ( (a-1) / b + 1) * b; }
+    T next_mul(T a, T b) { return ( (a - 1) / b + 1) * b; }
 
     template <typename T>
     EMU_HODE constexpr

@@ -23,6 +23,7 @@ namespace emu
         return absl::StrJoin(FWD(args)...);
     }
 
+
 } // namespace emu
 
 #endif //EMU_STRING_H

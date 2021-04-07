@@ -5,6 +5,9 @@
 
 #include <emu/config.cuh>
 
+#define EMU_GLOB   __global__
+#define EMU_DEVICE __device__
+
 #define EMU_TID (threadIdx.x)
 #define EMU_TID0 (!threadIdx.x)
 

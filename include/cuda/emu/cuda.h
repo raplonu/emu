@@ -1,9 +1,9 @@
 #ifndef EMU_CUDA_H
 #define EMU_CUDA_H
 
-#include <cuda/api_wrappers.hpp>
+#include <emu/scoped.h>
 
-#include <cuda_runtime_api.h>
+#include <cuda/api_wrappers.hpp>
 
 namespace emu
 {
@@ -66,7 +66,7 @@ namespace detail
     }
 
     template<typename T>
-    void copy_2d(T *destination, std::size_t d_pitch, const T * source, std::size_t s_pitch, std::size_t width, std::size_t height, const ::cuda::stream_t & stream) {
+    void copy_2d(T *destination, std::size_t d_pitch, const T * source, std::size_t s_pitch, std::size_t width, std::size_t height, stream_cref_t stream) {
         detail::copy_2d(destination, d_pitch * sizeof(T), source, s_pitch * sizeof(T), width * sizeof(T), height, stream.id());
     }
 
@@ -76,8 +76,8 @@ namespace detail
     }
 
     template<typename T>
-    void copy(T * destination, const T * source, std::size_t count, ::cuda::stream_t & stream) {
-        ::cuda::memory::async::copy((void*)destination, (const void*)source, count * sizeof(T), stream);
+    void copy(T * destination, const T * source, std::size_t count, stream_cref_t stream) {
+        ::cuda::memory::async::detail::copy((void*)destination, (const void*)source, count * sizeof(T), stream.id());
     }
 
     inline ::cuda::launch_configuration_t make_linear_launch_config(
@@ -90,6 +90,9 @@ namespace detail
             (length % threads_per_block == 0 ? 0 : 1);
         return ::cuda::make_launch_config(num_blocks, threads_per_block, ::cuda::no_shared_memory);
     }
+
+    template<typename T>
+    using DataContainer = emu::scoped_t<T*, ::cuda::memory::device::detail::deleter>;
 
 } // namespace cuda
 

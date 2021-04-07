@@ -116,12 +116,14 @@ namespace emu
         bool owning_ = true;
     };
 
+namespace scoped
+{
     /// Returns a scoped_t for the given value and function.
     /// Useful to do type deduction.
     ///
     /// Regular T, FunctionObject<U (T)> F where U is not constrained
     template<typename T, typename F>
-    constexpr scoped_t<std::decay_t<T>, std::decay_t<F>> scoped(T&& value, F&& f) {
+    constexpr scoped_t<std::decay_t<T>, std::decay_t<F>> create(T&& value, F&& f) {
         return scoped_t<std::decay_t<T>, std::decay_t<F>>{FWD(value), FWD(f)};
     }
 
@@ -130,21 +132,37 @@ namespace emu
     ///
     /// FunctionObject<U (T)> F where U is not constrained
     template<typename F>
-    constexpr scoped_t<void, std::decay_t<F>> scoped(F&& f) {
+    constexpr scoped_t<void, std::decay_t<F>> create(F&& f) {
         return scoped_t<void, std::decay_t<F>>{FWD(f)};
     }
 
+#define EMU_INVOKE_AT_SCOPE_EXIT(F)                                         \
+    const auto EMU_UNIQUE_NAME(invoke_at_scope_exit) = ::emu::scoped::create(F)
+
     template<typename T, typename F>
-    constexpr scoped_t<std::decay_t<T>, std::decay_t<F>> wrap_scoped(T&& value, F&& f) {
+    constexpr scoped_t<std::decay_t<T>, std::decay_t<F>> wrap(T&& value, F&& f) {
         return scoped_t<std::decay_t<T>, std::decay_t<F>>{FWD(value), FWD(f), false};
     }
 
     template<typename F>
-    constexpr scoped_t<void, std::decay_t<F>> wrap_scoped(F&& f) {
+    constexpr scoped_t<void, std::decay_t<F>> wrap(F&& f) {
         return scoped_t<void, std::decay_t<F>>{FWD(f), false};
     }
 
 
-}
+    template<typename T, typename V>
+    constexpr auto assign_for_current_scope(T & t, V && v)
+        EMU_NOEXCEPT_EXPR(std::exchange(t, FWD(v)))
+    {
+        auto old = std::exchange(t, FWD(v));
+        return create([&t, old = mv(old)]{ t = mv(old); });
+    }
+
+#define EMU_ASSIGN_FOR_CURRENT_SCOPE(T, V)                                                    \
+    const auto EMU_UNIQUE_NAME(assign_value_for_scope) = ::emu::scoped::assign_for_current_scope(T, V)
+
+} // namespace scope
+
+} // namespace emu
 
 #endif //EMU_RESOURCE_H
