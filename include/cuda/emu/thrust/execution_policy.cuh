@@ -13,11 +13,9 @@ namespace emu
 namespace thrust
 {
 
-namespace detail {
-    /**
-     * @brief
-     *
-     */
+namespace detail
+{
+
     struct execute_on_stream_async :
         ::thrust::cuda_cub::execute_on_stream_base<execute_on_stream_async>
     {
@@ -60,7 +58,7 @@ namespace detail {
     extern detail::par_t par;
     extern detail::par_async_t par_async;
 
-}
+} // namespace thrust
 
 } // namespace emu
 

@@ -101,8 +101,9 @@ namespace detail
     template<typename T>
     using Size = detail::SizeImpl<RemoveCVRef<T>>;
 
-    template<typename T>
-    constexpr bool IsIntegral = std::is_integral<T>::value;
+    template<typename T> constexpr bool IsArithmetic    = std::is_arithmetic<T>::value;
+    template<typename T> constexpr bool IsIntegral      = std::is_integral<T>::value;
+    template<typename T> constexpr bool IsFloatingPoint = std::is_floating_point<T>::value;
 
 namespace detail
 {
