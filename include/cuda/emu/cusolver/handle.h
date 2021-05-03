@@ -29,6 +29,8 @@ namespace handle
         struct Destroyer{
             void operator()(id_t id) const { destroy(id); }
         };
+
+        void set_stream(id_t handle, ::cuda::stream::id_t mode);
     }
 
     using ScopedHandle = emu::scoped_t<const id_t, detail::Destroyer>;
@@ -38,9 +40,9 @@ struct handle_t
 {
     handle_t();
 
-    handle_t(handle::id_t id, cuda::device::id_t device_id, bool owning);
+    handle_t(handle::id_t id, ::cuda::device::id_t device_id, bool owning);
 
-    handle_t(cuda::device::id_t device_id);
+    handle_t(::cuda::device::id_t device_id);
 
     constexpr handle_t(handle_t && o) = default;
     handle_t(const handle_t &) = delete;
@@ -52,9 +54,11 @@ struct handle_t
 
     ~handle_t() = default;
 
+    void set_stream(const ::cuda::stream_t & stream);
+
 private:
     handle::ScopedHandle id_;
-    cuda::device::id_t device_id_;
+    ::cuda::device::id_t device_id_;
 };
 
 
@@ -68,9 +72,9 @@ namespace handle
     /**
      * Create cusolver handle_t on current device.
      */
-    handle_t create(cuda::device_t device);
+    handle_t create(::cuda::device_t device);
 
-    handle_t wrap(id_t id, cuda::device_t device, bool take_ownership);
+    handle_t wrap(id_t id, ::cuda::device_t device, bool take_ownership);
 }
 
 }

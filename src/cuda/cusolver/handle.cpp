@@ -21,6 +21,9 @@ namespace detail
         throw_if_error(cusolverDnDestroy(id));
     }
 
+    void set_stream(id_t handle, cuda::stream::id_t stream) {
+            throw_if_error(cusolverDnSetStream(handle, stream));
+    }
 
 } // namespace detail
 
@@ -41,6 +44,10 @@ handle_t::handle_t(cuda::device::id_t device_id):
     device_id_(device_id)
 {}
 
+
+void handle_t::set_stream(const cuda::stream_t & stream) {
+    handle::detail::set_stream(id(), stream.id());
+}
 
 namespace handle
 {
