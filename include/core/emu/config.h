@@ -3,11 +3,11 @@
 
 #ifdef __CUDACC__
 
-#define EMU_CUDA 1
+#define EMU_CUDACC 1
 
 #else
 
-#define EMU_CUDA 0
+#define EMU_CUDACC 0
 
 #endif
 

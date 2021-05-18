@@ -19,7 +19,15 @@ if (PYBIND11_PYTHON_VERSION)
     message(STATUS "Python version: ${PYBIND11_PYTHON_VERSION}")
 endif()
 
-pybind11_add_module(emuwrap
+pybind11_add_module(emuwrap MODULE
     src/emu_wrap.cpp)
 
-target_link_libraries(emuwrap PRIVATE CONAN_PKG::emu)
+target_include_directories(emuwrap PUBLIC
+    $<INSTALL_INTERFACE:include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+)
+
+
+target_link_libraries(emuwrap PRIVATE
+    CONAN_PKG::emu
+)

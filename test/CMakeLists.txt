@@ -29,6 +29,7 @@ if (emu_build_cuda)
     add_executable(emucudatest
         src/cuda/test.cu
         src/cuda/math_test.cu
+        src/cuda/device_span_test.cu
         src/cuda/iterator/coordinate_test.cu
         src/cuda/iterator/function_test.cu
     )

@@ -73,6 +73,8 @@ class EmuConan(ConanFile):
         cmake.definitions['emu_build_cuda']   = self.options.cuda
         if self.options.cuda:
             cmake.definitions['emu_cuda_sm']  = self.options.cuda_sm
+            # Not now...
+            # cmake.definitions['CMAKE_CUDA_ARCHITECTURES']  = self.options.cuda_sm
 
         cmake.configure(source_folder='.')
         cmake.build()
@@ -100,5 +102,6 @@ class EmuConan(ConanFile):
         self.cpp_info.cxxflags = load(f'{self.package_folder}/data/emucore_flags.txt', f'{self.package_folder}/build/emucore_flags.txt')
 
         if self.options.cuda:
+            self.cpp_info.defines += ['EMU_CUDA=1']
             self.cpp_info.libs += ['emucuda']
             self.cpp_info.cxxflags += load(f'{self.package_folder}/data/emucuda_flags.txt', f'{self.package_folder}/build/emucuda_flags.txt')

@@ -15,26 +15,27 @@ namespace math
 namespace std
 {
 
-    constexpr EMU_HODE float       ceil (float       v ) noexcept{ return ::ceilf ( v ); }
-    constexpr EMU_HODE double      ceil (double      v ) noexcept{ return ::ceil  ( v ); }
-    constexpr EMU_HODE long double ceil (long double v ) noexcept{ return ::ceill ( v ); }
+    constexpr EMU_HODE float       ceil (float       v ) noexcept { return ::ceilf ( v ); }
+    constexpr EMU_HODE double      ceil (double      v ) noexcept { return ::ceil  ( v ); }
+    constexpr EMU_HODE long double ceil (long double v ) noexcept { return ::ceill ( v ); }
 
-    constexpr EMU_HODE float       floor(float       v ) noexcept{ return ::floorf( v ); }
-    constexpr EMU_HODE double      floor(double      v ) noexcept{ return ::floor ( v ); }
-    constexpr EMU_HODE long double floor(long double v ) noexcept{ return ::floorl( v ); }
+    constexpr EMU_HODE float       floor(float       v ) noexcept { return ::floorf( v ); }
+    constexpr EMU_HODE double      floor(double      v ) noexcept { return ::floor ( v ); }
+    constexpr EMU_HODE long double floor(long double v ) noexcept { return ::floorl( v ); }
 
-    constexpr EMU_HODE float       trunc(float       v ) noexcept{ return ::truncf( v ); }
-    constexpr EMU_HODE double      trunc(double      v ) noexcept{ return ::trunc ( v ); }
-    constexpr EMU_HODE long double trunc(long double v ) noexcept{ return ::truncl( v ); }
+    constexpr EMU_HODE float       trunc(float       v ) noexcept { return ::truncf( v ); }
+    constexpr EMU_HODE double      trunc(double      v ) noexcept { return ::trunc ( v ); }
+    constexpr EMU_HODE long double trunc(long double v ) noexcept { return ::truncl( v ); }
 
-    constexpr EMU_HODE float       round(float       v ) noexcept{ return ::roundf( v ); }
-    constexpr EMU_HODE double      round(double      v ) noexcept{ return ::round ( v ); }
-    constexpr EMU_HODE long double round(long double v ) noexcept{ return ::roundl( v ); }
+    constexpr EMU_HODE float       round(float       v ) noexcept { return ::roundf( v ); }
+    constexpr EMU_HODE double      round(double      v ) noexcept { return ::round ( v ); }
+    constexpr EMU_HODE long double round(long double v ) noexcept { return ::roundl( v ); }
 
 } // namespace std
 
 namespace detail
 {
+
     template<typename T1, typename T2>
     using SameTypes      = EnableIf<    Equivalent<T1, T2>::value or      (IsIntegral<T1> and IsIntegral<T2>), T1>;
 

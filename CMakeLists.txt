@@ -35,7 +35,6 @@ add_library(emucore
 target_include_directories(emucore PUBLIC
     $<INSTALL_INTERFACE:include/core>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/core>
-    ${CUDA_INCLUDE_DIRS}
 )
 
 target_compile_features(emucore PUBLIC cxx_std_14)
@@ -51,6 +50,10 @@ target_link_libraries(emucore PUBLIC
     CONAN_PKG::tl-optional
 )
 
+if (emu_build_cuda)
+    target_compile_definitions(emucore PUBLIC EMU_CUDA=1)
+endif()
+
 add_library(emu::core ALIAS emucore)
 set(emu_targets emucore)
 
@@ -64,6 +67,7 @@ if (emu_build_cuda)
 
     # Only rely on CUDA package for `cuda_select_nvcc_arch_flags`
     find_package(CUDA REQUIRED)
+    find_package(CUDAToolkit REQUIRED)
 
     if (NOT emu_cuda_sm)
         set(emu_cuda_sm "Auto")
@@ -81,7 +85,6 @@ if (emu_build_cuda)
     # This way it became unique and avoids difficulties using spaces.
     string(REPLACE "-gencode;" "--generate-code=" ARCH_FLAGS "${ARCH_FLAGS}")
 
-    find_package(CUDAToolkit REQUIRED)
 
     add_library(emucuda
         src/cuda/cublas/handle.cpp

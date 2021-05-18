@@ -10,9 +10,10 @@ namespace emu
 
 namespace cuda
 {
+    using namespace ::cuda;
 
-    using stream_ref_t  =       ::cuda::stream_t &;
-    using stream_cref_t = const ::cuda::stream_t &;
+    using stream_ref_t  =       stream_t &;
+    using stream_cref_t = const stream_t &;
 
 namespace detail
 {

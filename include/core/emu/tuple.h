@@ -8,7 +8,7 @@
 
 #include <tuple>
 
-#if EMU_CUDA
+#if EMU_CUDACC
 #include <thrust/tuple.h>
 #endif
 
@@ -32,7 +32,7 @@ namespace detail
         }
     };
 
-#if EMU_CUDA
+#if EMU_CUDACC
     template<typename... Ts>
     struct MakeBased<::thrust::tuple<Ts...>> {
 
