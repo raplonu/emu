@@ -31,7 +31,8 @@ namespace emu
      * @param group_size
      * @return std::size_t item_per_group_nb
      */
-    EMU_DEVICE inline std::size_t item_per_group_nb(std::size_t item_nb, std::size_t group_size) { return ceil(item_nb, group_size); }
+    EMU_DEVICE inline
+    std::size_t item_per_group_nb(std::size_t item_nb, std::size_t group_size) { return ceil(item_nb, group_size); }
 
     /**
      * @brief Share a resource between a group. Guaranty to minimize the number of resource
@@ -49,7 +50,8 @@ namespace emu
      * @param group_size The number of element in the group
      * @return std::size_t item_per_group_local_nb
      */
-    EMU_DEVICE inline std::size_t item_per_group_local_nb(std::size_t item_nb, std::size_t group_id, std::size_t group_size) {
+    EMU_DEVICE inline
+    std::size_t item_per_group_local_nb(std::size_t item_nb, std::size_t group_id, std::size_t group_size) {
         std::size_t item_pg = item_per_group_nb(item_nb, group_size);
 
         return max(0, min(item_nb, (group_id + 1) * item_pg) - group_id * item_pg);

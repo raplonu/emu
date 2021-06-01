@@ -26,8 +26,7 @@ class EmuConan(ConanFile):
         'ms-gsl/3.0.1',
         'tl-expected/1.0.0',
         'tl-optional/1.0.0',
-        'range-v3/0.11.0@ericniebler/stable',
-        'abseil/20200923.3']
+        'range-v3/0.11.0@ericniebler/stable']
 
     options = {'shared'         : [True, False],
                'fPIC'           : [True, False],
@@ -44,13 +43,16 @@ class EmuConan(ConanFile):
                #    2.0 2.1 3.0 3.2 3.5 3.7 5.0 5.2 5.3 6.0 6.2
                # For more information refer to https://cmake.org/cmake/help/latest/module/FindCUDA.html
                'cuda_sm'        : 'ANY',
-               'test'           : [True, False]}
+               'test'           : [True, False],
+               # Provide or not string utility. Needs abseil.
+               'string_util'         : [True, False]}
 
     default_options = {'shared'           : False,
                        'fPIC'             : True,
                        'cuda'             : True,
                        'cuda_sm'          : '7.0 7.2',
                        'test'             : False,
+                       'string_util'      : False,
                        'boost:header_only': True}
 
     settings = 'os', 'compiler', 'build_type', 'arch'
@@ -62,6 +64,9 @@ class EmuConan(ConanFile):
             self.requires('gtest/1.8.1@bincrafters/stable')
         if self.options.cuda:
             self.requires('cuda-api-wrappers/0.3.3@cosmic/stable')
+        if self.options.string_util:
+            self.requires('abseil/20200923.3')
+
 
     def build(self):
         cmake = CMake(self)
@@ -70,6 +75,9 @@ class EmuConan(ConanFile):
         cmake.definitions['emu_version']      = self.version
         cmake.definitions['emu_export_flags'] = True
         cmake.definitions['emu_build_test']   = self.options.test
+        cmake.definitions['emu_string_util']  = self.options.string_util
+
+        # CUDA
         cmake.definitions['emu_build_cuda']   = self.options.cuda
         if self.options.cuda:
             cmake.definitions['emu_cuda_sm']  = self.options.cuda_sm
@@ -101,7 +109,10 @@ class EmuConan(ConanFile):
         self.cpp_info.libs = ['emucore']
         self.cpp_info.cxxflags = load(f'{self.package_folder}/data/emucore_flags.txt', f'{self.package_folder}/build/emucore_flags.txt')
 
+        if self.options.string_util:
+            self.cpp_info.defines += ['EMU_STRING_UTIL']
+
         if self.options.cuda:
-            self.cpp_info.defines += ['EMU_CUDA=1']
+            self.cpp_info.defines += ['EMU_CUDA']
             self.cpp_info.libs += ['emucuda']
             self.cpp_info.cxxflags += load(f'{self.package_folder}/data/emucuda_flags.txt', f'{self.package_folder}/build/emucuda_flags.txt')

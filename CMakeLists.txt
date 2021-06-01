@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.17)
 
 option(emu_build_cuda   "Build cuda module"     ON)
 option(emu_verbose      "Print emu info"        OFF)
+option(emu_string_util  "emu string utilies"    OFF)
 option(emu_build_test   "Build unit test"       OFF)
 
 message(STATUS "Emu - Configuring")
@@ -44,14 +45,18 @@ target_link_libraries(emucore PUBLIC
     CONAN_PKG::boost
     CONAN_PKG::half
     CONAN_PKG::ms-gsl
-    CONAN_PKG::abseil
     CONAN_PKG::range-v3
     CONAN_PKG::tl-expected
     CONAN_PKG::tl-optional
 )
 
 if (emu_build_cuda)
-    target_compile_definitions(emucore PUBLIC EMU_CUDA=1)
+    target_compile_definitions(emucore PUBLIC EMU_CUDA)
+endif()
+
+if (emu_string_util)
+    target_compile_definitions(emucore PUBLIC EMU_STRING_UTIL)
+    target_link_libraries(emucore PUBLIC CONAN_PKG::abseil)
 endif()
 
 add_library(emu::core ALIAS emucore)

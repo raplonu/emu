@@ -5,7 +5,6 @@ find_package(GTest REQUIRED)
 add_executable(emucoretest
     src/core/test.cpp
     src/core/math_test.cpp
-    src/core/string_test.cpp
     src/core/byte_test.cpp
     src/core/span_test.cpp
     src/core/range_test.cpp
@@ -13,6 +12,11 @@ add_executable(emucoretest
     src/core/optional_test.cpp
     src/core/scoped_test.cpp
 )
+
+# Only test string utilities if enable.
+if (emu_string_util)
+    target_sources(emucore PRIVATE src/core/string_test.cpp)
+endif()
 
 target_link_libraries(emucoretest PRIVATE
     GTest::GTest GTest::Main emucore

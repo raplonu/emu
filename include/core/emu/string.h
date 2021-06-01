@@ -1,6 +1,8 @@
 #ifndef EMU_STRING_H
 #define EMU_STRING_H
 
+#ifdef EMU_STRING_UTIL
+
 #include <emu/macro.h>
 #include <emu/utility.h>
 
@@ -25,5 +27,7 @@ namespace emu
 
 
 } // namespace emu
+
+#endif //EMU_STRING_UTIL
 
 #endif //EMU_STRING_H
