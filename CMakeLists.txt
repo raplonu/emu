@@ -1,9 +1,12 @@
 cmake_minimum_required(VERSION 3.17)
 
-option(emu_build_cuda   "Build cuda module"     ON)
 option(emu_verbose      "Print emu info"        OFF)
 option(emu_string_util  "emu string utilies"    OFF)
+option(emu_build_cuda   "Build cuda module"     ON)
 option(emu_build_test   "Build unit test"       OFF)
+option(emu_export_flags "Export compile flags"  OFF)
+
+message("emu_build_test ${emu_build_test}")
 
 message(STATUS "Emu - Configuring")
 
@@ -13,9 +16,7 @@ if (emu_build_cuda)
     list(APPEND emu_language CUDA)
 endif()
 
-project(emu VERSION ${emu_version} LANGUAGES ${emu_language})
-
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+project(emu VERSION 0.1 LANGUAGES ${emu_language})
 
 message(CHECK_START "Emu - Conan setup")
 
@@ -28,7 +29,6 @@ message(CHECK_PASS "Done")
 #
 # Emu Core.
 #
-
 add_library(emucore
     src/core/fun.cpp
 )
@@ -71,25 +71,7 @@ if (emu_build_cuda)
     message(CHECK_START "Emu - Configuring CUDA support")
 
     # Only rely on CUDA package for `cuda_select_nvcc_arch_flags`
-    find_package(CUDA REQUIRED)
     find_package(CUDAToolkit REQUIRED)
-
-    if (NOT emu_cuda_sm)
-        set(emu_cuda_sm "Auto")
-    endif()
-
-    cuda_select_nvcc_arch_flags(ARCH_FLAGS ${emu_cuda_sm})
-    if (emu_verbose)
-        message(STATUS "Emu - cuda sm : ${ARCH_FLAGS_readable}")
-    endif()
-
-    # target_compile_options remove repeated arguments.
-    # Since `-gencode` appears multiple times,
-    # we replace it by `--generate-code=` and merge it
-    # will the next argument since there are related.
-    # This way it became unique and avoids difficulties using spaces.
-    string(REPLACE "-gencode;" "--generate-code=" ARCH_FLAGS "${ARCH_FLAGS}")
-
 
     add_library(emucuda
         src/cuda/cublas/handle.cpp
@@ -118,7 +100,6 @@ if (emu_build_cuda)
 
     target_compile_options(emucuda PUBLIC
         $<$<COMPILE_LANGUAGE:CUDA>:
-            ${ARCH_FLAGS}
             --extended-lambda
             --expt-relaxed-constexpr
         >)

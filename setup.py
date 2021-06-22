@@ -95,7 +95,7 @@ def build_conan(source_dir, build_dir, ref, channel, args, editable):
     call(f'conan build {source_dir} -bf {build_dir}')
     # Export C++ package into conan cache.
     if editable:
-        call(f'conan editable add {source_dir} {ref}@{channel} -l {source_dir}/layout_gcc')
+        call(f'conan editable add {source_dir} {ref}@{channel} -l {source_dir}/tools/layout_gcc')
     else:
         # Cannot export package if package already exist and is editable. Try delete it everytime.
         call(f'conan editable remove {ref}@{channel}')
@@ -125,7 +125,7 @@ class ConanBuild(build_ext):
         cxx_ref = f'{cxx_name}/{package_version}'
         cxx_args = f'-s build_type={build_mode} {glob_conan_args}'
 
-        call(f'./configure.sh')
+        call(f'./tools/configure.sh')
 
         build_conan(cxx_source_dir, cxx_build_dir, cxx_ref, channel, cxx_args, editable)
 

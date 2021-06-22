@@ -52,5 +52,5 @@ pip install ./emu --install-option=--channel=<custom channel>
 Also, it is possible to pass argument to the conan install command using the following command:
 
 ```bash
-pip install ./emu --install-option=--conan-args=="<conan args>"
+pip install ./emu --install-option=--conan-args="<conan args>"
 ```

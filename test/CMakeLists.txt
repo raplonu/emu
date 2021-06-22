@@ -1,4 +1,4 @@
-    project(emu_test LANGUAGES ${emu_language})
+project(emu_test LANGUAGES ${emu_language})
 
 find_package(GTest REQUIRED)
 
@@ -15,7 +15,7 @@ add_executable(emucoretest
 
 # Only test string utilities if enable.
 if (emu_string_util)
-    target_sources(emucore PRIVATE src/core/string_test.cpp)
+    target_sources(emucoretest PRIVATE src/core/string_test.cpp)
 endif()
 
 target_link_libraries(emucoretest PRIVATE
@@ -25,7 +25,7 @@ target_link_libraries(emucoretest PRIVATE
 target_include_directories(emucoretest PRIVATE include)
 
 add_test(NAME emucoretest
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test
     COMMAND emucoretest
 )
 
@@ -45,7 +45,7 @@ if (emu_build_cuda)
     target_include_directories(emucudatest PRIVATE include)
 
     add_test(NAME emucudatest
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test
         COMMAND emucudatest
     )
 endif()

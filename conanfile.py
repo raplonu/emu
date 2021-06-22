@@ -1,5 +1,5 @@
 import os
-from conans import ConanFile, CMake, tools
+from conans import ConanFile, tools, CMake
 
 def load(*filenames):
     for filename in filenames:
@@ -28,63 +28,69 @@ class EmuConan(ConanFile):
         'tl-optional/1.0.0',
         'range-v3/0.11.0@ericniebler/stable']
 
-    options = {'shared'         : [True, False],
-               'fPIC'           : [True, False],
-               # Build emu_cuda library.
-               'cuda'           : [True, False],
-               # Specify the sm configuration used to build emu_cuda library.
-               # This has no effect if cuda option is set to False.
-               # cuda_sm can be set to
-               # - 'Auto' detects local machine GPU compute arch at runtime.
-               # - 'Common' and 'All' cover common and entire subsets of architectures
-               # ARCH_AND_PTX : NAME | NUM.NUM | NUM.NUM(NUM.NUM) | NUM.NUM+PTX
-               # NAME: Fermi Kepler Maxwell Kepler+Tegra Kepler+Tesla Maxwell+Tegra Pascal
-               # NUM: Any number. Only those pairs are currently accepted by NVCC though:
-               #    2.0 2.1 3.0 3.2 3.5 3.7 5.0 5.2 5.3 6.0 6.2
-               # For more information refer to https://cmake.org/cmake/help/latest/module/FindCUDA.html
-               'cuda_sm'        : 'ANY',
-               'test'           : [True, False],
-               # Provide or not string utility. Needs abseil.
-               'string_util'         : [True, False]}
+    # Cannot be optional (link to the use of cuda or not).
+    python_requires = 'cuda_arch/0.1@cosmic/stable'
 
-    default_options = {'shared'           : False,
-                       'fPIC'             : True,
-                       'cuda'             : True,
-                       'cuda_sm'          : '7.0 7.2',
-                       'test'             : False,
-                       'string_util'      : False,
-                       'boost:header_only': True}
+    options = {
+        'shared'     : [True, False],
+        'fPIC'       : [True, False],
+        # Build emu_cuda library.
+        'cuda'       : [True, False],
+        # Specify the sm configuration used to build emu_cuda library.
+        # This has no effect if cuda option is set to False.
+        # cuda_sm can be set to
+        # - 'Auto' detects local machine GPU compute arch at runtime.
+        # NUM: Any number. Only those pairs are currently accepted by NVCC though:
+        #    20 21 30 32 35 37 50 52 53 60 62
+        # For more information refer to https://cmake.org/cmake/help/latest/variable/CMAKE_CUDA_ARCHITECTURES.html
+        'cuda_sm'    : 'ANY',
+        'test'       : [True, False],
+        # Provide or not string utility. Needs abseil.
+        'string_util': [True, False]}
+
+    default_options = {
+        'shared'           : False,
+        'fPIC'             : True,
+        'cuda'             : True,
+        'cuda_sm'          : 'Auto',
+        'test'             : False,
+        'string_util'      : False,
+        'boost:header_only': True}
 
     settings = 'os', 'compiler', 'build_type', 'arch'
     generators = 'cmake'
     exports_sources = 'CMakeLists.txt', 'cmake*', 'include*', 'src*', 'test*'
 
+    def _cuda_compute_capabilities(self):
+        return self.python_requires["cuda_arch"].module.compute_capabilities()
+
+    def configure(self):
+        if not self.options.cuda:
+            self.options.remove('cuda_sm')
+        elif str(self.options.cuda_sm) == 'Auto':
+            self.options.cuda_sm = self._cuda_compute_capabilities()
+
     def requirements(self):
-        if self.options.test:
-            self.requires('gtest/1.8.1@bincrafters/stable')
         if self.options.cuda:
-            self.requires('cuda-api-wrappers/0.3.3@cosmic/stable')
+            self.requires('cuda-api-wrappers/0.4.0@cosmic/stable')
         if self.options.string_util:
             self.requires('abseil/20200923.3')
-
+        if self.options.test:
+            self.requires('gtest/1.10.0')
 
     def build(self):
         cmake = CMake(self)
+        # cmake = CMakeToolchain(self)
 
         # Ask the project to generate {target}_flags.txt with the C++ & CUDA flags in it if any.
-        cmake.definitions['emu_version']      = self.version
         cmake.definitions['emu_export_flags'] = True
         cmake.definitions['emu_build_test']   = self.options.test
         cmake.definitions['emu_string_util']  = self.options.string_util
-
-        # CUDA
         cmake.definitions['emu_build_cuda']   = self.options.cuda
         if self.options.cuda:
-            cmake.definitions['emu_cuda_sm']  = self.options.cuda_sm
-            # Not now...
-            # cmake.definitions['CMAKE_CUDA_ARCHITECTURES']  = self.options.cuda_sm
+            cmake.definitions['CMAKE_CUDA_ARCHITECTURES'] = self.options.cuda_sm
 
-        cmake.configure(source_folder='.')
+        cmake.configure()
         cmake.build()
 
         # We did not use `self.should_test` since it is enable by default.
@@ -113,6 +119,6 @@ class EmuConan(ConanFile):
             self.cpp_info.defines += ['EMU_STRING_UTIL']
 
         if self.options.cuda:
-            self.cpp_info.defines += ['EMU_CUDA']
             self.cpp_info.libs += ['emucuda']
+            self.cpp_info.defines += ['EMU_CUDA']
             self.cpp_info.cxxflags += load(f'{self.package_folder}/data/emucuda_flags.txt', f'{self.package_folder}/build/emucuda_flags.txt')

@@ -16,7 +16,7 @@ class EmuwrapConan(ConanFile):
 
     build_policy = 'missing'
 
-    requires = ['pybind11/2.6.0']
+    requires = ['pybind11/2.6.2']
 
     options = {'python_version': 'ANY',
                'cxx_ref'       : 'ANY'}
@@ -45,7 +45,7 @@ class EmuwrapConan(ConanFile):
         return cmake
 
     def build(self):
-        # pybind11 adds `-Os` flag that nvcc did not know.
+        # pybind11 adds `-Os` flag that nvcc did not know. Fix : removes pybind11::opt_size
         # Temporary fix until https://github.com/conan-io/conan-center-index/issues/5334 is resolved
         tools.replace_in_file(f'{self.build_folder}/Findpybind11.cmake',
             "set(pybind11_COMPONENTS pybind11::headers pybind11::embed pybind11::module pybind11::python_link_helper pybind11::windows_extras pybind11::lto pybind11::thin_lto pybind11::opt_size pybind11::python2_no_register pybind11::pybind11)",
