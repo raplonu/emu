@@ -13,7 +13,7 @@ namespace cuda
 namespace memory
 {
 
-#if DEVICE_CONTEXT
+#if EMU_DEVICE_CONTEXT
 
     template<typename T>
     EMU_HODE constexpr T read(const T * ptr)
@@ -33,7 +33,7 @@ namespace memory
         *ptr = value;
     }
 
-#else // not DEVICE_CONTEXT
+#else // not EMU_DEVICE_CONTEXT
 
     template<typename T>
     EMU_HODE T read(const T * ptr)
@@ -57,7 +57,7 @@ namespace memory
         emu::cuda::copy(ptr, &value, 1);
     }
 
-#endif // DEVICE_CONTEXT
+#endif // EMU_DEVICE_CONTEXT
 
     template<typename T>
     T read(const T * ptr, stream_cref_t stream)
@@ -75,9 +75,7 @@ namespace memory
 
 } // namespace memory
 
-
 } // namespace cuda
-
 
 } // namespace emu
 

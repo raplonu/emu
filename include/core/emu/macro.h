@@ -34,17 +34,17 @@
 #define EMU_HODE_CONSTEXPR __device__ constexpr
 
 #ifdef __CUDA_ARCH__
-    #define DEVICE_CONTEXT 1
-    #define HOST_CONTEXT   0
+    #define EMU_DEVICE_CONTEXT 1
+    #define EMU_HOST_CONTEXT   0
 #else
-    #define DEVICE_CONTEXT 0
-    #define HOST_CONTEXT   1
+    #define EMU_DEVICE_CONTEXT 0
+    #define EMU_HOST_CONTEXT   1
 #endif
 
 #else
 
-#define DEVICE_CONTEXT     0
-#define HOST_CONTEXT       1
+#define EMU_DEVICE_CONTEXT     0
+#define EMU_HOST_CONTEXT       1
 
 #define EMU_HOST
 #define EMU_HODE

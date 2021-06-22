@@ -31,10 +31,10 @@ constexpr inline bool is_failure(STATUS_T error_code)  { return error_code != st
                                                                                                                          \
 struct EXCEPTION_T : EXCEPTION_BASE_T {                                                                                  \
     EXCEPTION_T(STATUS_T error_code) :                                                                                   \
-        std::EXCEPTION_T(fmt::format(CATEGORY" error : {}", DESCRIBE_FN(error_code))), code_(error_code)                 \
+        EXCEPTION_BASE_T(fmt::format(CATEGORY" error : {}", DESCRIBE_FN(error_code))), code_(error_code)                 \
     {}                                                                                                                   \
     EXCEPTION_T(STATUS_T error_code, const std::string& what_arg) :                                                      \
-        std::EXCEPTION_T(fmt::format(CATEGORY" error : {}; {}", DESCRIBE_FN(error_code), what_arg)), code_(error_code)   \
+        EXCEPTION_BASE_T(fmt::format(CATEGORY" error : {}; {}", DESCRIBE_FN(error_code), what_arg)), code_(error_code)   \
     {}                                                                                                                   \
     STATUS_T code() const { return code_; }                                                                              \
 private:                                                                                                                 \

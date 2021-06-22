@@ -232,7 +232,7 @@ namespace span
     {
         using value_type = RangeValue<Rg>;
         using std::begin; using std::end;
-        return detail::span_t<value_type, Location, Extent>(begin(range), end(range), location);
+        return detail::span_t<value_type, Location, Extent>(begin(range), end(range), EMU_FWD(location));
     }
 
     template<std::size_t Extent = dynamic_extent, typename It>
@@ -246,7 +246,21 @@ namespace span
     constexpr auto create(It begin, It end, Location && location) noexcept
     {
         using value_type = IteratorValue<It>;
-        return detail::span_t<value_type, Location, Extent>(begin, end, location);
+        return detail::span_t<value_type, Location, Extent>(begin, end, EMU_FWD(location));
+    }
+
+    template<std::size_t Extent = dynamic_extent, typename It>
+    constexpr auto create(It begin, std::size_t count) noexcept
+    {
+        using value_type = IteratorValue<It>;
+        return span_t<value_type, Extent>(begin, begin + count);
+    }
+
+    template<std::size_t Extent = dynamic_extent, typename It, typename Location>
+    constexpr auto create(It begin, std::size_t count, Location && location) noexcept
+    {
+        using value_type = IteratorValue<It>;
+        return detail::span_t<value_type, Location, Extent>(begin, begin + count, EMU_FWD(location));
     }
 
 

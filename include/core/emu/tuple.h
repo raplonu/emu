@@ -26,9 +26,9 @@ namespace detail
         template<typename... Types >
         static constexpr EMU_HODE
         auto make( Types&&... args )
-            EMU_NOEXCEPT_EXPR( std::make_tuple(FWD(args)...) )
+            EMU_NOEXCEPT_EXPR( std::make_tuple(EMU_FWD(args)...) )
         {
-            return std::make_tuple(FWD(args)...);
+            return std::make_tuple(EMU_FWD(args)...);
         }
     };
 
@@ -39,9 +39,9 @@ namespace detail
         template<typename... Types >
         static constexpr EMU_HODE
         auto make( Types&&... args )
-            EMU_NOEXCEPT_EXPR( ::thrust::make_tuple(FWD(args)...) )
+            EMU_NOEXCEPT_EXPR( ::thrust::make_tuple(EMU_FWD(args)...) )
         {
-            return ::thrust::make_tuple(FWD(args)...);
+            return ::thrust::make_tuple(EMU_FWD(args)...);
         }
     };
 #endif
@@ -51,9 +51,9 @@ namespace detail
     template<typename Tuple, typename... Types >
     constexpr EMU_HODE
     auto make_tuple_base_on( Types&&... args )
-        EMU_NOEXCEPT_EXPR( detail::MakeBased<RemoveCVRef<Tuple>>::make(FWD(args)...) )
+        EMU_NOEXCEPT_EXPR( detail::MakeBased<RemoveCVRef<Tuple>>::make(EMU_FWD(args)...) )
     {
-        return detail::MakeBased<RemoveCVRef<Tuple>>::make(FWD(args)...);
+        return detail::MakeBased<RemoveCVRef<Tuple>>::make(EMU_FWD(args)...);
     }
 
 namespace detail
@@ -64,7 +64,7 @@ namespace detail
     auto transform_impl_at(Fn && fn, Tuple && tuple, Tuples &&... tuples)
     {
         using std::get;
-        return functional::invoke(FWD(fn), FWD(get<I>(tuple)), FWD(get<I>(tuples))...);
+        return functional::invoke(EMU_FWD(fn), EMU_FWD(get<I>(tuple)), EMU_FWD(get<I>(tuples))...);
     }
 
     template<typename Fn, typename Tuple, std::size_t... I, typename... Tuples>
@@ -81,12 +81,12 @@ namespace detail
     constexpr EMU_HODE
     auto transform(Fn && fn, Tuple && tuple, Tuples &&... tuples)
         EMU_NOEXCEPT_EXPR(
-            detail::transform_impl(std::make_index_sequence<Size<Tuple>::value>{}, FWD(fn), FWD(tuple), FWD(tuples)...)
+            detail::transform_impl(std::make_index_sequence<Size<Tuple>::value>{}, EMU_FWD(fn), EMU_FWD(tuple), EMU_FWD(tuples)...)
         )
     {
         return detail::transform_impl(
             std::make_index_sequence<Size<Tuple>::value>{},
-            FWD(fn), FWD(tuple), fwd(tuples)...
+            EMU_FWD(fn), EMU_FWD(tuple), fwd(tuples)...
         );
     }
 

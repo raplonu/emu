@@ -87,7 +87,7 @@ namespace detail
 
     ADD_CAST_CONVERTER_COMPONENT(float, double);
 
-#if HOST_CONTEXT
+#if EMU_HOST_CONTEXT
 
     ADD_HOST_CONVERTER_COMPONENT(double, float             );
 

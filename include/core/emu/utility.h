@@ -9,7 +9,7 @@
 #include <functional>
 #include <utility>
 
-#define FWD(v) emu::fwd<decltype(v)>(v)
+#define EMU_FWD(v) emu::fwd<decltype(v)>(v)
 
 namespace emu
 {

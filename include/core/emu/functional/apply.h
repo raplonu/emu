@@ -17,7 +17,7 @@ namespace detail
         EMU_HODE constexpr decltype(auto) apply_impl(F&& f, Tuple&& t, std::index_sequence<I...>)
         {
             using std::get;
-            return invoke(FWD(f), get<I>(FWD(t))...);
+            return invoke(EMU_FWD(f), get<I>(EMU_FWD(t))...);
         }
 
 }  // namespace detail
@@ -29,11 +29,11 @@ namespace detail
     EMU_HODE constexpr
     decltype(auto) apply(F&& f, Tuple&& t)
         EMU_NOEXCEPT_EXPR(
-            detail::apply_impl(FWD(f), FWD(t), std::make_index_sequence<Size<Tuple>::value>{})
+            detail::apply_impl(EMU_FWD(f), EMU_FWD(t), std::make_index_sequence<Size<Tuple>::value>{})
         )
     {
         return detail::apply_impl(
-            FWD(f), FWD(t),
+            EMU_FWD(f), EMU_FWD(t),
             std::make_index_sequence<Size<Tuple>::value>{});
     }
 
@@ -51,7 +51,7 @@ namespace detail
         auto operator()(Tuple && t)
             EMU_NOEXCEPT_EXPR(apply(fn, t))
         {
-            return apply(fn, FWD(t));
+            return apply(fn, EMU_FWD(t));
         }
 
 
@@ -60,7 +60,7 @@ namespace detail
         auto operator()(Tuple && t) const
             EMU_NOEXCEPT_EXPR(apply(fn, t))
         {
-            return apply(fn, FWD(t));
+            return apply(fn, EMU_FWD(t));
         }
     };
 
@@ -70,7 +70,7 @@ namespace detail
     template<typename F>
     constexpr EMU_HODE
     auto make_apply(F && fn) noexcept {
-        return apply_t<F>{ FWD(fn) };
+        return apply_t<F>{ EMU_FWD(fn) };
     }
 } // namespace functional
 

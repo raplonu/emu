@@ -2,8 +2,7 @@
 #define EMU_THRUST_EXECUTION_POLICY_CUH
 
 #include <emu/macro.h>
-
-#include <cuda/api_wrappers.hpp>
+#include <emu/cuda.h>
 
 #include <thrust/execution_policy.h>
 

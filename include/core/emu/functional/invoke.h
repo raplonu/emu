@@ -18,9 +18,9 @@ namespace functional
     >
     EMU_HODE constexpr
     decltype(auto) invoke(Fn&& f, Args&&... args)
-        EMU_NOEXCEPT_EXPR( std::mem_fn(f)(FWD(args)...) )
+        EMU_NOEXCEPT_EXPR( std::mem_fn(f)(EMU_FWD(args)...) )
     {
-        return std::mem_fn(f)(FWD(args)...);
+        return std::mem_fn(f)(EMU_FWD(args)...);
     }
 
     template<typename Fn, typename... Args,
@@ -28,9 +28,9 @@ namespace functional
     >
     EMU_HODE constexpr
     decltype(auto) invoke(Fn&& f, Args&&... args)
-        EMU_NOEXCEPT_EXPR( FWD(f)(FWD(args)...) )
+        EMU_NOEXCEPT_EXPR( EMU_FWD(f)(EMU_FWD(args)...) )
     {
-        return FWD(f)(FWD(args)...);
+        return EMU_FWD(f)(EMU_FWD(args)...);
     }
 
 } // namespace functional

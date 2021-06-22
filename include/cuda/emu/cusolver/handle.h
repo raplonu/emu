@@ -3,8 +3,7 @@
 
 #include <emu/cusolver/error.h>
 
-#include <cuda/api_wrappers.hpp>
-
+#include <emu/cuda.h>
 #include <emu/scoped.h>
 #include <emu/device.h>
 

@@ -35,9 +35,9 @@ namespace emu
          */
         template<typename Opt, typename... Args>
         constexpr auto value_or_create(Opt && opt, Args &&... args)
-            EMU_NOEXCEPT_EXPR( (opt) ? FWD(opt).value() : ValueType<Opt>(FWD(args)...) )
+            EMU_NOEXCEPT_EXPR( (opt) ? EMU_FWD(opt).value() : ValueType<Opt>(EMU_FWD(args)...) )
         {
-            return (opt) ? FWD(opt).value() : ValueType<Opt>(FWD(args)...);
+            return (opt) ? EMU_FWD(opt).value() : ValueType<Opt>(EMU_FWD(args)...);
         }
 
         /**
@@ -52,9 +52,9 @@ namespace emu
          */
         template<typename Opt, typename Fn, typename... Args>
         constexpr auto value_or_invoke(Opt && opt, Fn && fn, Args &&... args)
-            EMU_NOEXCEPT_EXPR( (opt) ? FWD(opt).value() : FWD(fn)(FWD(args)...) )
+            EMU_NOEXCEPT_EXPR( (opt) ? EMU_FWD(opt).value() : EMU_FWD(fn)(EMU_FWD(args)...) )
         {
-            return (opt) ? FWD(opt).value() : FWD(fn)(FWD(args)...);
+            return (opt) ? EMU_FWD(opt).value() : EMU_FWD(fn)(EMU_FWD(args)...);
         }
 
         /**
@@ -67,9 +67,9 @@ namespace emu
          */
         template<typename To, typename Opt>
         constexpr auto as(Opt && opt)
-            EMU_NOEXCEPT_EXPR( FWD(opt).map(emu::as<To>) )
+            EMU_NOEXCEPT_EXPR( EMU_FWD(opt).map(emu::as<To>) )
         {
-            return FWD(opt).map(emu::as<To>);
+            return EMU_FWD(opt).map(emu::as<To>);
         }
 
     } // namespace optional

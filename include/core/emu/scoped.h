@@ -23,12 +23,12 @@ namespace emu
 
         template<typename T1, bool = EnableIfNotBase<scoped_t, T1>{}>
         constexpr scoped_t(T1 && value, bool owning = true) noexcept:
-            value(FWD(value)), function(), owning_(owning)
+            value(EMU_FWD(value)), function(), owning_(owning)
         {}
 
         template<typename T1, typename F1, bool = EnableIf<not Equivalent<F1, bool>::value>{}>
         constexpr scoped_t(T1 && value, F1 && function, bool owning = true) noexcept:
-            value(FWD(value)), function(FWD(function)), owning_(owning)
+            value(EMU_FWD(value)), function(EMU_FWD(function)), owning_(owning)
         {}
 
         scoped_t(const scoped_t & oc) = delete;
@@ -80,7 +80,7 @@ namespace emu
 
         template<typename F1, bool = EnableIfNotBase<scoped_t, F1>{}>
         constexpr scoped_t(F1 function, bool owning = true):
-            function(FWD(function)), owning_(owning)
+            function(EMU_FWD(function)), owning_(owning)
         {}
 
         scoped_t(const scoped_t & oc) = delete;
@@ -126,7 +126,7 @@ namespace scoped
     /// Regular T, FunctionObject<U (T)> F where U is not constrained
     template<typename T, typename F>
     constexpr scoped_t<std::decay_t<T>, std::decay_t<F>> create(T&& value, F&& f) {
-        return scoped_t<std::decay_t<T>, std::decay_t<F>>{FWD(value), FWD(f)};
+        return scoped_t<std::decay_t<T>, std::decay_t<F>>{EMU_FWD(value), EMU_FWD(f)};
     }
 
     /// Returns a scoped_t for the given function.
@@ -135,7 +135,7 @@ namespace scoped
     /// FunctionObject<U (T)> F where U is not constrained
     template<typename F>
     constexpr scoped_t<void, std::decay_t<F>> create(F&& f) {
-        return scoped_t<void, std::decay_t<F>>{FWD(f)};
+        return scoped_t<void, std::decay_t<F>>{EMU_FWD(f)};
     }
 
 #define EMU_INVOKE_AT_SCOPE_EXIT(F)                                         \
@@ -143,20 +143,20 @@ namespace scoped
 
     template<typename T, typename F>
     constexpr scoped_t<std::decay_t<T>, std::decay_t<F>> wrap(T&& value, F&& f) {
-        return scoped_t<std::decay_t<T>, std::decay_t<F>>{FWD(value), FWD(f), false};
+        return scoped_t<std::decay_t<T>, std::decay_t<F>>{EMU_FWD(value), EMU_FWD(f), false};
     }
 
     template<typename F>
     constexpr scoped_t<void, std::decay_t<F>> wrap(F&& f) {
-        return scoped_t<void, std::decay_t<F>>{FWD(f), false};
+        return scoped_t<void, std::decay_t<F>>{EMU_FWD(f), false};
     }
 
 
     template<typename T, typename V>
     constexpr auto assign_for_current_scope(T & t, V && v)
-        EMU_NOEXCEPT_EXPR(std::exchange(t, FWD(v)))
+        EMU_NOEXCEPT_EXPR(std::exchange(t, EMU_FWD(v)))
     {
-        auto old = std::exchange(t, FWD(v));
+        auto old = std::exchange(t, EMU_FWD(v));
         return create([&t, old = mv(old)]{ t = mv(old); });
     }
 

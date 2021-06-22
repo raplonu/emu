@@ -146,6 +146,8 @@ namespace detail
     EMU_MATCH_SIZE(std::uint32_t, 4);
     EMU_MATCH_SIZE(std::uint64_t, 8);
 
+#undef EMU_MATCH_SIZE
+
 } // namespace detail
 
 template<typename T>

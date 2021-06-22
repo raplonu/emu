@@ -3,7 +3,7 @@
 
 #include <emu/scoped.h>
 
-#include <cuda/api_wrappers.hpp>
+#include <cuda/runtime_api.hpp>
 
 namespace emu
 {
@@ -40,7 +40,7 @@ namespace detail
 
     template<typename T>
     inline T* allocate(::cuda::device_t device, std::size_t size) {
-        return static_cast<T*>(::cuda::memory::device::allocate(device, size * sizeof(T)));
+        return static_cast<T*>(::cuda::memory::device::allocate(device, size * sizeof(T)).start);
     }
 
 
