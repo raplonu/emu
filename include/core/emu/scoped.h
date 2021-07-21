@@ -22,25 +22,32 @@ namespace emu
         constexpr scoped_t() = default;
 
         template<typename T1, bool = EnableIfNotBase<scoped_t, T1>{}>
-        constexpr scoped_t(T1 && value, bool owning = true) noexcept:
+        constexpr scoped_t(T1 && value, bool owning = true)
+            EMU_NOEXCEPT_EXPR(value_type(EMU_FWD(value)), function_type())
+        :
             value(EMU_FWD(value)), function(), owning_(owning)
         {}
 
         template<typename T1, typename F1, bool = EnableIf<not Equivalent<F1, bool>::value>{}>
-        constexpr scoped_t(T1 && value, F1 && function, bool owning = true) noexcept:
+        constexpr scoped_t(T1 && value, F1 && function, bool owning = true)
+            EMU_NOEXCEPT_EXPR(value_type(EMU_FWD(value)), function_type(EMU_FWD(function)))
+        :
             value(EMU_FWD(value)), function(EMU_FWD(function)), owning_(owning)
         {}
 
         scoped_t(const scoped_t & oc) = delete;
 
-        constexpr scoped_t(scoped_t && oc) noexcept:
+        constexpr scoped_t(scoped_t && oc)
+            EMU_NOEXCEPT_EXPR(value_type(mv(oc.value)), function_type(mv(oc.function))):
             value(mv(oc.value)), function(mv(oc.function)),
             owning_(std::exchange(oc.owning_, false))
         {}
 
         scoped_t& operator=(const scoped_t & oc) = delete;
 
-        scoped_t& operator=(scoped_t && oc) noexcept(noexcept_invoke) {
+        scoped_t& operator=(scoped_t && oc)
+            noexcept(noexcept_invoke and noexcept(std::declval<value_type&>() = mv(oc.value), std::declval<function_type&>() = mv(oc.function)))
+        {
             invoke();
 
             value    = mv(oc.value);
@@ -52,6 +59,30 @@ namespace emu
 
         ~scoped_t() noexcept(noexcept_invoke) {
             invoke();
+        }
+
+        constexpr T& operator*() noexcept {
+            return value;
+        }
+
+        constexpr const T& operator*() const noexcept {
+            return value;
+        }
+
+        constexpr T release()
+            EMU_NOEXCEPT_EXPR(mv(std::declval<value_type&>()))
+        {
+            owning_ = false;
+            return mv(value);
+        }
+
+        template<typename TT>
+        constexpr void reset(TT && new_value, bool owning = true)
+            noexcept(noexcept_invoke and noexcept(std::declval<value_type&>() = EMU_FWD(new_value)))
+        {
+            invoke();
+            value = EMU_FWD(new_value);
+            owning_ = owning;
         }
 
         constexpr bool owning() const noexcept {
@@ -76,23 +107,30 @@ namespace emu
     {
         using function_type = F;
 
+        static constexpr bool noexcept_invoke = EMU_NOEXCEPT_EXPR(std::declval<function_type&>()());
+
         constexpr scoped_t() = default;
 
         template<typename F1, bool = EnableIfNotBase<scoped_t, F1>{}>
-        constexpr scoped_t(F1 function, bool owning = true):
+        constexpr scoped_t(F1 function, bool owning = true)
+            EMU_NOEXCEPT_EXPR(function_type(EMU_FWD(function))):
             function(EMU_FWD(function)), owning_(owning)
         {}
 
         scoped_t(const scoped_t & oc) = delete;
 
-        constexpr scoped_t(scoped_t && oc):
+        constexpr scoped_t(scoped_t && oc)
+            EMU_NOEXCEPT_EXPR(function_type(mv(oc.function)))
+        :
             function(mv(oc.function)),
             owning_(std::exchange(oc.owning_, false))
         {}
 
         scoped_t& operator=(const scoped_t & oc) = delete;
 
-        scoped_t& operator=(scoped_t && oc) {
+        scoped_t& operator=(scoped_t && oc)
+            noexcept(noexcept_invoke and noexcept(std::declval<function_type&>() = mv(oc.function)))
+        {
             invoke();
 
             function = mv(oc.function);
@@ -101,8 +139,23 @@ namespace emu
             return *this;
         };
 
-        ~scoped_t() {
+        ~scoped_t() noexcept(noexcept_invoke) {
             invoke();
+        }
+
+        constexpr void release() noexcept {
+            owning_ = false;
+        }
+
+        constexpr void reset(bool owning = true)
+            noexcept(noexcept_invoke)
+        {
+            invoke();
+            owning_ = owning;
+        }
+
+        constexpr bool owning() const noexcept {
+            return owning_;
         }
 
     private:
@@ -111,12 +164,26 @@ namespace emu
         }
 
     public:
-
         function_type function;
 
     private:
         bool owning_ = true;
     };
+
+namespace detail
+{
+
+    struct deleter_t {
+        template<typename T>
+        void operator()(T* ptr) {
+            delete ptr;
+        }
+    };
+
+} // namespace detail
+
+    template<typename T, typename Deleter = detail::deleter_t>
+    using scoped_ptr_t = scoped_t<T*, Deleter>;
 
 namespace scoped
 {

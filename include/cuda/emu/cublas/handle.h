@@ -13,14 +13,14 @@ namespace emu
 namespace cublas
 {
 
-class handle_t;
+    struct handle_t;
 
 namespace handle
 {
     using id_t = cublasHandle_t;
 
-    namespace detail
-    {
+namespace detail
+{
         id_t create();
 
         void destroy(id_t id);
@@ -40,50 +40,51 @@ namespace handle
         cublasPointerMode_t get_pointer_mode(id_t handle);
 
         void set_pointer_mode(id_t handle, cublasPointerMode_t mode);
-    }
+
+} // namespace detail
 
     using ScopedHandle = emu::scoped_t<const id_t, detail::Destroyer>;
-}
 
-struct handle_t
-{
-    handle_t();
+} // namespace handle
 
-    handle_t(handle::id_t id, ::cuda::device::id_t device_id, bool owning);
+    struct handle_t
+    {
+        handle_t();
 
-    handle_t(::cuda::device::id_t device_id);
+        handle_t(handle::id_t id, ::cuda::device::id_t device_id, bool owning);
 
-    constexpr handle_t(handle_t && o) = default;
-    handle_t(const handle_t &) = delete;
+        handle_t(::cuda::device::id_t device_id);
 
-    handle_t& operator=(handle_t &&) = default;
-    handle_t& operator=(const handle_t &) = delete;
+        constexpr handle_t(handle_t && o) = default;
+        handle_t(const handle_t &) = delete;
 
-    handle::id_t id() const noexcept { return id_.value; }
+        handle_t& operator=(handle_t &&) = default;
+        handle_t& operator=(const handle_t &) = delete;
 
-    void set_stream(const ::cuda::stream_t & stream);
+        handle::id_t id() const noexcept { return id_.value; }
 
-    ::cuda::stream_t stream() const;
+        void set_stream(const ::cuda::stream_t & stream);
 
-    void set_math_mode(cublasMath_t mode);
+        ::cuda::stream_t stream() const;
 
-    cublasMath_t math_mode() const;
+        void set_math_mode(cublasMath_t mode);
 
-    void set_pointer_mode(cublasPointerMode_t mode);
+        cublasMath_t math_mode() const;
 
-    cublasPointerMode_t pointer_mode() const;
+        void set_pointer_mode(cublasPointerMode_t mode);
 
-    handle_t & enable();
+        cublasPointerMode_t pointer_mode() const;
 
-    const handle_t & enable() const;
+        handle_t & enable();
 
-    ~handle_t() = default;
+        const handle_t & enable() const;
 
-private:
-    handle::ScopedHandle id_;
-    ::cuda::device::id_t device_id_;
-};
+        ~handle_t() = default;
 
+    private:
+        handle::ScopedHandle id_;
+        ::cuda::device::id_t device_id_;
+    };
 
 namespace handle
 {
@@ -98,10 +99,11 @@ namespace handle
     handle_t create(::cuda::device_t device);
 
     handle_t wrap(id_t id, ::cuda::device_t device, bool take_ownership);
-}
 
-}
+} // namespace handle
 
-}
+} // namespace cublas
+
+} // namespace emu
 
 #endif //EMU_CUBLAS_HANDLE_H

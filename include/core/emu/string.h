@@ -13,7 +13,7 @@ namespace emu
 } // namespace emu
 
 
-#ifdef EMU_STRING_UTIL
+#if EMU_STRING_UTIL
 
 #include <absl/strings/string_view.h>
 #include <absl/strings/str_split.h>

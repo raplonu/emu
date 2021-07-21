@@ -2,8 +2,9 @@
 #define EMU_WRAP_CAST_SPAN_H
 
 #include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
 #include <emu/span.h>
-#ifdef EMU_CUDA
+#if EMU_CUDA
 #include <emu/device_span.h>
 #endif
 
@@ -69,7 +70,7 @@ namespace cast
 
     };
 
-#ifdef EMU_CUDA
+#if EMU_CUDA
 
 namespace detail
 {
@@ -212,28 +213,18 @@ namespace pybind11
 namespace detail
 {
 
-    template<typename T>
-    void fun() {
-        fmt::print("{}\n", __PRETTY_FUNCTION__);
-    }
-
-    template<typename T>
-    constexpr auto naaame()  noexcept {
-        return _(__PRETTY_FUNCTION__);
-    }
-
     template <typename ElementType, typename Location, std::size_t Extent>
     struct type_caster< emu::detail::span_t<ElementType, Location, Extent> >
     {
         using adaptor     = emu::cast::python_convertion_adaptor<emu::detail::span_t<ElementType, Location, Extent>>;
         using cpp_type    = typename adaptor::cpp_type;
         using python_type = typename adaptor::python_type;
+
         /**
          * This macro establishes the name 'Toto' in
          * function signatures and declares a local variable
          * 'value' of type Toto
          */
-
         PYBIND11_TYPE_CASTER(cpp_type, adaptor::descr);
 
         /**

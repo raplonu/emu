@@ -23,6 +23,18 @@ namespace emu
 
     namespace optional
     {
+        /**
+         * @brief Returns the opt content if exists or will emplace it from the additional arguments provided.
+         *
+         * @param opt - An optional value (e.g. std::optional, tl::optional).
+         * @param args - variadic list of argument that will be forwarded to the constructor.
+         */
+        template<typename Opt, typename... Args>
+        constexpr auto value_or_emplace(Opt && opt, Args &&... args)
+            EMU_NOEXCEPT_EXPR( (opt) ? EMU_FWD(opt).value() : EMU_FWD(opt).emplace(EMU_FWD(args)...) )
+        {
+            return (opt) ? EMU_FWD(opt).value() : EMU_FWD(opt).emplace(EMU_FWD(args)...);
+        }
 
         /**
          * @brief Returns the opt content if exists or will create it from the additional arguments provided.
@@ -55,6 +67,23 @@ namespace emu
             EMU_NOEXCEPT_EXPR( (opt) ? EMU_FWD(opt).value() : EMU_FWD(fn)(EMU_FWD(args)...) )
         {
             return (opt) ? EMU_FWD(opt).value() : EMU_FWD(fn)(EMU_FWD(args)...);
+        }
+
+        /**
+         * @brief Returns the opt content if exists or will emplace it from the invocation of the provided callable.
+         *
+         * This function is an alternative to value_or_emplace
+         * when the user doesn't want to invoke the function if not used.
+         *
+         * @param opt - An optional value (e.g. std::optional, tl::optional).
+         * @param fn - A callable value that will return (e.g. function, function object).
+         * @param args - variadic list of argument that will be forwarded to the function.
+         */
+        template<typename Opt, typename Fn, typename... Args>
+        constexpr auto value_or_invoke_emplace(Opt && opt, Fn && fn, Args &&... args)
+            EMU_NOEXCEPT_EXPR( (opt) ? EMU_FWD(opt).value() : EMU_FWD(fn)(EMU_FWD(args)...) )
+        {
+            return (opt) ? EMU_FWD(opt).value() : EMU_FWD(opt).emplace(EMU_FWD(fn)(EMU_FWD(args)...));
         }
 
         /**

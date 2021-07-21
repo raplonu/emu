@@ -2,6 +2,7 @@
 #define EMU_CUBLAS_TYPE_H
 
 #include <emu/macro.h>
+#include <emu/assert.h>
 
 #include <cublas_v2.h>
 
@@ -61,7 +62,7 @@ namespace cublas
         case Operation::Conjg:
             return CUBLAS_OP_CONJG;
         }
-        EMU_UNREACHABLE
+        EMU_UNREACHABLE;
     }
 
     constexpr inline cublasSideMode_t convert(SideMode sm) noexcept {
@@ -72,7 +73,7 @@ namespace cublas
         case SideMode::Right:
             return CUBLAS_SIDE_RIGHT;
         }
-        EMU_UNREACHABLE
+        EMU_UNREACHABLE;
     }
 
     constexpr inline cublasFillMode_t convert(FillMode fm) noexcept {
@@ -85,7 +86,7 @@ namespace cublas
         case FillMode::Full:
             return CUBLAS_FILL_MODE_FULL;
         }
-        EMU_UNREACHABLE
+        EMU_UNREACHABLE;
     }
 
     constexpr inline cublasDiagType_t convert(DiagonalType dt) noexcept {
@@ -96,13 +97,10 @@ namespace cublas
         case DiagonalType::Unit:
             return CUBLAS_DIAG_UNIT;
         }
-        EMU_UNREACHABLE
+        EMU_UNREACHABLE;
     }
 
-
-
 } // namespace cublas
-
 
 } // namespace emu
 
