@@ -20,13 +20,13 @@ class EmuConan(ConanFile):
     no_copy_source = True
 
     requires = [
-        'fmt/7.1.2',
-        'boost/1.71.0@conan/stable',
+        'fmt/8.0.0',
+        'boost/1.76.0',
         'half/2.1.0@cosmic/stable',
-        'ms-gsl/3.0.1',
+        'ms-gsl/3.1.0',
         'tl-expected/1.0.0',
         'tl-optional/1.0.0',
-        'range-v3/0.11.0@ericniebler/stable']
+        'range-v3/0.11.0']
 
     # Cannot be optional (link to the use of cuda or not).
     python_requires = 'cuda_arch/0.1@cosmic/stable'
@@ -114,11 +114,10 @@ class EmuConan(ConanFile):
     def package_info(self):
         self.cpp_info.libs = ['emucore']
         self.cpp_info.cxxflags = load(f'{self.package_folder}/data/emucore_flags.txt', f'{self.package_folder}/build/emucore_flags.txt')
-
-        if self.options.string_util:
-            self.cpp_info.defines += ['EMU_STRING_UTIL']
+        self.cpp_info.defines += [
+            f'EMU_STRING_UTIL={1 if self.options.string_util else 0}',
+            f'EMU_CUDA={1 if self.options.cuda else 0}']
 
         if self.options.cuda:
             self.cpp_info.libs += ['emucuda']
-            self.cpp_info.defines += ['EMU_CUDA']
             self.cpp_info.cxxflags += load(f'{self.package_folder}/data/emucuda_flags.txt', f'{self.package_folder}/build/emucuda_flags.txt')
