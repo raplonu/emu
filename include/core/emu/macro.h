@@ -1,19 +1,28 @@
 #ifndef EMU_MACRO_H
 #define EMU_MACRO_H
 
-#include <boost/preprocessor/stringize.hpp>
-#include <boost/preprocessor/facilities/empty.hpp>
-
 #include <emu/config.h>
+
+#include <boost/preprocessor/cat.hpp>
 
 #include <type_traits>
 
-/// Specify that a function may throw or not. Do nothing if noexcept is not available.
+/// Specify noinline attribute regardless of compiler.
+/// gcc allow cold path attribute.
+/// See https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#Common-Function-Attributes
+#if EMU_GCC or EMU_CUDACC
+#define EMU_NOINLINE __attribute__((__noinline__,cold))
+#else // compilator is neither gcc nor nvcc.
+#define EMU_NOINLINE BOOST_NOINLINE
+#endif
+
+#define EMU_FORCEINLINE BOOST_FORCEINLINE
+
+/// Specify that a function may throw or not.
 #define EMU_NOEXCEPT(cond) noexcept(cond)
 
 /// Specify that a function may throw if the given expression may throw.
-/// Do nothing if noexcept is not available.
-#define EMU_NOEXCEPT_EXPR(expr) noexcept(noexcept(expr))
+#define EMU_NOEXCEPT_EXPR(...) noexcept(noexcept(__VA_ARGS__))
 
 #if EMU_CUDACC
 
@@ -53,21 +62,9 @@
 
 #endif
 
-#if defined __GNUC__ or defined __CUDACC__
-#define EMU_COLD_PATH __attribute__((noinline,cold))
-
-#else // compilator is neither gcc nor nvcc
-#define EMU_COLD_PATH
-#error
-
-#endif
-
-#define EMU_UNREACHABLE __builtin_unreachable();
-
 #define EMU_COMMA ,
 
-#define EMU_CONCAT(a, b) EMU_CONCAT_INNER(a, b)
-#define EMU_CONCAT_INNER(a, b) a ## b
+#define EMU_CONCAT(a, b) BOOST_PP_CAT(a, b)
 
 #define EMU_UNIQUE_NAME(base) EMU_CONCAT(base, __COUNTER__)
 

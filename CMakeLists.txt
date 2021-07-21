@@ -50,9 +50,8 @@ target_link_libraries(emucore PUBLIC
     CONAN_PKG::tl-optional
 )
 
-if (emu_build_cuda)
-    target_compile_definitions(emucore PUBLIC EMU_CUDA)
-endif()
+# set EMU_CUDA to 0 or 1 depending on emu_build_cuda.
+target_compile_definitions(emucore PUBLIC EMU_CUDA=$<BOOL:${emu_build_cuda}>)
 
 if (emu_string_util)
     target_compile_definitions(emucore PUBLIC EMU_STRING_UTIL)

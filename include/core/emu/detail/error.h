@@ -2,6 +2,7 @@
 #define EMU_DETAIL_ERROR_H
 
 #include <emu/macro.h>
+#include <emu/assert.h>
 
 #include <fmt/core.h>
 
@@ -41,12 +42,12 @@ private:                                                                        
     STATUS_T code_;                                                                                                      \
 };                                                                                                                       \
 inline void throw_if_error(STATUS_T status) noexcept(false) {                                                            \
-	if (is_failure(status))                                                                                              \
-        [&] () EMU_COLD_PATH { throw EXCEPTION_T(status); }();                                                           \
+	if (EMU_UNLIKELY(is_failure(status)))                                                                                \
+        [&] () EMU_NOINLINE { throw EXCEPTION_T(status); }();                                                            \
 }                                                                                                                        \
 inline void throw_if_error(STATUS_T status, std::string message) noexcept(false) {                                       \
-	if (is_failure(status))                                                                                              \
-        [&] () EMU_COLD_PATH { throw EXCEPTION_T(status, message); }();                                                  \
+	if (EMU_UNLIKELY(is_failure(status)))                                                                                \
+        [&] () EMU_NOINLINE { throw EXCEPTION_T(status, message); }();                                                   \
 }
 
 
