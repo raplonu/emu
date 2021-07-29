@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 
 #include <emu/string.h>
-#include <fmt/core.h>
 
 using namespace emu;
 

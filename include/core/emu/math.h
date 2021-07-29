@@ -37,10 +37,10 @@ namespace detail
 {
 
     template<typename T1, typename T2>
-    using SameTypes      = EnableIf<    Equivalent<T1, T2>::value or      (IsIntegral<T1> and IsIntegral<T2>), T1>;
+    using SameTypes      = EnableIf<    Equivalent<T1, T2> or      (IsIntegral<T1> and IsIntegral<T2>), T1>;
 
     template<typename T1, typename T2>
-    using DifferentTypes = EnableIf<not Equivalent<T1, T2>::value and not (IsIntegral<T1> and IsIntegral<T2>), T1>;
+    using DifferentTypes = EnableIf<not Equivalent<T1, T2> and not (IsIntegral<T1> and IsIntegral<T2>), T1>;
 
 } // namespace detail
 

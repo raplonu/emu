@@ -29,12 +29,12 @@ namespace detail
     EMU_HODE constexpr
     decltype(auto) apply(F&& f, Tuple&& t)
         EMU_NOEXCEPT_EXPR(
-            detail::apply_impl(EMU_FWD(f), EMU_FWD(t), std::make_index_sequence<Size<Tuple>::value>{})
+            detail::apply_impl(EMU_FWD(f), EMU_FWD(t), std::make_index_sequence<tuple::Size<Tuple>::value>{})
         )
     {
         return detail::apply_impl(
             EMU_FWD(f), EMU_FWD(t),
-            std::make_index_sequence<Size<Tuple>::value>{});
+            std::make_index_sequence<tuple::Size<Tuple>::value>{});
     }
 
     /**

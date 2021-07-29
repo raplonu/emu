@@ -16,10 +16,10 @@ namespace emu
      * but the user is allowed to specify the value_type of vector using
      * the fist template parameter.
      */
-    template<typename T = AutoTag, typename R>
+    template<typename T = use_default, typename R>
     constexpr auto as_vector(R && range)
     {
-        using value_type = IfNotAutoOr<T, std::remove_cv_t<RangeValue<R>>>;
+        using value_type = NotDefaultOr<T, std::remove_cv_t<RangeValue<R>>>;
         using std::begin; using std::end;
         return std::vector<value_type>(begin(range), end(range));
     }
@@ -31,10 +31,10 @@ namespace emu
      * but the user is allowed to specify the value_type of vector using
      * the fist template parameter.
      */
-    template<typename T = AutoTag, typename R, std::size_t N>
+    template<typename T = use_default, typename R, std::size_t N>
     constexpr auto as_vector(R (&range)[N])
     {
-        using value_type = IfNotAutoOr<T, std::remove_cv_t<R>>;
+        using value_type = NotDefaultOr<T, std::remove_cv_t<R>>;
         using std::begin; using std::end;
         return std::vector<value_type>(begin(range), end(range));
     }

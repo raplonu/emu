@@ -28,7 +28,7 @@ namespace emu
             value(EMU_FWD(value)), function(), owning_(owning)
         {}
 
-        template<typename T1, typename F1, bool = EnableIf<not Equivalent<F1, bool>::value>{}>
+        template<typename T1, typename F1, EnableIf<not Equivalent<F1, bool>> = true>
         constexpr scoped_t(T1 && value, F1 && function, bool owning = true)
             EMU_NOEXCEPT_EXPR(value_type(EMU_FWD(value)), function_type(EMU_FWD(function)))
         :

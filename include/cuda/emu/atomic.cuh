@@ -4,6 +4,8 @@
 #include <emu/macro.cuh>
 #include <emu/math.h>
 
+#include <cstdint>
+
 namespace emu
 {
 
@@ -12,6 +14,24 @@ namespace atomic
 
 namespace detail
 {
+
+    template<std::size_t S>
+    struct matching_word_impl;
+
+#define EMU_MATCH_SIZE(TYPE, SIZE)                               \
+    template<> struct matching_word_impl<SIZE> { using type = TYPE; }
+
+    EMU_MATCH_SIZE(std::uint8_t,  1);
+    EMU_MATCH_SIZE(std::uint16_t, 2);
+    EMU_MATCH_SIZE(std::uint32_t, 4);
+    EMU_MATCH_SIZE(std::uint64_t, 8);
+
+#undef EMU_MATCH_SIZE
+
+    template<typename T>
+    using matching_word = typename matching_word_impl<sizeof(T)>::type;
+
+
     template<typename T, typename Op>
     EMU_DEVICE T atomic_op(T * address, T val, Op op)
     {

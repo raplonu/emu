@@ -3,19 +3,15 @@
 
 #include <emu/macro.h>
 
-#if EMU_CUDACC
-#include <thrust/tuple.h>
-#endif
-
 #include <type_traits>
 #include <iterator>
-#include <tuple>
-#include <cstdint>
 
 namespace emu
 {
 
-    ///  Primary type categories
+    /// Wraps type traits properties since helper variable template only available from C++17.
+
+    /// Primary type categories
     template<typename T> constexpr auto IsVoid                  = std::is_void<T>::value;
     template<typename T> constexpr auto IsNullPointer           = std::is_null_pointer<T>::value;
     template<typename T> constexpr auto IsIntegral              = std::is_integral<T>::value;
@@ -31,7 +27,7 @@ namespace emu
     template<typename T> constexpr auto IsMemberObjectPointer   = std::is_member_object_pointer<T>::value;
     template<typename T> constexpr auto IsMemberFunctionPointer = std::is_member_function_pointer<T>::value;
 
-    ///  Composite type categories
+    /// Composite type categories
     template<typename T> constexpr auto IsFundamental   = std::is_fundamental<T>::value;
     template<typename T> constexpr auto IsArithmetic    = std::is_arithmetic<T>::value;
     template<typename T> constexpr auto IsScalar        = std::is_scalar<T>::value;
@@ -40,12 +36,68 @@ namespace emu
     template<typename T> constexpr auto IsReference     = std::is_reference<T>::value;
     template<typename T> constexpr auto IsMemberPointer = std::is_member_pointer<T>::value;
 
-    ///  Type properties
+    /// Type properties
     template<typename T> constexpr auto IsConst             = std::is_const<T>::value;
     template<typename T> constexpr auto IsVolatile          = std::is_volatile<T>::value;
     template<typename T> constexpr auto IsTrivial           = std::is_trivial<T>::value;
     template<typename T> constexpr auto IsTriviallyCopyable = std::is_trivially_copyable<T>::value;
     template<typename T> constexpr auto IsStandardLayout    = std::is_standard_layout<T>::value;
+
+    /// Type relationships
+    template<typename T1, typename T2>        constexpr auto IsSame        = std::is_same<T1, T2>::value;
+    template<typename Base, typename Derived> constexpr auto IsBaseOf      = std::is_base_of<Base, Derived>::value;
+    template<typename From, typename To>      constexpr auto IsConvertible = std::is_convertible<From, To>::value;
+
+    /// Supported operations
+    template<typename T, typename... Args> constexpr auto IsConstructible          = std::is_constructible<T, Args...>::value;
+    template<typename T, typename... Args> constexpr auto IsTriviallyConstructible = std::is_trivially_constructible<T, Args...>::value;
+    template<typename T, typename... Args> constexpr auto IsNothrowConstructible   = std::is_nothrow_constructible<T, Args...>::value;
+    template<typename T> constexpr auto IsDefaultConstructible                     = std::is_default_constructible<T>::value;
+    template<typename T> constexpr auto IsTriviallyDefaultConstructible            = std::is_trivially_default_constructible<T>::value;
+    template<typename T> constexpr auto IsNothrowDefaultConstructible              = std::is_nothrow_default_constructible<T>::value;
+    template<typename T> constexpr auto IsCopyConstructible                        = std::is_copy_constructible<T>::value;
+    template<typename T> constexpr auto IsTriviallyCopyConstructible               = std::is_trivially_copy_constructible<T>::value;
+    template<typename T> constexpr auto IsNothrowCopyConstructible                 = std::is_nothrow_copy_constructible<T>::value;
+    template<typename T> constexpr auto IsMoveConstructible                        = std::is_move_constructible<T>::value;
+    template<typename T> constexpr auto IsTriviallyMoveConstructible               = std::is_trivially_move_constructible<T>::value;
+    template<typename T> constexpr auto IsNothrowMoveConstructible                 = std::is_nothrow_move_constructible<T>::value;
+    template<typename T, typename U> constexpr auto IsAssignable                   = std::is_assignable<T, U>::value;
+    template<typename T, typename U> constexpr auto IsTriviallyAssignable          = std::is_trivially_assignable<T, U>::value;
+    template<typename T, typename U> constexpr auto IsNothrowAssignable            = std::is_nothrow_assignable<T, U>::value;
+    template<typename T> constexpr auto IsCopyAssignable                           = std::is_copy_assignable<T>::value;
+    template<typename T> constexpr auto IsTriviallyCopyAssignable                  = std::is_trivially_copy_assignable<T>::value;
+    template<typename T> constexpr auto IsNothrowCopyAssignable                    = std::is_nothrow_copy_assignable<T>::value;
+    template<typename T> constexpr auto IsMoveAssignable                           = std::is_move_assignable<T>::value;
+    template<typename T> constexpr auto IsTriviallyMoveAssignable                  = std::is_trivially_move_assignable<T>::value;
+    template<typename T> constexpr auto IsNothrowMoveAssignable                    = std::is_nothrow_move_assignable<T>::value;
+    template<typename T> constexpr auto IsDestructible                             = std::is_destructible<T>::value;
+    template<typename T> constexpr auto IsTriviallyDestructible                    = std::is_trivially_destructible<T>::value;
+    template<typename T> constexpr auto IsNothrowDestructible                      = std::is_nothrow_destructible<T>::value;
+    template<typename T> constexpr auto HasVirtualDestructor                       = std::has_virtual_destructor<T>::value;
+
+    /**
+     * @brief Behave exactly as the std::enable_if_t but default output type as bool.
+     *
+     * Facilitates writing functions with similar domain but with different constraints.
+     *
+     * When testing using type template parameter, a simple approach would be to write this:
+     * `template<typename T, typename = std::enable_if_t<condition_v<T> > >
+     * void fun(T);`
+     * But this approach wont compile with overload functions such as
+     * `template<typename T, typename = std::enable_if_t<other_condition_v<T> > >
+     * void fun(T);`
+     *
+     * Example: Two different functions, one taking integral, other floating point.
+     * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     * template<typename T, emu::EnableIf<emu::IsIntegral<T>> = true>
+     * void fun(T);
+     *
+     * template<typename T, emu::EnableIf<emu::IsFloatingPoint<T>> = true>
+     * void fun(T);
+     * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
+    template<bool B, typename T = bool>
+    using EnableIf = std::enable_if_t<B, T>;
 
 namespace detail
 {
@@ -55,6 +107,8 @@ namespace detail
 
 } // namespace detail
 
+    /// Behave exactly as the std::type_identity_t of C++20.
+    /// See also <a href="https://en.cppreference.com/w/cpp/language/template_argument_deduction#Non-deduced_contexts">non-deduced contexts</a>
     template<typename T>
     using Identity = typename detail::IdentityImpl<T>::type;
 
@@ -63,13 +117,10 @@ namespace detail
     template<typename T, typename Other>
     using NotDefaultOr = std::conditional_t<std::is_same<T, use_default>::value, Other, T>;
 
-    template<bool B, typename T = bool>
-    using EnableIf = std::enable_if_t<B, T>;
-
     template<typename T1, typename T2>
-    using Equivalent = std::is_same<std::decay_t<T1>, std::decay_t<T2>>;
+    constexpr auto Equivalent = IsSame<std::decay_t<T1>, std::decay_t<T2>>;
 
-    // Behave exactly as the  std::remove_cvref_t of C++20.
+    // Behave exactly as the std::remove_cvref_t of C++20.
     template< class T >
     using RemoveCVRef = typename std::remove_cv_t<std::remove_reference_t<T>>;
 
@@ -78,7 +129,7 @@ namespace detail
     template<typename T>
     using DifferenceType = typename RemoveCVRef<T>::difference_type;
     template<typename T>
-    using Category       = typename RemoveCVRef<T>::category;
+    using Category       = typename RemoveCVRef<T>::iterator_category;
 
     template<typename It>
     using IteratorValue      = ValueType<std::iterator_traits<RemoveCVRef<It>>>;
@@ -90,6 +141,7 @@ namespace detail
 // use a specific namespace name in order to avoid namespace polution with `using std::begin;`
 namespace detail_begin
 {
+
     using std::begin;
     template<typename Rg>
     using IteratorTypeImpl = decltype(begin(std::declval<Rg>()));
@@ -106,53 +158,18 @@ namespace detail_begin
     template<typename Rg>
     using RangeCategory   = IteratorCategory<IteratorType<RemoveCVRef<Rg>>>;
 
-    struct AutoTag{};
+    EMU_GENERATE_TRAITS_HAS(HasData, T, std::declval<T&>().data());
+    EMU_GENERATE_TRAITS_HAS(HasSize, T, std::declval<T&>().size());
 
-    template<typename T>
-    using IsAutoTag = std::is_same<AutoTag, std::remove_cv_t<T>>;
+    template<typename Container>
+    constexpr auto IsContainer = HasData<Container> and HasSize<Container> and IsSame<RangeCategory<Container>, std::random_access_iterator_tag>;
 
-    template<typename T, typename U>
-    using IfNotAutoOr = std::conditional_t<IsAutoTag<T>::value, U, T>;
+    template<typename Location>
+    struct is_location : std::false_type {};
 
-namespace detail
-{
-    template<typename T>
-    struct SizeImpl {
-        static constexpr std::size_t value = std::tuple_size<T>::value;
-    };
+    template<typename Location>
+    constexpr auto IsLocation = is_location<Location>::value;
 
-#if EMU_CUDACC
-    template<typename... Ts>
-    struct SizeImpl<::thrust::tuple<Ts...>> {
-        static constexpr std::size_t value = ::thrust::tuple_size<::thrust::tuple<Ts...>>::value;
-    };
-#endif
-} // namespace detail
-
-    template<typename T>
-    using Size = detail::SizeImpl<RemoveCVRef<T>>;
-
-
-namespace detail
-{
-    template<std::size_t S>
-    struct matching_word;
-
-#define EMU_MATCH_SIZE(TYPE, SIZE)                               \
-    template<> struct matching_word<SIZE> { using type = TYPE; }
-
-    EMU_MATCH_SIZE(std::uint8_t,  1);
-    EMU_MATCH_SIZE(std::uint16_t, 2);
-    EMU_MATCH_SIZE(std::uint32_t, 4);
-    EMU_MATCH_SIZE(std::uint64_t, 8);
-
-#undef EMU_MATCH_SIZE
-
-} // namespace detail
-
-template<typename T>
-using matching_word = typename detail::matching_word<sizeof(T)>::type;
-
-}
+} // namespace emu
 
 #endif //EMU_TYPE_TRAITS_H

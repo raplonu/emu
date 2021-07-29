@@ -20,6 +20,26 @@ namespace tuple
 
 namespace detail
 {
+
+    template<typename T>
+    struct SizeImpl {
+        static constexpr std::size_t value = std::tuple_size<T>::value;
+    };
+
+#if EMU_CUDACC
+    template<typename... Ts>
+    struct SizeImpl<::thrust::tuple<Ts...>> {
+        static constexpr std::size_t value = ::thrust::tuple_size<::thrust::tuple<Ts...>>::value;
+    };
+#endif
+
+} // namespace detail
+
+    template<typename T>
+    using Size = detail::SizeImpl<RemoveCVRef<T>>;
+
+namespace detail
+{
     template<typename T>
     struct MakeBased {
 
