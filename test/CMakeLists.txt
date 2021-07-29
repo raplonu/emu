@@ -7,6 +7,7 @@ add_executable(emucoretest
     src/core/math_test.cpp
     src/core/byte_test.cpp
     src/core/span_test.cpp
+    src/core/mdspan_test.cpp
     src/core/range_test.cpp
     src/core/expected_test.cpp
     src/core/optional_test.cpp
@@ -34,6 +35,7 @@ if (emu_build_cuda)
         src/cuda/test.cu
         src/cuda/math_test.cu
         src/cuda/device_span_test.cu
+        src/cuda/device_mdspan_test.cu
         src/cuda/iterator/coordinate_test.cu
         src/cuda/iterator/function_test.cu
     )

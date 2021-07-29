@@ -1019,14 +1019,14 @@ TEST(span_test, from_array_constructor)
      {
          const emu::span_t<const int> s = a;
          EXPECT_TRUE(s.size() == 4);
-         const emu::span_t<const byte> bs = as_bytes(s);
+         const emu::span_t<const byte> bs = emu::span::as<const emu::byte>(s);
          EXPECT_TRUE(static_cast<const void*>(bs.data()) == static_cast<const void*>(s.data()));
          EXPECT_TRUE(bs.size() == s.size_bytes());
      }
 
      {
          emu::span_t<int> s;
-         const auto bs = as_bytes(s);
+         const auto bs = emu::span::as<const emu::byte>(s);
          EXPECT_TRUE(bs.size() == s.size());
          EXPECT_TRUE(bs.size() == 0);
          EXPECT_TRUE(bs.size_bytes() == 0);
@@ -1036,7 +1036,7 @@ TEST(span_test, from_array_constructor)
 
      {
          emu::span_t<int> s = a;
-         const auto bs = as_bytes(s);
+         const auto bs = emu::span::as<const emu::byte>(s);
          EXPECT_TRUE(static_cast<const void*>(bs.data()) == static_cast<const void*>(s.data()));
          EXPECT_TRUE(bs.size() == s.size_bytes());
      }
@@ -1057,7 +1057,7 @@ TEST(span_test, from_array_constructor)
          // you should not be able to get writeable bytes for const objects
          emu::span_t<const int> s = a;
          EXPECT_TRUE(s.size() == 4);
-         emu::span_t<const byte> bs = as_writable_bytes(s);
+         emu::span_t<const byte> bs = emu::span::as<emu::byte>(s);
          EXPECT_TRUE(static_cast<void*>(bs.data()) == static_cast<void*>(s.data()));
          EXPECT_TRUE(bs.size() == s.size_bytes());
  #endif
@@ -1065,7 +1065,7 @@ TEST(span_test, from_array_constructor)
 
      {
          emu::span_t<int> s;
-         const auto bs = as_writable_bytes(s);
+         const auto bs = emu::span::as<emu::byte>(s);
          EXPECT_TRUE(bs.size() == s.size());
          EXPECT_TRUE(bs.size() == 0);
          EXPECT_TRUE(bs.size_bytes() == 0);
@@ -1075,7 +1075,7 @@ TEST(span_test, from_array_constructor)
 
      {
          emu::span_t<int> s = a;
-         const auto bs = as_writable_bytes(s);
+         const auto bs = emu::span::as<emu::byte>(s);
          EXPECT_TRUE(static_cast<void*>(bs.data()) == static_cast<void*>(s.data()));
          EXPECT_TRUE(bs.size() == s.size_bytes());
      }

@@ -2,14 +2,33 @@
 #define EMU_SPAN_H
 
 #include <emu/type_traits.h>
+#include <emu/utility.h>
 #include <emu/byte.h>
 #include <emu/misc/location.h>
 
 #include <gsl/span>
 
-
 namespace emu
 {
+
+namespace span
+{
+    template<
+        typename ElementType, std::size_t Extent, typename Location,
+        EnableIf<IsLocation<Location>> = true
+    >
+    constexpr auto create(gsl::span<ElementType, Extent> s, Location location);
+
+namespace detail
+{
+    template<typename Rg>
+    constexpr auto HasPointerIterator = IsSame<RangeValue<Rg>*, IteratorType<Rg>>;
+
+    template<typename It>
+    constexpr auto IsPointerIterator = IsSame<IteratorValue<It>*, It>;
+
+} // namespace detail
+
     /**
      * @brief std::dynamic_extent is a constant of type std::size_t that is used to differentiate std::span of static and dynamic extent.
      *
@@ -18,14 +37,15 @@ namespace emu
     //TODO: replace gsl::dynamic_extent by std::dynamic_extent when c++20.
     using gsl::dynamic_extent;
 
-    //TODO: replace gsl::as_bytes by std::as_bytes when c++20.
-    using gsl::as_bytes;
 
-    //TODO: replace gsl::as_writable_bytes by std::as_writable_bytes when c++20.
-    using gsl::as_writable_bytes;
 
 namespace detail
 {
+    template<std::size_t From, std::size_t To>
+    constexpr auto IsAllowedExtentConversion = gsl::details::is_allowed_extent_conversion<From, To>::value;
+
+    template <typename From, typename To>
+    constexpr auto IsAllowedElementTypeConversion = gsl::details::is_allowed_element_type_conversion<From, To>::value;
 
     template<typename ElementType, typename Location, std::size_t Extent = dynamic_extent>
     struct span_t : gsl::span<ElementType, Extent>
@@ -43,163 +63,184 @@ namespace detail
         using iterator                   = typename base_t::iterator;
         using reverse_iterator           = typename base_t::reverse_iterator;
 
-        static constexpr size_type extent = base_t::Extent;
+        using base_t::extent;
 
         using location_type              = Location;
 
+        // constexpr span_t() noexcept = default;
+        constexpr span_t(const span_t&) noexcept = default;
+        constexpr span_t(span_t&&) noexcept = default;
 
-        // [span.cons], span constructors, copy, assignment, and destructor
-        template <bool Dependent = false,
+        template< bool Dependent = false,
                 // "Dependent" is needed to make "std::enable_if_t<Dependent || Extent == 0 || Extent
                 // == dynamic_extent>" SFINAE, since "std::enable_if_t<Extent == 0 || Extent ==
                 // dynamic_extent>" is ill-formed when Extent is greater than 0.
-                class = std::enable_if_t<(Dependent ||
-                                            gsl::details::is_allowed_extent_conversion<0, Extent>::value)>>
+                EnableIf<(Dependent || IsAllowedExtentConversion<0, Extent>)> = true
+        >
         constexpr span_t() noexcept:
-            base_t(), location()
+            base_t(), location_()
         {}
 
-        // [span.cons], span constructors, copy, assignment, and destructor
-        template <bool Dependent = false,
-                // "Dependent" is needed to make "std::enable_if_t<Dependent || Extent == 0 || Extent
-                // == dynamic_extent>" SFINAE, since "std::enable_if_t<Extent == 0 || Extent ==
-                // dynamic_extent>" is ill-formed when Extent is greater than 0.
-                class = std::enable_if_t<(Dependent ||
-                                            gsl::details::is_allowed_extent_conversion<0, Extent>::value)>>
-        constexpr span_t(location_type location ) noexcept:
-            base_t(), location(location)
+        constexpr span_t(pointer ptr, size_type count, location_type location = {}) noexcept:
+            base_t(ptr, count), location_(location)
         {}
 
-        constexpr span_t(pointer ptr, size_type count) noexcept:
-            base_t(ptr, count), location()
+        constexpr span_t(pointer firstElem, pointer lastElem, location_type location = {}) noexcept:
+            base_t(firstElem, lastElem), location_(location)
         {}
 
-        constexpr span_t(pointer ptr, size_type count, location_type location) noexcept:
-            base_t(ptr, count), location(location)
+        template< std::size_t N, EnableIf<IsAllowedExtentConversion<N, Extent>> = true>
+        constexpr span_t(element_type (&arr)[N], location_type location = {}) noexcept:
+            base_t(arr), location_(location)
         {}
 
-        constexpr span_t(pointer firstElem, pointer lastElem) noexcept:
-            base_t(firstElem, lastElem), location()
-        {}
-
-        constexpr span_t(pointer firstElem, pointer lastElem, location_type location) noexcept:
-            base_t(firstElem, lastElem), location(location)
-        {}
-
-        template <std::size_t N,
-                std::enable_if_t<gsl::details::is_allowed_extent_conversion<N, Extent>::value, int> = 0>
-        constexpr span_t(element_type (&arr)[N]) noexcept:
-        base_t(arr), location()
-        {}
-
-        template <std::size_t N,
-                std::enable_if_t<gsl::details::is_allowed_extent_conversion<N, Extent>::value, int> = 0>
-        constexpr span_t(element_type (&arr)[N], location_type location) noexcept:
-        base_t(arr), location(location)
-        {}
-
-        template <
+        template<
             class T, std::size_t N,
-            std::enable_if_t<(gsl::details::is_allowed_extent_conversion<N, Extent>::value &&
-                            gsl::details::is_allowed_element_type_conversion<T, element_type>::value),
-                            int> = 0>
+            EnableIf<IsAllowedExtentConversion<N, Extent> and IsAllowedElementTypeConversion<T, element_type>> = true
+        >
         constexpr span_t(std::array<T, N>& arr, location_type location = {}) noexcept:
-            base_t(arr), location(location)
+            base_t(arr), location_(location)
         {}
 
-        template <class T, std::size_t N,
-                std::enable_if_t<
-                    (gsl::details::is_allowed_extent_conversion<N, Extent>::value &&
-                    gsl::details::is_allowed_element_type_conversion<const T, element_type>::value),
-                    int> = 0>
-        constexpr span_t(const std::array<T, N>& arr) noexcept:
-            base_t(arr), location()
-        {}
-
-        template <class T, std::size_t N,
-                std::enable_if_t<
-                    (gsl::details::is_allowed_extent_conversion<N, Extent>::value &&
-                    gsl::details::is_allowed_element_type_conversion<const T, element_type>::value),
-                    int> = 0>
-        constexpr span_t(const std::array<T, N>& arr, location_type location) noexcept:
-            base_t(arr), location(location)
+        template<
+            class T, std::size_t N,
+            EnableIf<IsAllowedExtentConversion<N, Extent> and IsAllowedElementTypeConversion<const T, element_type>> = true
+        >
+        constexpr span_t(const std::array<T, N>& arr, location_type location = {}) noexcept:
+            base_t(arr), location_(location)
         {}
 
         // NB: the SFINAE here uses .data() as an incomplete/imperfect proxy for the requirement
         // on Container to be a contiguous sequence container.
         template <class Container,
-                class = std::enable_if_t<
+                EnableIf<
                     !gsl::details::is_span<Container>::value && !gsl::details::is_std_array<Container>::value &&
                     std::is_pointer<decltype(std::declval<Container&>().data())>::value &&
                     std::is_convertible<
                         std::remove_pointer_t<decltype(std::declval<Container&>().data())> (*)[],
-                        element_type (*)[]>::value>>
+                        element_type (*)[]>::value
+                > = true
+        >
         constexpr span_t(Container& cont) noexcept:
-            base_t(cont), location()
+            base_t(cont), location_()
         {}
 
         // NB: the SFINAE here uses .data() as an incomplete/imperfect proxy for the requirement
         // on Container to be a contiguous sequence container.
         template <class Container,
-                class = std::enable_if_t<
+                EnableIf<
                     !gsl::details::is_span<Container>::value && !gsl::details::is_std_array<Container>::value &&
                     std::is_pointer<decltype(std::declval<Container&>().data())>::value &&
                     std::is_convertible<
                         std::remove_pointer_t<decltype(std::declval<Container&>().data())> (*)[],
-                        element_type (*)[]>::value>>
+                        element_type (*)[]>::value
+                > = true
+        >
         constexpr span_t(Container& cont, location_type location) noexcept:
-            base_t(cont), location(location)
+            base_t(cont), location_(location)
         {}
 
         template <class Container,
-                class = std::enable_if_t<
+                EnableIf<
                     std::is_const<element_type>::value && !gsl::details::is_span<Container>::value &&
                     !gsl::details::is_std_array<Container>::value &&
                     std::is_pointer<decltype(std::declval<const Container&>().data())>::value &&
                     std::is_convertible<std::remove_pointer_t<
                                             decltype(std::declval<const Container&>().data())> (*)[],
-                                        element_type (*)[]>::value>>
-        constexpr span_t(const Container& cont) noexcept:
-            base_t(cont), location()
+                                        element_type (*)[]>::value
+                > = true
+        >
+        constexpr span_t(const Container& cont, location_type location = {}) noexcept:
+            base_t(cont), location_(location)
         {}
-
-        template <class Container,
-                class = std::enable_if_t<
-                    std::is_const<element_type>::value && !gsl::details::is_span<Container>::value &&
-                    !gsl::details::is_std_array<Container>::value &&
-                    std::is_pointer<decltype(std::declval<const Container&>().data())>::value &&
-                    std::is_convertible<std::remove_pointer_t<
-                                            decltype(std::declval<const Container&>().data())> (*)[],
-                                        element_type (*)[]>::value>>
-        constexpr span_t(const Container& cont, location_type location) noexcept:
-            base_t(cont), location(location)
-        {}
-
-        constexpr span_t(const span_t& other) noexcept = default;
 
         template <
             class OtherElementType, std::size_t OtherExtent,
-            class = std::enable_if_t<
-                gsl::details::is_allowed_extent_conversion<OtherExtent, Extent>::value &&
-                gsl::details::is_allowed_element_type_conversion<OtherElementType, element_type>::value>>
+            EnableIf<
+                IsAllowedExtentConversion<OtherExtent, extent> &&
+                IsAllowedElementTypeConversion<OtherElementType, element_type> &&
+                std::is_same<location_type, location::host_t>::value
+            > = true
+        >
         constexpr span_t(const span_t<OtherElementType, location_type, OtherExtent>& other) noexcept:
-            base_t(other), location(other.location)
+            base_t(other), location_(other.location())
         {}
 
         template <
             class OtherElementType, std::size_t OtherExtent,
-            class = std::enable_if_t<
-                gsl::details::is_allowed_extent_conversion<OtherExtent, Extent>::value &&
-                gsl::details::is_allowed_element_type_conversion<OtherElementType, element_type>::value &&
-                std::is_same<location_type, location::host_t>::value>>
-        constexpr span_t(const gsl::span<OtherElementType, OtherExtent>& other) noexcept:
-            base_t(other), location()
+            EnableIf<
+                IsAllowedExtentConversion<OtherExtent, extent> &&
+                IsAllowedElementTypeConversion<OtherElementType, element_type>
+            > = true
+        >
+        constexpr span_t(const gsl::span<OtherElementType, OtherExtent>& other, location_type location = {}) noexcept:
+            base_t(other), location_(location)
         {}
 
-        location_type location;
+        constexpr span_t& operator=(const span_t&) noexcept = default;
+        constexpr span_t& operator=(span_t&&) noexcept = default;
+
+        template <std::size_t Count>
+        constexpr auto first() const noexcept {
+            return as_span_t(base_t::template first<Count>());
+        }
+
+        template <std::size_t Count>
+        constexpr auto last() const noexcept {
+            return as_span_t(base_t::template last<Count>());
+        }
+
+        constexpr auto first(size_type count) const noexcept {
+            return as_span_t(base_t::first(count));
+        }
+
+        constexpr auto last(size_type count) const noexcept {
+            return as_span_t(base_t::last(count));
+        }
+
+        template< std::size_t Offset, std::size_t Count = dynamic_extent >
+        constexpr auto subspan() const noexcept {
+            return as_span_t(base_t::template subspan<Offset, Count>());
+        }
+
+        constexpr auto subspan( size_type offset, size_type count = dynamic_extent ) const noexcept {
+            return as_span_t(base_t::subspan(offset, count));
+        }
+
+        location_type location() const noexcept {
+            return location_;
+        }
+
+    private:
+        location_type location_;
+
+        template<typename OtherElementType, std::size_t OtherExtent>
+        constexpr auto as_span_t(gsl::span<OtherElementType, OtherExtent> span) const noexcept {
+            return span_t<OtherElementType, location_type, OtherExtent>(span, location());
+        }
     };
+
 } // namespace detail
 
+} // namespace span
+
+} // namespace emu
+
+namespace gsl
+{
+
+namespace details
+{
+
+    template <class ElementType, typename Location, std::size_t Extent>
+    struct is_span_oracle<emu::span::detail::span_t<ElementType, Location, Extent>> : std::true_type {};
+
+} // namespace details
+
+} // namespace gsl
+
+namespace emu
+{
 
     /**
      * @brief The class template span describes an object that can refer to a contiguous sequence of objects
@@ -212,14 +253,16 @@ namespace detail
      * @note Use span from gsl library since it is the closest implementation of c++20 std::span.
      */
     //TODO: replace gsl::span by std::span when c++20.
-    template<typename ElementType, std::size_t Extent = dynamic_extent>
-    using span_t = detail::span_t<ElementType, location::host_t, Extent>;
-
-
+    template<typename ElementType, std::size_t Extent = span::dynamic_extent>
+    using span_t = span::detail::span_t<ElementType, location::host_t, Extent>;
 
 namespace span
 {
-    template<std::size_t Extent = dynamic_extent, typename Rg>
+
+    template<
+        std::size_t Extent = dynamic_extent, typename Rg,
+        EnableIf<detail::HasPointerIterator<Rg>> = true
+    >
     constexpr auto create(Rg && range) noexcept
     {
         using value_type = RangeValue<Rg>;
@@ -227,7 +270,11 @@ namespace span
         return span_t<value_type, Extent>(begin(range), end(range));
     }
 
-    template<std::size_t Extent = dynamic_extent, typename Rg, typename Location>
+    template<
+        std::size_t Extent = dynamic_extent, typename Rg, typename Location,
+        // EnableIf<not IsPointer<std::decay_t<Rg>>> = true,
+        EnableIf<detail::HasPointerIterator<Rg> and IsLocation<Location>> = true
+    >
     constexpr auto create(Rg && range, Location && location) noexcept
     {
         using value_type = RangeValue<Rg>;
@@ -235,34 +282,98 @@ namespace span
         return detail::span_t<value_type, Location, Extent>(begin(range), end(range), EMU_FWD(location));
     }
 
-    template<std::size_t Extent = dynamic_extent, typename It>
+    template<
+        std::size_t Extent = dynamic_extent, typename Container,
+        EnableIf<not detail::HasPointerIterator<Container>> = true,
+        EnableIf<IsContainer<Container>> = true
+    >
+    constexpr auto create(Container && container) noexcept
+    {
+        using value_type = RangeValue<Container>;
+        return span_t<value_type, Extent>(container.data(), container.size());
+    }
+
+    template<
+        std::size_t Extent = dynamic_extent, typename Container, typename Location,
+        EnableIf<not detail::HasPointerIterator<Container>> = true,
+        EnableIf<IsContainer<Container> and IsLocation<Location>> = true
+    >
+    constexpr auto create(Container && container, Location && location) noexcept
+    {
+        using value_type = RangeValue<Container>;
+        return detail::span_t<value_type, Location, Extent>(container.data(), container.size(), EMU_FWD(location));
+    }
+
+    template<
+        std::size_t Extent = dynamic_extent, typename It,
+        EnableIf<detail::IsPointerIterator<It>> = true
+    >
     constexpr auto create(It begin, It end) noexcept
     {
         using value_type = IteratorValue<It>;
         return span_t<value_type, Extent>(begin, end);
     }
 
-    template<std::size_t Extent = dynamic_extent, typename It, typename Location>
+    template<
+        std::size_t Extent = dynamic_extent, typename It, typename Location,
+        EnableIf<detail::IsPointerIterator<It> and IsLocation<Location>> = true
+    >
     constexpr auto create(It begin, It end, Location && location) noexcept
     {
         using value_type = IteratorValue<It>;
         return detail::span_t<value_type, Location, Extent>(begin, end, EMU_FWD(location));
     }
 
-    template<std::size_t Extent = dynamic_extent, typename It>
+    template<
+        std::size_t Extent = dynamic_extent, typename It,
+        EnableIf<detail::IsPointerIterator<It>> = true
+    >
     constexpr auto create(It begin, std::size_t count) noexcept
     {
         using value_type = IteratorValue<It>;
         return span_t<value_type, Extent>(begin, begin + count);
     }
 
-    template<std::size_t Extent = dynamic_extent, typename It, typename Location>
+    template<
+        std::size_t Extent = dynamic_extent, typename It, typename Location,
+        EnableIf<detail::IsPointerIterator<It> and IsLocation<Location>> = true
+    >
     constexpr auto create(It begin, std::size_t count, Location && location) noexcept
     {
         using value_type = IteratorValue<It>;
         return detail::span_t<value_type, Location, Extent>(begin, begin + count, EMU_FWD(location));
     }
 
+namespace detail
+{
+    template <typename To, typename From, std::size_t Extent>
+    struct calculate_byte_size : std::integral_constant<std::size_t, Extent * sizeof(From) / sizeof(To)>
+    {
+        static_assert(((Extent * sizeof(From)) % sizeof(To)) == 0        , "Size is incompatible.");
+        static_assert(Extent < dynamic_extent / sizeof(From) * sizeof(To), "Size is too big."     );
+    };
+
+    template <typename To, typename From>
+    struct calculate_byte_size<To, From, dynamic_extent>
+        : std::integral_constant<std::size_t, dynamic_extent>
+    {};
+} // namespace detail
+
+    template<typename To, typename From, typename Location, std::size_t Extent,
+        // Enable when destination is const or source is not const.
+        EnableIf<IsConst<To> || not IsConst<From> > = true
+    >
+    constexpr auto as(span::detail::span_t<From, Location, Extent> s) noexcept
+    {
+        using type = detail::span_t<To, Location, detail::calculate_byte_size<To, From, Extent>::value>;
+
+        return type{reinterpret_cast<To*>(s.data()), s.size_bytes(), s.location()};
+    }
+
+    template<typename Span, typename... Args>
+    EMU_HODE constexpr auto subspan(Span span, Args&&... args) noexcept {
+        return span.subspan(EMU_FWD(args)...);
+    }
 
 } // namespace span
 

@@ -24,6 +24,7 @@ class EmuConan(ConanFile):
         'boost/1.76.0',
         'half/2.1.0@cosmic/stable',
         'ms-gsl/3.1.0',
+        'mdspan/0.1.1@cosmic/stable',
         'tl-expected/1.0.0',
         'tl-optional/1.0.0',
         'range-v3/0.11.0']

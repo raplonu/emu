@@ -21,6 +21,9 @@ namespace location
 
 } // namespace location
 
+    template<>
+    struct is_location<location::cuda_t> : std::true_type {};
+
 } // namespace emu
 
 #endif //EMU_MISC_DEVICE_LOCATION_H

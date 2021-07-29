@@ -11,6 +11,9 @@ namespace location
 
 } // namespace location
 
+    template<>
+    struct is_location<location::host_t> : std::true_type {};
+
 } // namespace emu
 
 #endif //EMU_MISC_LOCATION_H

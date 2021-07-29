@@ -45,6 +45,7 @@ target_link_libraries(emucore PUBLIC
     CONAN_PKG::boost
     CONAN_PKG::half
     CONAN_PKG::ms-gsl
+    CONAN_PKG::mdspan
     CONAN_PKG::range-v3
     CONAN_PKG::tl-expected
     CONAN_PKG::tl-optional
