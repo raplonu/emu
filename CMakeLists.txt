@@ -1,14 +1,6 @@
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 3.18)
 
-option(emu_verbose      "Print emu info"        OFF)
-option(emu_string_util  "emu string utilies"    OFF)
-option(emu_build_cuda   "Build cuda module"     ON)
-option(emu_build_test   "Build unit test"       OFF)
-option(emu_export_flags "Export compile flags"  OFF)
-
-message("emu_build_test ${emu_build_test}")
-
-message(STATUS "Emu - Configuring")
+message(CHECK_START "Emu - Configuring")
 
 set(emu_language CXX)
 
@@ -18,10 +10,15 @@ endif()
 
 project(emu VERSION 0.1 LANGUAGES ${emu_language})
 
-message(CHECK_START "Emu - Conan setup")
+option(emu_verbose      "Print emu info"        OFF)
+option(emu_string_util  "emu string utilies"    OFF)
+option(emu_build_cuda   "Build cuda module"     ON)
+option(emu_build_python "Build python module"   ON)
+option(emu_build_test   "Build unit test"       OFF)
+option(emu_export_flags "Export compile flags"  OFF)
 
-include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(TARGETS)
+message("emu_build_test ${emu_build_test}")
+message("PYBIND11_PYTHON_VERSION ${PYBIND11_PYTHON_VERSION}")
 
 message(CHECK_PASS "Done")
 
@@ -29,6 +26,16 @@ message(CHECK_PASS "Done")
 #
 # Emu Core.
 #
+
+find_package(Boost REQUIRED)
+find_package(fmt REQUIRED)
+find_package(half REQUIRED)
+find_package(Microsoft.GSL REQUIRED)
+find_package(mdspan REQUIRED)
+find_package(range-v3 REQUIRED)
+find_package(tl-expected REQUIRED)
+find_package(tl-optional REQUIRED)
+
 add_library(emucore
     src/core/fun.cpp
 )
@@ -41,14 +48,14 @@ target_include_directories(emucore PUBLIC
 target_compile_features(emucore PUBLIC cxx_std_14)
 
 target_link_libraries(emucore PUBLIC
-    CONAN_PKG::fmt
-    CONAN_PKG::boost
-    CONAN_PKG::half
-    CONAN_PKG::ms-gsl
-    CONAN_PKG::mdspan
-    CONAN_PKG::range-v3
-    CONAN_PKG::tl-expected
-    CONAN_PKG::tl-optional
+    Boost::Boost
+    fmt::fmt
+    half::half
+    Microsoft.GSL::Microsoft.GSL
+    range-v3::range-v3
+    tl::expected
+    tl::optional
+    std::mdspan
 )
 
 # set EMU_CUDA to 0 or 1 depending on emu_build_cuda.
@@ -70,8 +77,8 @@ set(emu_targets emucore)
 if (emu_build_cuda)
     message(CHECK_START "Emu - Configuring CUDA support")
 
-    # Only rely on CUDA package for `cuda_select_nvcc_arch_flags`
     find_package(CUDAToolkit REQUIRED)
+    find_package(cuda-api-wrappers REQUIRED)
 
     add_library(emucuda
         src/cuda/cublas/handle.cpp
@@ -95,7 +102,7 @@ if (emu_build_cuda)
         emucore
         CUDA::cublas
         CUDA::cudart
-        CONAN_PKG::cuda-api-wrappers
+        cuda-api-wrappers::cuda-api-wrappers
     )
 
     target_compile_options(emucuda PUBLIC
@@ -106,6 +113,41 @@ if (emu_build_cuda)
 
     add_library(emu::cuda ALIAS emucuda)
     list(APPEND emu_targets emucuda)
+
+    message(CHECK_PASS "Done")
+endif()
+
+########################################################################
+#
+# Emu python.
+#
+
+if (emu_build_python)
+    message(CHECK_START "Emu - Configuring python support")
+
+    find_package(pybind11 REQUIRED)
+
+    add_library(emupython
+        src/python/cast/common.cpp
+    )
+
+    target_include_directories(emupython PUBLIC
+        $<INSTALL_INTERFACE:include/python>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/python>)
+
+    target_link_libraries(emupython PUBLIC
+        emucore
+        pybind11::pybind11
+    )
+
+    if (emu_build_cuda)
+        target_link_libraries(emupython PUBLIC emucuda)
+    endif()
+
+    target_compile_features(emucuda PUBLIC cxx_std_14)
+
+    add_library(emu::python ALIAS emupython)
+    list(APPEND emu_targets emupython)
 
     message(CHECK_PASS "Done")
 endif()

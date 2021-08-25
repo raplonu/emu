@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 LOCAL_DIR="$(realpath --relative-to=$(pwd) $( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd ))"
 
 rm -rf                                  \

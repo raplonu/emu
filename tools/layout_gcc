@@ -7,9 +7,10 @@ src
 [includedirs]
 include/core
 include/cuda
+include/python
 
 [libdirs]
-build/lib
+build
 
 [bindirs]
-build/bin
+build

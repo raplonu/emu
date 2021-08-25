@@ -1,33 +1,22 @@
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 3.18)
 
 message(STATUS "EmuWrap - Configuring")
 
-project(emuwrap VERSION ${emuwrap_version} LANGUAGES CXX)
-
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
-message(CHECK_START "Emu - Conan setup")
-
-include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(TARGETS)
-
-message(CHECK_PASS "Done")
+project(emuwrap VERSION 0.1 LANGUAGES CXX)
 
 find_package(pybind11 REQUIRED)
+find_package(emu REQUIRED)
 
 if (PYBIND11_PYTHON_VERSION)
     message(STATUS "Python version: ${PYBIND11_PYTHON_VERSION}")
 endif()
 
 pybind11_add_module(emuwrap MODULE
-    src/emu_wrap.cpp)
-
-target_include_directories(emuwrap PUBLIC
-    $<INSTALL_INTERFACE:include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    src/emu_wrap.cpp
 )
 
+target_include_directories(emuwrap PUBLIC include)
 
-target_link_libraries(emuwrap PRIVATE
-    CONAN_PKG::emu
-)
+target_link_libraries(emuwrap PRIVATE emu::emu)
+
+install(TARGETS emuwrap LIBRARY DESTINATION .)

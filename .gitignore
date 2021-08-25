@@ -1,2 +1,3 @@
 python/*.so
-python/conanfile.txt
+python/*.dlib
+python/*.dll

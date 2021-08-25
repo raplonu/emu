@@ -59,16 +59,16 @@ namespace detail
 
 handle_t::handle_t():
     id_(handle::detail::create(), true),
-    device_id_(cuda::device::current::get().id())
+    device_id_(::cuda::device::current::get().id())
 {}
 
-handle_t::handle_t(handle::id_t id, cuda::device::id_t device_id, bool owning):
+handle_t::handle_t(handle::id_t id, ::cuda::device::id_t device_id, bool owning):
     id_(id, owning),
     device_id_(device_id)
 {}
 
-handle_t::handle_t(cuda::device::id_t device_id):
-    id_(emu::set_and_invoke(cuda::device::get(device_id), handle::detail::create), true),
+handle_t::handle_t(::cuda::device::id_t device_id):
+    id_(emu::set_and_invoke(::cuda::device::get(device_id), handle::detail::create), true),
     device_id_(device_id)
 {}
 

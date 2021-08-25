@@ -22,7 +22,7 @@ namespace span
 namespace detail
 {
     template<typename Rg>
-    constexpr auto HasPointerIterator = IsSame<RangeValue<Rg>*, IteratorType<Rg>>;
+    constexpr auto HasPointerIterator = IsPointer<RangeIteratorType<Rg>>;
 
     template<typename It>
     constexpr auto IsPointerIterator = IsSame<IteratorValue<It>*, It>;
@@ -261,87 +261,84 @@ namespace span
 
     template<
         std::size_t Extent = dynamic_extent, typename Rg,
+        EnableIf<not IsPointer<Rg>> = true,
+        EnableIf<not HasData<Rg>> = true,
         EnableIf<detail::HasPointerIterator<Rg>> = true
     >
     constexpr auto create(Rg && range) noexcept
     {
-        using value_type = RangeValue<Rg>;
+        using value_type = ForwardConst<Rg, RangeValue<Rg>>;
         using std::begin; using std::end;
         return span_t<value_type, Extent>(begin(range), end(range));
     }
 
     template<
         std::size_t Extent = dynamic_extent, typename Rg, typename Location,
-        // EnableIf<not IsPointer<std::decay_t<Rg>>> = true,
+        EnableIf<not IsPointer<Rg>> = true,
+        EnableIf<not HasData<Rg>> = true,
         EnableIf<detail::HasPointerIterator<Rg> and IsLocation<Location>> = true
     >
     constexpr auto create(Rg && range, Location && location) noexcept
     {
-        using value_type = RangeValue<Rg>;
+        using value_type = ForwardConst<Rg, RangeValue<Rg>>;
         using std::begin; using std::end;
         return detail::span_t<value_type, Location, Extent>(begin(range), end(range), EMU_FWD(location));
     }
 
+    template<typename T> struct TOo;
+
     template<
         std::size_t Extent = dynamic_extent, typename Container,
-        EnableIf<not detail::HasPointerIterator<Container>> = true,
+        EnableIf<not IsPointer<Container>> = true,
+        EnableIf<HasData<Container>> = true,
         EnableIf<IsContainer<Container>> = true
     >
     constexpr auto create(Container && container) noexcept
     {
-        using value_type = RangeValue<Container>;
+        using value_type = ForwardConst<Container, ContainerValue<Container>>;
         return span_t<value_type, Extent>(container.data(), container.size());
     }
 
     template<
         std::size_t Extent = dynamic_extent, typename Container, typename Location,
-        EnableIf<not detail::HasPointerIterator<Container>> = true,
+        EnableIf<not IsPointer<Container>> = true,
+        EnableIf<HasData<Container>> = true,
         EnableIf<IsContainer<Container> and IsLocation<Location>> = true
     >
     constexpr auto create(Container && container, Location && location) noexcept
     {
-        using value_type = RangeValue<Container>;
+        using value_type = ForwardConst<Container, ContainerValue<Container>>;
         return detail::span_t<value_type, Location, Extent>(container.data(), container.size(), EMU_FWD(location));
     }
 
-    template<
-        std::size_t Extent = dynamic_extent, typename It,
-        EnableIf<detail::IsPointerIterator<It>> = true
-    >
-    constexpr auto create(It begin, It end) noexcept
+    template<std::size_t Extent = dynamic_extent, typename T>
+    constexpr auto create(T* begin, T* end) noexcept
     {
-        using value_type = IteratorValue<It>;
-        return span_t<value_type, Extent>(begin, end);
+        return span_t<T, Extent>(begin, end);
     }
 
     template<
-        std::size_t Extent = dynamic_extent, typename It, typename Location,
-        EnableIf<detail::IsPointerIterator<It> and IsLocation<Location>> = true
+        std::size_t Extent = dynamic_extent, typename T, typename Location,
+        EnableIf<IsLocation<Location>> = true
     >
-    constexpr auto create(It begin, It end, Location && location) noexcept
+    constexpr auto create(T* begin, T* end, Location && location) noexcept
     {
-        using value_type = IteratorValue<It>;
-        return detail::span_t<value_type, Location, Extent>(begin, end, EMU_FWD(location));
+        return detail::span_t<T, Location, Extent>(begin, end, EMU_FWD(location));
+    }
+
+    template<std::size_t Extent = dynamic_extent, typename T>
+    constexpr auto create(T* begin, std::size_t count) noexcept
+    {
+        return span_t<T, Extent>(begin, count);
     }
 
     template<
-        std::size_t Extent = dynamic_extent, typename It,
-        EnableIf<detail::IsPointerIterator<It>> = true
+        std::size_t Extent = dynamic_extent, typename T, typename Location,
+        EnableIf<IsLocation<Location>> = true
     >
-    constexpr auto create(It begin, std::size_t count) noexcept
+    constexpr auto create(T* begin, std::size_t count, Location && location) noexcept
     {
-        using value_type = IteratorValue<It>;
-        return span_t<value_type, Extent>(begin, begin + count);
-    }
-
-    template<
-        std::size_t Extent = dynamic_extent, typename It, typename Location,
-        EnableIf<detail::IsPointerIterator<It> and IsLocation<Location>> = true
-    >
-    constexpr auto create(It begin, std::size_t count, Location && location) noexcept
-    {
-        using value_type = IteratorValue<It>;
-        return detail::span_t<value_type, Location, Extent>(begin, begin + count, EMU_FWD(location));
+        return detail::span_t<T, Location, Extent>(begin, count, EMU_FWD(location));
     }
 
 namespace detail

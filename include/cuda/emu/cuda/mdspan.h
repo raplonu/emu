@@ -2,7 +2,7 @@
 #define EMU_CUDA_MDSPAN_H
 
 #include <emu/mdspan.h>
-#include <emu/misc/device_location.h>
+#include <emu/cuda/misc/location.h>
 
 namespace emu
 {
@@ -10,19 +10,24 @@ namespace emu
 namespace cuda
 {
 
-    /**
-     * @brief The class template span describes an object that can refer to a contiguous sequence of objects
-     * with the first element of the sequence at position zero.
-     *
-     * A span can either have a static extent, in which case the number of elements in the sequence is known
-     * and encoded in the type, or a dynamic extent.
-     * Please refer to https://en.cppreference.com/w/cpp/container/span for more detail.
-     *
-     * @note Use span from gsl library since it is the closest implementation of c++20 std::span.
-     */
-    //TODO: replace gsl::span by std::span when c++20.
-    template <typename ElementType, typename Extents, typename LayoutPolicy = span::layout_right, typename AccessorPolicy = span::default_accessor<ElementType>>
-    using device_mdspan_t = span::detail::mdspan_t<ElementType, location::cuda_t, Extents, LayoutPolicy, AccessorPolicy>;
+    template <typename ElementType, typename Extents, typename LayoutPolicy = mdspan::layout_right, typename AccessorPolicy = mdspan::default_accessor<ElementType>>
+    using mdspan_t = mdspan::detail::mdspan_t<ElementType, location::cuda_t, Extents, LayoutPolicy, AccessorPolicy>;
+
+    template<typename ElementType> using mdspan_1d_t = mdspan_t<ElementType, mdspan::dextents<1>>;
+    template<typename ElementType> using mdspan_2d_t = mdspan_t<ElementType, mdspan::dextents<2>>;
+    template<typename ElementType> using mdspan_3d_t = mdspan_t<ElementType, mdspan::dextents<3>>;
+
+    template<typename ElementType> using mdspan_1d_c_t = mdspan_t<ElementType, mdspan::dextents<1>>;
+    template<typename ElementType> using mdspan_2d_c_t = mdspan_t<ElementType, mdspan::dextents<2>>;
+    template<typename ElementType> using mdspan_3d_c_t = mdspan_t<ElementType, mdspan::dextents<3>>;
+
+    template<typename ElementType> using mdspan_1d_f_t = mdspan_t<ElementType, mdspan::dextents<1>, mdspan::layout_f>;
+    template<typename ElementType> using mdspan_2d_f_t = mdspan_t<ElementType, mdspan::dextents<2>, mdspan::layout_f>;
+    template<typename ElementType> using mdspan_3d_f_t = mdspan_t<ElementType, mdspan::dextents<3>, mdspan::layout_f>;
+
+    template<typename ElementType> using mdspan_1d_s_t = mdspan_t<ElementType, mdspan::dextents<1>, mdspan::layout_stride>;
+    template<typename ElementType> using mdspan_2d_s_t = mdspan_t<ElementType, mdspan::dextents<2>, mdspan::layout_stride>;
+    template<typename ElementType> using mdspan_3d_s_t = mdspan_t<ElementType, mdspan::dextents<3>, mdspan::layout_stride>;
 
 } // namespace cuda
 

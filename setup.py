@@ -101,12 +101,10 @@ def build_conan(source_dir, build_dir, ref, channel, args, editable):
         call(f'conan editable remove {ref}@{channel}')
         call(f'conan export-pkg {source_dir} {channel} -f -bf {build_dir}')
 
-
 class ConanBuild(build_ext):
     def run(self):
         for ext in self.extensions:
             self.build_extension(ext)
-
 
     def build_extension(self, ext):
         p_version = sys.version_info
@@ -123,32 +121,18 @@ class ConanBuild(build_ext):
         cxx_source_dir = ext.sourcedir
         cxx_build_dir  = f'{build_dir}/build'
         cxx_ref = f'{cxx_name}/{package_version}'
-        cxx_args = f'-s build_type={build_mode} {glob_conan_args}'
-
-        call(f'./tools/configure.sh')
+        cxx_args = f'-s build_type={build_mode} -o python=True -o {cxx_name}:python_version={version} {glob_conan_args}'
 
         build_conan(cxx_source_dir, cxx_build_dir, cxx_ref, channel, cxx_args, editable)
 
         # Package wrap
         py_source_dir  = f'{ext.sourcedir}/python'
         py_build_dir   = f'{build_dir}/python/build'
-        py_ref  = f'{py_name}/{package_version}'
-        py_args  = f'{cxx_args} -o {py_name}:cxx_ref={cxx_ref}@{channel} -o {py_name}:python_version={version}'
 
-        build_conan(py_source_dir, py_build_dir, py_ref, channel, py_args, editable)
-
-        # Retrive C++ libraries from conan cache and export then into python package.
-        call(f'conan install {py_ref}@{channel} -g json -if {py_build_dir} {py_args}')
-
-        # Exporting wrapper and its dependencies libraries.
-        data = json.load(open(f'{py_build_dir}/conanbuildinfo.json'))
-
-        py_dep = next(filter(lambda d: d['name'] == py_name, data['dependencies']))
-        for lib_path in py_dep['lib_paths']:
-            if os.listdir(lib_path):
-                for lib in map(Path, glob(f'{lib_path}/*.so')):
-                    # If in editable mode, export library as symbolic link, otherwise perform a plain copy.
-                    (symlink if editable else copy2)(lib, export_dir / lib.name)
+        call(f'conan install {cxx_ref}@{channel} -if {py_build_dir} -g CMakeToolchain -g CMakeDeps -o emu:python=True -o emu:python_version={version}')
+        call(f'cmake {py_source_dir} -B {py_build_dir} -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_MODULE_PATH={py_build_dir} -DCMAKE_INSTALL_PREFIX={export_dir}')
+        call(f'cmake --build {py_build_dir}')
+        call(f'cmake --install {py_build_dir}')
 
 setup(
     name=package_name,

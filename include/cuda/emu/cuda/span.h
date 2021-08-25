@@ -2,7 +2,7 @@
 #define EMU_CUDA_SPAN_H
 
 #include <emu/span.h>
-#include <emu/misc/device_location.h>
+#include <emu/cuda/misc/location.h>
 
 namespace emu
 {

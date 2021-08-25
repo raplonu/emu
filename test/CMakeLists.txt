@@ -7,6 +7,7 @@ add_executable(emucoretest
     src/core/math_test.cpp
     src/core/byte_test.cpp
     src/core/span_test.cpp
+    src/core/span_create_test.cpp
     src/core/mdspan_test.cpp
     src/core/range_test.cpp
     src/core/expected_test.cpp
@@ -20,7 +21,7 @@ if (emu_string_util)
 endif()
 
 target_link_libraries(emucoretest PRIVATE
-    GTest::GTest GTest::Main emucore
+    GTest::gtest GTest::gtest_main emucore
 )
 
 target_include_directories(emucoretest PRIVATE include)
@@ -41,7 +42,7 @@ if (emu_build_cuda)
     )
 
     target_link_libraries(emucudatest PRIVATE
-        GTest::GTest GTest::Main emucuda
+        GTest::gtest GTest::gtest_main emucuda
     )
 
     target_include_directories(emucudatest PRIVATE include)
@@ -49,5 +50,22 @@ if (emu_build_cuda)
     add_test(NAME emucudatest
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test
         COMMAND emucudatest
+    )
+endif()
+
+if (emu_build_python)
+    add_executable(emupythontest
+        src/python/toto_test.cpp
+    )
+
+    target_link_libraries(emupythontest PRIVATE
+        GTest::gtest GTest::gtest_main emupython
+    )
+
+    target_include_directories(emupythontest PRIVATE include)
+
+    add_test(NAME emupythontest
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test
+        COMMAND emupythontest
     )
 endif()

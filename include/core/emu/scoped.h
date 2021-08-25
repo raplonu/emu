@@ -21,7 +21,7 @@ namespace emu
 
         constexpr scoped_t() = default;
 
-        template<typename T1, bool = EnableIfNotBase<scoped_t, T1>{}>
+        template<typename T1, EnableIfNotBase<scoped_t, T1> = true>
         constexpr scoped_t(T1 && value, bool owning = true)
             EMU_NOEXCEPT_EXPR(value_type(EMU_FWD(value)), function_type())
         :

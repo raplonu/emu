@@ -97,7 +97,6 @@ namespace detail
 
 } // namespace cuda
 
-
 } // namespace emu
 
 #endif //EMU_CUDA_H

@@ -120,23 +120,32 @@ namespace detail
     template<typename T1, typename T2>
     constexpr auto Equivalent = IsSame<std::decay_t<T1>, std::decay_t<T2>>;
 
+    template< class T >
+    using RemoveRef = std::remove_reference_t<T>;
+
+    template< class T >
+    using RemoveCV = std::remove_cv_t<T>;
+
     // Behave exactly as the std::remove_cvref_t of C++20.
     template< class T >
-    using RemoveCVRef = typename std::remove_cv_t<std::remove_reference_t<T>>;
+    using RemoveCVRef = RemoveCV<RemoveRef<T>>;
+
+    template<typename T, typename U>
+    using ForwardConst = std::conditional_t<IsConst<std::remove_reference_t<T>>, std::add_const_t<std::remove_reference_t<U>>, U>;
 
     template<typename T>
-    using ValueType      = typename RemoveCVRef<T>::value_type;
+    using ValueType      = typename RemoveRef<T>::value_type;
     template<typename T>
-    using DifferenceType = typename RemoveCVRef<T>::difference_type;
+    using DifferenceType = typename RemoveRef<T>::difference_type;
     template<typename T>
-    using Category       = typename RemoveCVRef<T>::iterator_category;
+    using Category       = typename RemoveRef<T>::iterator_category;
 
     template<typename It>
-    using IteratorValue      = ValueType<std::iterator_traits<RemoveCVRef<It>>>;
+    using IteratorValue      = ValueType<std::iterator_traits<RemoveRef<It>>>;
     template<typename It>
-    using IteratorDifference = DifferenceType<std::iterator_traits<RemoveCVRef<It>>>;
+    using IteratorDifference = DifferenceType<std::iterator_traits<RemoveRef<It>>>;
     template<typename It>
-    using IteratorCategory   = Category<std::iterator_traits<RemoveCVRef<It>>>;
+    using IteratorCategory   = Category<std::iterator_traits<RemoveRef<It>>>;
 
 // use a specific namespace name in order to avoid namespace polution with `using std::begin;`
 namespace detail_begin
@@ -144,25 +153,43 @@ namespace detail_begin
 
     using std::begin;
     template<typename Rg>
-    using IteratorTypeImpl = decltype(begin(std::declval<Rg>()));
+    using RangeIteratorTypeImpl = decltype(begin(std::declval<Rg>()));
 
 } // namespace detail_begin
 
     template<typename Rg>
-    using IteratorType = detail_begin::IteratorTypeImpl<Rg>;
+    using RangeIteratorType = detail_begin::RangeIteratorTypeImpl<Rg>;
 
     template<typename Rg>
-    using RangeValue      = IteratorValue<IteratorType<RemoveCVRef<Rg>>>;
+    using RangeValue      = IteratorValue<RangeIteratorType<Rg>>;
     template<typename Rg>
-    using RangeDifference = IteratorDifference<IteratorType<RemoveCVRef<Rg>>>;
+    using RangeDifference = IteratorDifference<RangeIteratorType<Rg>>;
     template<typename Rg>
-    using RangeCategory   = IteratorCategory<IteratorType<RemoveCVRef<Rg>>>;
+    using RangeCategory   = IteratorCategory<RangeIteratorType<Rg>>;
+
+namespace detail
+{
+
+    template<typename Container>
+    using ContainerIteratorTypeImpl = decltype(std::declval<Container>().data());
+
+} // namespace detail
+
+    template<typename Rg>
+    using ContainerIteratorType = detail::ContainerIteratorTypeImpl<Rg>;
+
+    template<typename Rg>
+    using ContainerValue      = IteratorValue<ContainerIteratorType<Rg>>;
+    template<typename Rg>
+    using ContainerDifference = IteratorDifference<ContainerIteratorType<Rg>>;
+    template<typename Rg>
+    using ContainerCategory   = IteratorCategory<ContainerIteratorType<Rg>>;
 
     EMU_GENERATE_TRAITS_HAS(HasData, T, std::declval<T&>().data());
     EMU_GENERATE_TRAITS_HAS(HasSize, T, std::declval<T&>().size());
 
     template<typename Container>
-    constexpr auto IsContainer = HasData<Container> and HasSize<Container> and IsSame<RangeCategory<Container>, std::random_access_iterator_tag>;
+    constexpr auto IsContainer = HasData<Container> and HasSize<Container> and IsSame<ContainerCategory<Container>, std::random_access_iterator_tag>;
 
     template<typename Location>
     struct is_location : std::false_type {};

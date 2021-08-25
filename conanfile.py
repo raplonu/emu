@@ -1,5 +1,6 @@
 import os
-from conans import ConanFile, tools, CMake
+from conans import ConanFile, tools
+from conan.tools.cmake import CMake, CMakeToolchain, CMakeDeps
 
 def load(*filenames):
     for filename in filenames:
@@ -37,6 +38,8 @@ class EmuConan(ConanFile):
         'fPIC'       : [True, False],
         # Build emu_cuda library.
         'cuda'       : [True, False],
+        # Build emu_python library.
+        'python'     : [True, False],
         # Specify the sm configuration used to build emu_cuda library.
         # This has no effect if cuda option is set to False.
         # cuda_sm can be set to
@@ -45,6 +48,7 @@ class EmuConan(ConanFile):
         #    20 21 30 32 35 37 50 52 53 60 62
         # For more information refer to https://cmake.org/cmake/help/latest/variable/CMAKE_CUDA_ARCHITECTURES.html
         'cuda_sm'    : 'ANY',
+        'python_version': 'ANY',
         'test'       : [True, False],
         # Provide or not string utility. Needs abseil.
         'string_util': [True, False]}
@@ -54,12 +58,12 @@ class EmuConan(ConanFile):
         'fPIC'             : True,
         'cuda'             : True,
         'cuda_sm'          : 'Auto',
+        'python'           : False,
         'test'             : False,
         'string_util'      : False,
         'boost:header_only': True}
 
     settings = 'os', 'compiler', 'build_type', 'arch'
-    generators = 'cmake'
     exports_sources = 'CMakeLists.txt', 'cmake*', 'include*', 'src*', 'test*'
 
     def _cuda_compute_capabilities(self):
@@ -71,30 +75,53 @@ class EmuConan(ConanFile):
         elif str(self.options.cuda_sm) == 'Auto':
             self.options.cuda_sm = self._cuda_compute_capabilities()
 
+        if not self.options.python:
+            self.options.remove('python_version')
+
     def requirements(self):
         if self.options.cuda:
             self.requires('cuda-api-wrappers/0.4.0@cosmic/stable')
+
+        if self.options.python:
+            self.requires('pybind11/2.6.2')
+
         if self.options.string_util:
             self.requires('abseil/20200923.3')
+
         if self.options.test:
             self.requires('gtest/1.10.0')
 
-    def build(self):
-        cmake = CMake(self)
-        # cmake = CMakeToolchain(self)
+    def generate(self):
+        cmake = CMakeToolchain(self)
 
+        cmake.variables['emu_build_cuda']   = self.options.cuda
+        cmake.variables['emu_build_python'] = self.options.python
+        cmake.variables['emu_string_util']  = self.options.string_util
+        cmake.variables['emu_build_test']   = self.options.test
         # Ask the project to generate {target}_flags.txt with the C++ & CUDA flags in it if any.
-        cmake.definitions['emu_export_flags'] = True
-        cmake.definitions['emu_build_test']   = self.options.test
-        cmake.definitions['emu_string_util']  = self.options.string_util
-        cmake.definitions['emu_build_cuda']   = self.options.cuda
+        cmake.variables['emu_export_flags'] = True
+
         if self.options.cuda:
-            cmake.definitions['CMAKE_CUDA_ARCHITECTURES'] = self.options.cuda_sm
+            cmake.variables['CMAKE_CUDA_ARCHITECTURES'] = self.options.cuda_sm
+
+        if self.options.python:
+            cmake.variables['PYBIND11_PYTHON_VERSION'] = self.options.python_version
+
+        cmake.generate()
+
+        CMakeDeps(self).generate()
+
+    def build(self):
+        # Fix to enable parallel compilation.
+        self.conf["tools.build:processes"] = tools.cpu_count()
+
+        cmake = CMake(self)
 
         cmake.configure()
         cmake.build()
 
         # We did not use `self.should_test` since it is enable by default.
+        # But it can be still triggered independently using `-t` argument.
         if self.options.test:
             cmake.test()
 
@@ -107,6 +134,9 @@ class EmuConan(ConanFile):
         if self.options.cuda:
             self.copy("*.h"  , dst="include", src="include/cuda")
             self.copy("*.cuh", dst="include", src="include/cuda")
+
+        if self.options.python:
+            self.copy("*.h"  , dst="include", src="include/python")
 
         # Each target export its public flags in {target}_flags.txt if there is any flags.
         # Flags are exported in package in order to be used by consumer.
@@ -122,3 +152,8 @@ class EmuConan(ConanFile):
         if self.options.cuda:
             self.cpp_info.libs += ['emucuda']
             self.cpp_info.cxxflags += load(f'{self.package_folder}/data/emucuda_flags.txt', f'{self.package_folder}/build/emucuda_flags.txt')
+
+        if self.options.python:
+            self.cpp_info.libs += ['emupython']
+            self.cpp_info.cxxflags += load(f'{self.package_folder}/data/emucuda_flags.txt', f'{self.package_folder}/build/emupython_flags.txt')
+

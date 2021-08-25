@@ -3,7 +3,7 @@
 namespace emu
 {
 
-namespace thrust
+namespace  thrust
 {
 
     detail::par_t par;

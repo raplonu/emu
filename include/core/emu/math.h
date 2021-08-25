@@ -244,7 +244,6 @@ namespace detail
     //     constexpr EMU_HODE T operator()(T a, Identity<T> b) const noexcept { return a + b; }
     // };
 
-
     constexpr auto add  = add_t {};
     constexpr auto sub  = sub_t {};
     constexpr auto mul  = mul_t {};
@@ -256,7 +255,6 @@ namespace detail
     constexpr auto bxor = bxor_t{};
 
 } // namespace math
-
 
 } // namespace emu
 
