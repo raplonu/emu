@@ -77,7 +77,7 @@ void handle_t::set_stream(const cuda::stream_t & stream) {
 }
 
 cuda::stream_t handle_t::stream() const {
-    return cuda::stream::detail::wrap(device_id_, handle::detail::get_stream(id()), false);
+    return cuda::stream::detail_::wrap(device_id_, handle::detail::get_stream(id()), false);
 }
 
 void handle_t::set_math_mode(cublasMath_t mode) {

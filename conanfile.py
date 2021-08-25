@@ -80,7 +80,7 @@ class EmuConan(ConanFile):
 
     def requirements(self):
         if self.options.cuda:
-            self.requires('cuda-api-wrappers/0.4.0@cosmic/stable')
+            self.requires('cuda-api-wrappers/0.4.3@cosmic/stable')
 
         if self.options.python:
             self.requires('pybind11/2.6.2')
