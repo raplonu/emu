@@ -66,14 +66,17 @@ class EmuConan(ConanFile):
     settings = 'os', 'compiler', 'build_type', 'arch'
     exports_sources = 'CMakeLists.txt', 'cmake*', 'include*', 'src*', 'test*'
 
-    def _cuda_compute_capabilities(self):
-        return self.python_requires["cuda_arch"].module.compute_capabilities()
+    def parse_cuda_compute_capabilities(self):
+        cuda = self.python_requires["cuda_arch"].module
+
+        if str(self.options.cuda_sm) == 'Auto':
+            self.options.cuda_sm = cuda.compute_capabilities()
 
     def configure(self):
         if not self.options.cuda:
             self.options.remove('cuda_sm')
-        elif str(self.options.cuda_sm) == 'Auto':
-            self.options.cuda_sm = self._cuda_compute_capabilities()
+        else:
+            self.parse_cuda_compute_capabilities()
 
         if not self.options.python:
             self.options.remove('python_version')

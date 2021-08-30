@@ -1,15 +1,16 @@
-#ifndef EMU_RESOURCE_H
-#define EMU_RESOURCE_H
+#ifndef EMU_SCOPED_H
+#define EMU_SCOPED_H
 
-#include <emu/utility.h>
 #include <emu/type_traits.h>
+#include <emu/utility.h>
 
 #include <utility>
 
 namespace emu
 {
+
     template<typename Base, typename Derive>
-    using EnableIfNotBase = EnableIf<not std::is_base_of<RemoveCVRef<Base>, RemoveCVRef<Derive>>::value>;
+    using EnableIfNotBase = EnableIf<not IsBaseOf<RemoveCVRef<Base>, RemoveCVRef<Derive>>>;
 
     template<typename T, typename F>
     struct scoped_t
@@ -234,4 +235,4 @@ namespace scoped
 
 } // namespace emu
 
-#endif //EMU_RESOURCE_H
+#endif //EMU_SCOPED_H

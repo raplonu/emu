@@ -23,13 +23,13 @@ namespace detail
         throw_if_error(cublasDestroy(id));
     }
 
-    cuda::stream::id_t get_stream(id_t handle) {
-        cuda::stream::id_t stream;
+    ::cuda::stream::id_t get_stream(id_t handle) {
+        ::cuda::stream::id_t stream;
         throw_if_error(cublasGetStream(handle, &stream));
         return stream;
     }
 
-    void set_stream(id_t handle, cuda::stream::id_t stream) {
+    void set_stream(id_t handle, ::cuda::stream::id_t stream) {
         throw_if_error(cublasSetStream(handle, stream));
     }
 
@@ -72,12 +72,12 @@ handle_t::handle_t(::cuda::device::id_t device_id):
     device_id_(device_id)
 {}
 
-void handle_t::set_stream(const cuda::stream_t & stream) {
+void handle_t::set_stream(const ::cuda::stream_t & stream) {
     handle::detail::set_stream(id(), stream.id());
 }
 
-cuda::stream_t handle_t::stream() const {
-    return cuda::stream::detail_::wrap(device_id_, handle::detail::get_stream(id()), false);
+::cuda::stream_t handle_t::stream() const {
+    return ::cuda::stream::detail_::wrap(device_id_, handle::detail::get_stream(id()), false);
 }
 
 void handle_t::set_math_mode(cublasMath_t mode) {
@@ -114,11 +114,11 @@ namespace handle
         return {};
     }
 
-    handle_t create(cuda::device_t device) {
+    handle_t create(::cuda::device_t device) {
         return { device.id() };
     }
 
-    handle_t wrap(id_t id, cuda::device_t device, bool take_ownership) {
+    handle_t wrap(id_t id, ::cuda::device_t device, bool take_ownership) {
         return { id, device.id(), take_ownership };
     }
 

@@ -158,7 +158,7 @@ namespace detail
         }
 
         static location::cuda_t location(const py::buffer_info& bi) {
-            cuda::memory::pointer_t<void> ptr{bi.ptr};
+            ::cuda::memory::pointer_t<void> ptr{bi.ptr};
 
             // Only way to consistently retreive device location.
             return {::cuda::device::get(ptr.attributes().device)};

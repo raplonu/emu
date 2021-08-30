@@ -21,7 +21,7 @@ namespace detail
         throw_if_error(cusolverDnDestroy(id));
     }
 
-    void set_stream(id_t handle, cuda::stream::id_t stream) {
+    void set_stream(id_t handle, ::cuda::stream::id_t stream) {
             throw_if_error(cusolverDnSetStream(handle, stream));
     }
 
@@ -45,7 +45,7 @@ handle_t::handle_t(::cuda::device::id_t device_id):
 {}
 
 
-void handle_t::set_stream(const cuda::stream_t & stream) {
+void handle_t::set_stream(const ::cuda::stream_t & stream) {
     handle::detail::set_stream(id(), stream.id());
 }
 
@@ -55,11 +55,11 @@ namespace handle
         return {};
     }
 
-    handle_t create(cuda::device_t device) {
+    handle_t create(::cuda::device_t device) {
         return { device.id() };
     }
 
-    handle_t wrap(id_t id, cuda::device_t device, bool take_ownership) {
+    handle_t wrap(id_t id, ::cuda::device_t device, bool take_ownership) {
         return { id, device.id(), take_ownership };
     }
 

@@ -12,11 +12,11 @@ namespace location
 
     struct cuda_t {
 
-        cuda::device_t device;
+        ::cuda::device_t device;
 
         cuda_t(): device(::cuda::device::current::get()) {}
 
-        cuda_t(cuda::device_t device) noexcept: device(device) {}
+        cuda_t(::cuda::device_t device) noexcept: device(device) {}
 
     };
 

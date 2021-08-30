@@ -89,6 +89,10 @@ namespace detail
             base_t(firstElem, lastElem), location_(location)
         {}
 
+        constexpr span_t(std::initializer_list<element_type> init_list, location_type location = {}) noexcept:
+            base_t(init_list.begin(), init_list.end()), location_(location)
+        {}
+
         template< std::size_t N, EnableIf<IsAllowedExtentConversion<N, Extent>> = true>
         constexpr span_t(element_type (&arr)[N], location_type location = {}) noexcept:
             base_t(arr), location_(location)
