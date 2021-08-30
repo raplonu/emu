@@ -2,13 +2,7 @@ cmake_minimum_required(VERSION 3.18)
 
 message(CHECK_START "Emu - Configuring")
 
-set(emu_language CXX)
-
-if (emu_build_cuda)
-    list(APPEND emu_language CUDA)
-endif()
-
-project(emu VERSION 0.1 LANGUAGES ${emu_language})
+project(emu VERSION 0.1 LANGUAGES CXX)
 
 option(emu_verbose      "Print emu info"        OFF)
 option(emu_string_util  "emu string utilies"    OFF)
@@ -17,8 +11,10 @@ option(emu_build_python "Build python module"   ON)
 option(emu_build_test   "Build unit test"       OFF)
 option(emu_export_flags "Export compile flags"  OFF)
 
-message("emu_build_test ${emu_build_test}")
-message("PYBIND11_PYTHON_VERSION ${PYBIND11_PYTHON_VERSION}")
+if (emu_build_cuda)
+    enable_language(CUDA)
+endif()
+
 
 message(CHECK_PASS "Done")
 

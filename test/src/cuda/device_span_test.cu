@@ -12,7 +12,7 @@ namespace
 
         EXPECT_EQ(s.data(), nullptr);
         EXPECT_EQ(s.size(), 0);
-        EXPECT_EQ(s.location().device, emu::cuda::device::current::get());
+        EXPECT_EQ(s.location().device, ::cuda::device::current::get());
     }
 
     TEST(DeviceSpan, ThrustSpanAsRawPtr)
@@ -23,7 +23,7 @@ namespace
 
         EXPECT_EQ(s.data(), v.data().get());
         EXPECT_EQ(s.size(), 5);
-        EXPECT_EQ(s.location().device, emu::cuda::device::current::get());
+        EXPECT_EQ(s.location().device, ::cuda::device::current::get());
     }
 
 }

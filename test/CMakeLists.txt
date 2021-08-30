@@ -1,4 +1,4 @@
-project(emu_test LANGUAGES ${emu_language})
+cmake_minimum_required(VERSION 3.18)
 
 find_package(GTest REQUIRED)
 
@@ -32,6 +32,7 @@ add_test(NAME emucoretest
 )
 
 if (emu_build_cuda)
+
     add_executable(emucudatest
         src/cuda/test.cu
         src/cuda/math_test.cu
@@ -54,6 +55,7 @@ if (emu_build_cuda)
 endif()
 
 if (emu_build_python)
+
     add_executable(emupythontest
         src/python/toto_test.cpp
     )
@@ -68,4 +70,5 @@ if (emu_build_python)
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test
         COMMAND emupythontest
     )
+
 endif()
