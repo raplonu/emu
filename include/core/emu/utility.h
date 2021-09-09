@@ -1,6 +1,7 @@
 #ifndef EMU_UTILITY_H
 #define EMU_UTILITY_H
 
+#include <emu/config.h>
 #include <emu/macro.h>
 #include <emu/type_traits.h>
 
@@ -55,6 +56,8 @@ namespace detail
 
   //###################### SIZE ########################
 
+#if EMU_NO_CXX17
+
     template <class C>
     constexpr auto size(const C& c) -> decltype(c.size())
     {
@@ -82,6 +85,12 @@ namespace detail
     {
         return N;
     }
+
+#else
+
+    using std::size;
+
+#endif
 
     /**
     * Calculate the ceil result of a / b

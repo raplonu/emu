@@ -5,7 +5,8 @@ LOCAL_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 set -e
 
 # Get dependencies and prepare build directory.
-conan install $LOCAL_DIR -if $LOCAL_DIR/build $@
+# By default always build missing binary packages.
+conan install $LOCAL_DIR -if $LOCAL_DIR/build -b missing $@
 
 # Let conan invoke cmake configure.
 conan build $LOCAL_DIR -bf $LOCAL_DIR/build -c

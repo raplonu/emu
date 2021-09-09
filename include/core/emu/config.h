@@ -16,4 +16,6 @@
 
 #endif
 
+#define EMU_NO_CXX17 BOOST_NO_CXX17
+
 #endif //EMU_CONFIG_H
