@@ -56,7 +56,7 @@ namespace detail
 
   //###################### SIZE ########################
 
-#if EMU_NO_CXX17
+#ifdef EMU_NO_CXX17
 
     template <class C>
     constexpr auto size(const C& c) -> decltype(c.size())
