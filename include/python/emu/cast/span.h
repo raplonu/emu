@@ -7,7 +7,7 @@
 #include <emu/cast/mdspan.h>
 #include <emu/span.h>
 #include <emu/mdspan.h>
-#if EMU_CUDA
+#ifdef EMU_CUDA
 #include <emu/cuda/span.h>
 #endif
 
@@ -28,11 +28,11 @@ namespace cast
         using bia = buffer_info_adaptor<ElementType, Location>;
 
         static constexpr auto descr() {
-            using namespace pybind11::detail;
+            using namespace ::pybind11::detail;
             return _("span<") + make_caster<ElementType>::name + _("[*], ") + bia::loc_descr() + _(">");
         }
 
-        static optional_t<cpp_type> convert(pybind11::handle handle) {
+        static optional_t<cpp_type> convert(::pybind11::handle handle) {
 
             // Try cast handle into buffer.
             return bia::get_buffer_info(handle).and_then([](auto buffer_info) -> optional_t<cpp_type> {

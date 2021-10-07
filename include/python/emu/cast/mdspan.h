@@ -5,7 +5,7 @@
 #include <emu/type_traits.h>
 #include <emu/optional.h>
 #include <emu/mdspan.h>
-#if EMU_CUDA
+#ifdef EMU_CUDA
 #include <emu/cuda/mdspan.h>
 #endif
 
@@ -103,28 +103,28 @@ namespace cast
 
         template< std::size_t I, EnableIf<cpp_type::static_extent(I) == mdspan::dynamic_extent> = true>
         static constexpr auto dim_descr() {
-            using namespace pybind11::detail;
+            using namespace py::detail;
             return _("*");
         }
 
         template< std::size_t I, EnableIf<cpp_type::static_extent(I) != mdspan::dynamic_extent> = true>
         static constexpr auto dim_descr() {
-            using namespace pybind11::detail;
+            using namespace py::detail;
             return _<cpp_type::static_extent(I)>();
         }
 
         template< std::size_t... Is >
         static constexpr auto shape_descr(std::index_sequence<Is...>) {
-            using namespace pybind11::detail;
+            using namespace py::detail;
             return concat(dim_descr<Is>()...);
         }
 
         static constexpr auto descr() {
-            using namespace pybind11::detail;
+            using namespace py::detail;
             return _("mdspan<") + concat(make_caster<ElementType>::name + _("[") + shape_descr(std::make_index_sequence<cpp_type::rank()>{}) + _("]"), bia::loc_descr()) + _(">");
         }
 
-        static emu::optional_t<cpp_type> convert(pybind11::handle handle) {
+        static emu::optional_t<cpp_type> convert(py::handle handle) {
 
             // Try cast handle into buffer.
             return bia::get_buffer_info(handle).and_then([](auto buffer_info) -> emu::optional_t<cpp_type> {
@@ -332,7 +332,7 @@ namespace detail
 
 //     };
 
-// // #if EMU_CUDA
+// // #ifdef EMU_CUDA
 
 // // namespace detail
 // // {

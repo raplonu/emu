@@ -289,8 +289,6 @@ namespace span
         return detail::span_t<value_type, Location, Extent>(begin(range), end(range), EMU_FWD(location));
     }
 
-    template<typename T> struct TOo;
-
     template<
         std::size_t Extent = dynamic_extent, typename Container,
         EnableIf<not IsPointer<Container>> = true,

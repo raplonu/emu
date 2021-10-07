@@ -60,8 +60,8 @@ class EmuConan(ConanFile):
         'cuda_sm'          : 'Auto',
         'python'           : False,
         'test'             : False,
-        'string_util'      : False,
-        'boost:header_only': True}
+        'string_util'      : False
+    }
 
     settings = 'os', 'compiler', 'build_type', 'arch'
     exports_sources = 'CMakeLists.txt', 'cmake*', 'include*', 'src*', 'test*'
@@ -148,13 +148,12 @@ class EmuConan(ConanFile):
     def package_info(self):
         self.cpp_info.libs = ['emucore']
         self.cpp_info.cxxflags = load(f'{self.package_folder}/data/emucore_flags.txt', f'{self.package_folder}/build/emucore_flags.txt')
-        self.cpp_info.defines += [
-            f'EMU_STRING_UTIL={1 if self.options.string_util else 0}',
-            f'EMU_CUDA={1 if self.options.cuda else 0}']
+        self.cpp_info.defines += [f'EMU_STRING_UTIL={1 if self.options.string_util else 0}']
 
         if self.options.cuda:
             self.cpp_info.libs += ['emucuda']
             self.cpp_info.cxxflags += load(f'{self.package_folder}/data/emucuda_flags.txt', f'{self.package_folder}/build/emucuda_flags.txt')
+            self.cpp_info.defines += ['EMU_CUDA']
 
         if self.options.python:
             self.cpp_info.libs += ['emupython']

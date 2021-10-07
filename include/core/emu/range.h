@@ -12,14 +12,14 @@ namespace emu
     /**
      * @brief Takes a range and return the coresponding vector.
      *
-     * By default, the vector will be std::remove_cv_t<range::value_type>
+     * By default, the vector will be RemoveCVRef<range::value_type>
      * but the user is allowed to specify the value_type of vector using
      * the fist template parameter.
      */
     template<typename T = use_default, typename R>
     constexpr auto as_vector(R && range)
     {
-        using value_type = NotDefaultOr<T, std::remove_cv_t<RangeValue<R>>>;
+        using value_type = NotDefaultOr<T, RemoveCVRef<RangeValue<R>>>;
         using std::begin; using std::end;
         return std::vector<value_type>(begin(range), end(range));
     }
@@ -27,14 +27,14 @@ namespace emu
     /**
      * @brief Takes a c array and return the coresponding vector.
      *
-     * By default, the vector will be std::remove_cv_t<R>
+     * By default, the vector will be RemoveCVRef<R>
      * but the user is allowed to specify the value_type of vector using
      * the fist template parameter.
      */
     template<typename T = use_default, typename R, std::size_t N>
     constexpr auto as_vector(R (&range)[N])
     {
-        using value_type = NotDefaultOr<T, std::remove_cv_t<R>>;
+        using value_type = NotDefaultOr<T, RemoveCVRef<R>>;
         using std::begin; using std::end;
         return std::vector<value_type>(begin(range), end(range));
     }

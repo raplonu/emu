@@ -34,10 +34,74 @@ namespace detail
 
     using detail::stdex::default_accessor;
 
-    using detail::stdex::dextents;
-    using detail::stdex::extents;
+    template <size_t Rank>
+    using dextents_t = detail::stdex::dextents<Rank>;
+
+    template <size_t... Extents>
+    using extents_t = detail::stdex::extents<Extents...>;
+
     using detail::stdex::full_extent_t;
     using detail::stdex::full_extent;
+
+    /// Get stdex::mdspan extents as an array.
+    template <typename T = std::size_t, typename ElementType, typename Extents, typename LayoutPolicy, typename AccessorPolicy>
+    auto extents(const detail::stdex::mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy> & mdspan)
+    {
+        std::array<T, decltype(mdspan)::rank()> res{};
+        for (std::size_t i = 0; i < decltype(mdspan)::rank(); ++i)
+            res[i] = mdspan.extent(0);
+        return res;
+    }
+
+    /// Get stdex::mdspan strides as an array.
+    template <typename T = std::size_t, typename ElementType, typename Extents, typename LayoutPolicy, typename AccessorPolicy>
+    auto strides(const detail::stdex::mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy> & mdspan)
+    {
+        std::array<T, decltype(mdspan)::rank()> res{};
+        for (std::size_t i = 0; i < decltype(mdspan)::rank(); ++i)
+            res[i] = mdspan.stride(0);
+        return res;
+    }
+
+    // TODO: Replaces all strides version by the a template when C++17.
+    template <typename T = std::size_t>
+    auto strides(span_t<const std::size_t> extents, std::size_t word_size)
+    {
+        std::vector<T> res(extents.size());
+
+        auto last = word_size;
+        for (int i = extents.size() - 1; i >= 0; --i) {
+            res[i] = last;
+            last = extents[i] * res[i];
+        }
+        return res;
+    }
+
+    template <typename T = std::size_t>
+    auto strides(span_t<const int> extents, std::size_t word_size)
+    {
+        std::vector<T> res(extents.size());
+
+        auto last = word_size;
+        for (int i = extents.size() - 1; i >= 0; --i) {
+            res[i] = last;
+            last = extents[i] * res[i];
+        }
+        return res;
+    }
+
+    template <typename T = std::size_t>
+    auto strides(span_t<const long int> extents, std::size_t word_size)
+    {
+        std::vector<T> res(extents.size());
+
+        auto last = word_size;
+        for (int i = extents.size() - 1; i >= 0; --i) {
+            res[i] = last;
+            last = extents[i] * res[i];
+        }
+        return res;
+    }
 
 namespace detail
 {
@@ -224,14 +288,15 @@ namespace detail
             return as_span_t(detail::stdex::submdspan(*this, EMU_FWD(slices)...));
         }
 
-        EMU_HODE constexpr std::array<size_type, base_t::rank()> shape() const noexcept {
-            std::array<size_type, base_t::rank()> s;
+        EMU_HODE constexpr std::array<size_type, base_t::rank()> extents() const noexcept {
+            // return strides();
+            std::array<size_type, base_t::rank()> s{};
             for (auto i = 0; i < base_t::rank(); ++i) s[i] = base_t::extent(i);
             return s;
         }
 
         EMU_HODE constexpr std::array<size_type, base_t::rank()> stride() const noexcept {
-            std::array<size_type, base_t::rank()> s;
+            std::array<size_type, base_t::rank()> s{};
             for (auto i = 0; i < base_t::rank(); ++i) s[i] = base_t::stride(i);
             return s;
         }
@@ -259,21 +324,21 @@ namespace detail
     template <typename ElementType, typename Extents, typename LayoutPolicy = mdspan::layout_right, typename AccessorPolicy = mdspan::default_accessor<ElementType>>
     using mdspan_t = mdspan::detail::mdspan_t<ElementType, location::host_t, Extents, LayoutPolicy, AccessorPolicy>;
 
-    template<typename ElementType> using mdspan_1d_t = mdspan_t<ElementType, mdspan::dextents<1>>;
-    template<typename ElementType> using mdspan_2d_t = mdspan_t<ElementType, mdspan::dextents<2>>;
-    template<typename ElementType> using mdspan_3d_t = mdspan_t<ElementType, mdspan::dextents<3>>;
+    template<typename ElementType> using mdspan_1d_t = mdspan_t<ElementType, mdspan::dextents_t<1>>;
+    template<typename ElementType> using mdspan_2d_t = mdspan_t<ElementType, mdspan::dextents_t<2>>;
+    template<typename ElementType> using mdspan_3d_t = mdspan_t<ElementType, mdspan::dextents_t<3>>;
 
-    template<typename ElementType> using mdspan_1d_c_t = mdspan_t<ElementType, mdspan::dextents<1>>;
-    template<typename ElementType> using mdspan_2d_c_t = mdspan_t<ElementType, mdspan::dextents<2>>;
-    template<typename ElementType> using mdspan_3d_c_t = mdspan_t<ElementType, mdspan::dextents<3>>;
+    template<typename ElementType> using mdspan_1d_c_t = mdspan_t<ElementType, mdspan::dextents_t<1>>;
+    template<typename ElementType> using mdspan_2d_c_t = mdspan_t<ElementType, mdspan::dextents_t<2>>;
+    template<typename ElementType> using mdspan_3d_c_t = mdspan_t<ElementType, mdspan::dextents_t<3>>;
 
-    template<typename ElementType> using mdspan_1d_f_t = mdspan_t<ElementType, mdspan::dextents<1>, mdspan::layout_f>;
-    template<typename ElementType> using mdspan_2d_f_t = mdspan_t<ElementType, mdspan::dextents<2>, mdspan::layout_f>;
-    template<typename ElementType> using mdspan_3d_f_t = mdspan_t<ElementType, mdspan::dextents<3>, mdspan::layout_f>;
+    template<typename ElementType> using mdspan_1d_f_t = mdspan_t<ElementType, mdspan::dextents_t<1>, mdspan::layout_f>;
+    template<typename ElementType> using mdspan_2d_f_t = mdspan_t<ElementType, mdspan::dextents_t<2>, mdspan::layout_f>;
+    template<typename ElementType> using mdspan_3d_f_t = mdspan_t<ElementType, mdspan::dextents_t<3>, mdspan::layout_f>;
 
-    template<typename ElementType> using mdspan_1d_s_t = mdspan_t<ElementType, mdspan::dextents<1>, mdspan::layout_stride>;
-    template<typename ElementType> using mdspan_2d_s_t = mdspan_t<ElementType, mdspan::dextents<2>, mdspan::layout_stride>;
-    template<typename ElementType> using mdspan_3d_s_t = mdspan_t<ElementType, mdspan::dextents<3>, mdspan::layout_stride>;
+    template<typename ElementType> using mdspan_1d_s_t = mdspan_t<ElementType, mdspan::dextents_t<1>, mdspan::layout_stride>;
+    template<typename ElementType> using mdspan_2d_s_t = mdspan_t<ElementType, mdspan::dextents_t<2>, mdspan::layout_stride>;
+    template<typename ElementType> using mdspan_3d_s_t = mdspan_t<ElementType, mdspan::dextents_t<3>, mdspan::layout_stride>;
 
 namespace mdspan
 {
@@ -281,7 +346,7 @@ namespace mdspan
     template<std::size_t Extent = dynamic_extent, typename T>
     constexpr auto create(T* begin, std::size_t count) noexcept
     {
-        return mdspan_t<T, extents<Extent>>(begin, {count});
+        return mdspan_t<T, extents_t<Extent>>(begin, {count});
     }
 
     template<
@@ -290,29 +355,28 @@ namespace mdspan
     >
     constexpr auto create(T* begin, std::size_t count, Location && location) noexcept
     {
-        return detail::mdspan_t<T, Location, extents<Extent>>(begin, {count}, EMU_FWD(location));
+        return detail::mdspan_t<T, Location, extents_t<Extent>>(begin, {count}, EMU_FWD(location));
     }
 
     template<typename T, typename Location, std::size_t Extent>
     constexpr auto create(const detail::span_t<T, Location, Extent> & s) noexcept
     {
-        return detail::mdspan_t<T, Location, extents<Extent>>(s.data(), extents<Extent>{s.size()}, s.location());
+        return detail::mdspan_t<T, Location, extents_t<Extent>>(s.data(), extents_t<Extent>{s.size()}, s.location());
     }
 
     template<typename T, std::size_t Extent>
     constexpr auto create(const gsl::span<T, Extent> & s) noexcept
     {
-        return mdspan_t<T, extents<Extent>>(s.data(), {s.size()});
+        return mdspan_t<T, extents_t<Extent>>(s.data(), {s.size()});
     }
 
     template<typename T, std::size_t Extent, typename Location>
     constexpr auto create(const gsl::span<T, Extent> & s, Location && location) noexcept
     {
-        return mdspan_t<T, extents<Extent>>(s.data(), {s.size()}, EMU_FWD(location));
+        return mdspan_t<T, extents_t<Extent>>(s.data(), {s.size()}, EMU_FWD(location));
     }
 
-
-} // namespace span
+} // namespace mdspan
 
 } // namespace emu
 

@@ -57,11 +57,12 @@ endif()
 if (emu_build_python)
 
     add_executable(emupythontest
-        src/python/toto_test.cpp
+        src/python/span_test.cpp
+        src/python/pybind11_test.cpp
     )
 
     target_link_libraries(emupythontest PRIVATE
-        GTest::gtest GTest::gtest_main emupython
+        GTest::gtest GTest::gtest_main emupython pybind11::embed
     )
 
     target_include_directories(emupythontest PRIVATE include)

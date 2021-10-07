@@ -77,12 +77,24 @@ namespace emu
             return mv(value);
         }
 
-        template<typename TT>
-        constexpr void reset(TT && new_value, bool owning = true)
+        template<typename T1>
+        constexpr void reset(T1 && new_value, bool owning = true)
             noexcept(noexcept_invoke and noexcept(std::declval<value_type&>() = EMU_FWD(new_value)))
         {
             invoke();
             value = EMU_FWD(new_value);
+            owning_ = owning;
+        }
+
+        template<typename T1, typename F1>
+        constexpr void reset(T1 && new_value, F1 && new_function, bool owning = true)
+            noexcept(noexcept_invoke
+                and noexcept(std::declval<value_type&>() = EMU_FWD(new_value))
+                and noexcept(std::declval<function_type&>() = EMU_FWD(new_function)))
+        {
+            invoke();
+            value = EMU_FWD(new_value);
+            function = EMU_FWD(new_function);
             owning_ = owning;
         }
 
@@ -100,7 +112,7 @@ namespace emu
         function_type function;
 
     private:
-        bool owning_ = true;
+        bool owning_ = false;
     };
 
     template<typename F>

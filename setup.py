@@ -108,7 +108,7 @@ class ConanBuild(build_ext):
 
     def build_extension(self, ext):
         p_version = sys.version_info
-        version = f'{p_version.major}.{p_version.minor}.{p_version.micro}'
+        version = f'{p_version.major}.{p_version.minor}'
 
         editable   = glob_editable
         channel    = glob_conan_channel

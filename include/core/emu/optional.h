@@ -23,6 +23,19 @@ namespace emu
 
     namespace optional
     {
+
+        // /// Create an optional of type T by taking ownership of value.
+        // template<typename T>
+        // auto create(T&& value) {
+        //     return optional_t<RemoveCVRef<T>>(EMU_FWD(value));
+        // }
+
+        // /// Create an optional of type T by taking ownership of value.
+        // template<typename T>
+        // auto wrap(T&& value) {
+        //     return optional_t<T>(EMU_FWD(value));
+        // }
+
         /**
          * @brief Returns the opt content if exists or will emplace it from the additional arguments provided.
          *

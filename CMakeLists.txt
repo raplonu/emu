@@ -54,8 +54,9 @@ target_link_libraries(emucore PUBLIC
     std::mdspan
 )
 
-# set EMU_CUDA to 0 or 1 depending on emu_build_cuda.
-target_compile_definitions(emucore PUBLIC EMU_CUDA=$<BOOL:${emu_build_cuda}>)
+if(emu_build_cuda)
+    target_compile_definitions(emucore PUBLIC EMU_CUDA)
+endif()
 
 if (emu_string_util)
     target_compile_definitions(emucore PUBLIC EMU_STRING_UTIL)
