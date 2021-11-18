@@ -23,7 +23,7 @@ message(CHECK_PASS "Done")
 # Emu Core.
 #
 
-find_package(Boost REQUIRED)
+find_package(boost REQUIRED)
 find_package(fmt REQUIRED)
 find_package(half REQUIRED)
 find_package(Microsoft.GSL REQUIRED)
@@ -44,14 +44,14 @@ target_include_directories(emucore PUBLIC
 target_compile_features(emucore PUBLIC cxx_std_14)
 
 target_link_libraries(emucore PUBLIC
-    Boost::Boost
+    boost::boost
     fmt::fmt
     half::half
     Microsoft.GSL::Microsoft.GSL
     range-v3::range-v3
-    tl::expected
-    tl::optional
-    std::mdspan
+    tl-expected::tl-expected
+    tl-optional::tl-optional
+    mdspan::mdspan
 )
 
 if(emu_build_cuda)
