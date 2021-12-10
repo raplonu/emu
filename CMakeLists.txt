@@ -4,12 +4,12 @@ message(CHECK_START "Emu - Configuring")
 
 project(emu VERSION 0.1 LANGUAGES CXX)
 
-option(emu_verbose      "Print emu info"        OFF)
-option(emu_string_util  "emu string utilies"    OFF)
-option(emu_build_cuda   "Build cuda module"     ON)
-option(emu_build_python "Build python module"   ON)
-option(emu_build_test   "Build unit test"       OFF)
-option(emu_export_flags "Export compile flags"  OFF)
+option(emu_verbose      "Print emu info"       OFF)
+option(emu_string_util  "emu string utilies"   OFF)
+option(emu_build_cuda   "Build cuda module"    ON)
+option(emu_build_python "Build python module"  ON)
+option(emu_build_test   "Build unit test"      OFF)
+option(emu_export_flags "Export compile flags" OFF)
 
 if (emu_build_cuda)
     enable_language(CUDA)
@@ -20,10 +20,10 @@ message(CHECK_PASS "Done")
 
 ########################################################################
 #
-# Emu Core.
+# Emu Core
 #
 
-find_package(boost REQUIRED)
+find_package(Boost REQUIRED)
 find_package(fmt REQUIRED)
 find_package(half REQUIRED)
 find_package(Microsoft.GSL REQUIRED)
@@ -47,7 +47,7 @@ target_link_libraries(emucore PUBLIC
     boost::boost
     fmt::fmt
     half::half
-    Microsoft.GSL::Microsoft.GSL
+    Microsoft.GSL::GSL
     range-v3::range-v3
     tl-expected::tl-expected
     tl-optional::tl-optional
@@ -68,7 +68,7 @@ set(emu_targets emucore)
 
 ########################################################################
 #
-# Emu CUDA.
+# Emu CUDA
 #
 
 if (emu_build_cuda)
@@ -116,7 +116,7 @@ endif()
 
 ########################################################################
 #
-# Emu python.
+# Emu python
 #
 
 if (emu_build_python)
@@ -141,7 +141,7 @@ if (emu_build_python)
         target_link_libraries(emupython PUBLIC emucuda)
     endif()
 
-    target_compile_features(emucuda PUBLIC cxx_std_14)
+    target_compile_features(emupython PUBLIC cxx_std_14)
 
     add_library(emu::python ALIAS emupython)
     list(APPEND emu_targets emupython)
@@ -151,7 +151,7 @@ endif()
 
 ########################################################################
 #
-# Google Test.
+# Test
 #
 # The tests are not built by default.  To build them, set the
 # emu_build_test option to ON.  You can do it by running ccmake

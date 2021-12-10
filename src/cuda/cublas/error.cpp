@@ -3,11 +3,11 @@
 
 namespace emu
 {
+
 namespace cublas
 {
 
-std::string describe(status_t error_code)
-{
+    std::string describe(status_t error_code) {
     using namespace std::string_literals;
 
     switch (status(error_code))

@@ -92,7 +92,7 @@ class EmuConan(ConanFile):
             self.requires('abseil/20200923.3')
 
         if self.options.test:
-            self.requires('gtest/1.10.0')
+            self.requires('gtest/1.11.0')
 
     def generate(self):
         cmake = CMakeToolchain(self)

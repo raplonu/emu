@@ -345,6 +345,7 @@ namespace span
 
 namespace detail
 {
+
     template <typename To, typename From, std::size_t Extent>
     struct calculate_byte_size : std::integral_constant<std::size_t, Extent * sizeof(From) / sizeof(To)>
     {
@@ -356,6 +357,7 @@ namespace detail
     struct calculate_byte_size<To, From, dynamic_extent>
         : std::integral_constant<std::size_t, dynamic_extent>
     {};
+
 } // namespace detail
 
     template<typename To, typename From, typename Location, std::size_t Extent,
@@ -376,6 +378,6 @@ namespace detail
 
 } // namespace span
 
-}
+} // namespace emu
 
 #endif //EMU_SPAN_H
