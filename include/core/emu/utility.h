@@ -56,7 +56,11 @@ namespace detail
 
   //###################### SIZE ########################
 
-#ifdef EMU_NO_CXX17
+#if EMU_FROM_CXX17
+
+    using std::size;
+
+#else
 
     template <class C>
     constexpr auto size(const C& c) -> decltype(c.size())
@@ -85,10 +89,6 @@ namespace detail
     {
         return N;
     }
-
-#else
-
-    using std::size;
 
 #endif
 

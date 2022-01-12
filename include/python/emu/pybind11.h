@@ -50,18 +50,19 @@ namespace pybind11
 
 } // namespace emu
 
+FMT_BEGIN_NAMESPACE
 
 /**
- * @brief Forward every object that inherit pybind11::object to pybind11::str::format.
+ * @brief Forward every object that inherit pybind11::handle to pybind11::str::format.
  *
- * Note: It would have been better to use `handle` instead of `object`. But since a handle is
- * a range of handle, it causes formating error. For now,
+ * Note: Since handle provide a range interface. We need to explicitly declare it and
+ * its inherited classes not has a range.
  *
  * @tparam T
  * @tparam Char
  */
-template <typename Char>
-struct fmt::formatter<pybind11::handle, Char /*, emu::EnableIf< emu::IsBaseOf<pybind11::object, T>, void > */> {
+template <typename T, typename Char>
+struct formatter<T, Char, emu::EnableIf< emu::IsBaseOf<pybind11::handle, T>, void > > {
 
     std::string format_ = "{}";
 
@@ -83,22 +84,31 @@ struct fmt::formatter<pybind11::handle, Char /*, emu::EnableIf< emu::IsBaseOf<py
     }
 };
 
-template <> struct fmt::formatter<pybind11::object  >: formatter<pybind11::handle> {};
-template <> struct fmt::formatter<pybind11::bool_   >: formatter<pybind11::handle> {};
-template <> struct fmt::formatter<pybind11::int_    >: formatter<pybind11::handle> {};
-template <> struct fmt::formatter<pybind11::float_  >: formatter<pybind11::handle> {};
-template <> struct fmt::formatter<pybind11::str     >: formatter<pybind11::handle> {};
-template <> struct fmt::formatter<pybind11::bytes   >: formatter<pybind11::handle> {};
-template <> struct fmt::formatter<pybind11::tuple   >: formatter<pybind11::handle> {};
-template <> struct fmt::formatter<pybind11::list    >: formatter<pybind11::handle> {};
-template <> struct fmt::formatter<pybind11::dict    >: formatter<pybind11::handle> {};
-template <> struct fmt::formatter<pybind11::slice   >: formatter<pybind11::handle> {};
-template <> struct fmt::formatter<pybind11::none    >: formatter<pybind11::handle> {};
-template <> struct fmt::formatter<pybind11::capsule >: formatter<pybind11::handle> {};
-template <> struct fmt::formatter<pybind11::iterable>: formatter<pybind11::handle> {};
-template <> struct fmt::formatter<pybind11::iterator>: formatter<pybind11::handle> {};
-template <> struct fmt::formatter<pybind11::function>: formatter<pybind11::handle> {};
-template <> struct fmt::formatter<pybind11::buffer  >: formatter<pybind11::handle> {};
+FMT_END_NAMESPACE
+
+FMT_BEGIN_NAMESPACE
+
+    // Specialization for each pybind11 type to never be treated as a range by fmt.
+
+    template <typename Char> struct is_range<pybind11::handle  , Char>: std::false_type {};
+    template <typename Char> struct is_range<pybind11::object  , Char>: std::false_type {};
+    template <typename Char> struct is_range<pybind11::bool_   , Char>: std::false_type {};
+    template <typename Char> struct is_range<pybind11::int_    , Char>: std::false_type {};
+    template <typename Char> struct is_range<pybind11::float_  , Char>: std::false_type {};
+    template <typename Char> struct is_range<pybind11::str     , Char>: std::false_type {};
+    template <typename Char> struct is_range<pybind11::bytes   , Char>: std::false_type {};
+    template <typename Char> struct is_range<pybind11::tuple   , Char>: std::false_type {};
+    template <typename Char> struct is_range<pybind11::list    , Char>: std::false_type {};
+    template <typename Char> struct is_range<pybind11::dict    , Char>: std::false_type {};
+    template <typename Char> struct is_range<pybind11::slice   , Char>: std::false_type {};
+    template <typename Char> struct is_range<pybind11::none    , Char>: std::false_type {};
+    template <typename Char> struct is_range<pybind11::capsule , Char>: std::false_type {};
+    template <typename Char> struct is_range<pybind11::iterable, Char>: std::false_type {};
+    template <typename Char> struct is_range<pybind11::iterator, Char>: std::false_type {};
+    template <typename Char> struct is_range<pybind11::function, Char>: std::false_type {};
+    template <typename Char> struct is_range<pybind11::buffer  , Char>: std::false_type {};
+
+FMT_END_NAMESPACE
 
 // Note: This code is supposed to disable range formating for any pybind11 types.
 // But it fail since it does not adds any level of template specialization.
