@@ -11,6 +11,7 @@ namespace cast
 namespace detail
 {
 
+
     extents_strides extents_and_stride(py::handle cai, std::size_t word_size) {
         // auto shape = as_vector<py::ssize_t>(cai["shape"].cast<py::tuple>());
         auto extents = cai["shape"].cast<std::vector<py::ssize_t>>();
@@ -19,6 +20,7 @@ namespace detail
             pybind11::not_none(cai["strides"]).map(py::cast<std::vector<py::ssize_t>>),
             [&extents, word_size]{ return mdspan::strides<py::ssize_t>(extents, word_size); }
         );
+
 
         return {mv(extents), mv(strides)};
     }

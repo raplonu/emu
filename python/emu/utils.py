@@ -3,8 +3,10 @@ from collections.abc import Iterable
 from .operator import eq, ne
 from .functional import apply
 
+
 class AnyOf:
-    def __init__(self, iterable : Iterable):
+
+    def __init__(self, iterable: Iterable):
         self.__iterable = iterable
 
     def __eq__(self, other):
@@ -16,12 +18,14 @@ class AnyOf:
     def __call__(self, *args, **kwargs):
         return any(map(apply.rpartial(*args, **kwargs), self.__iterable))
 
+
 def any_of(*args):
     return AnyOf(args)
 
 
 class AllOf:
-    def __init__(self, iterable : Iterable):
+
+    def __init__(self, iterable: Iterable):
         self.__iterable = iterable
 
     def __eq__(self, other):
@@ -32,6 +36,7 @@ class AllOf:
 
     def __call__(self, *args, **kwargs):
         return all(map(apply.rpartial(*args, **kwargs), self.__iterable))
+
 
 def all_of(*args):
     return AllOf(args)

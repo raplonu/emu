@@ -18,7 +18,7 @@ namespace
 
         py::int_ i(0);
 
-        static_assert(emu::IsBaseOf<pybind11::handle, py::int_>, "TOTO");
+        static_assert(std::is_base_of_v<pybind11::handle, py::int_>, "TOTO");
 
         {
             // No formatter.

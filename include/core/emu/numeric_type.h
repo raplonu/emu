@@ -2,12 +2,18 @@
 #define EMU_NUMERIC_TYPE_H
 
 #include <cstdint>
+
+#if EMU_HALF
 #include <half.hpp>
+#endif //EMU_HALF
 
 namespace emu
 {
+
+#if EMU_HALF
     // Expose half_float::half in emu namespace
     using half_float::half;
+#endif //EMU_HALF
 
     enum class DataType {
         uint8,
@@ -47,7 +53,9 @@ namespace emu
         MAP_TYPE(uint32_t, DataType::uint32)
         MAP_TYPE(uint64_t, DataType::uint64)
 
+#if EMU_HALF
         MAP_TYPE(half, DataType::float16)
+#endif //EMU_HALF
         MAP_TYPE(float,            DataType::float32)
         MAP_TYPE(double,           DataType::float64)
     }

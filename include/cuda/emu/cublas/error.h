@@ -10,12 +10,16 @@ namespace emu
 
 namespace cublas
 {
+
+    /**
+     * @brief The error category for CUBLAS.
+     */
     using status_t = cublasStatus_t;
 
     /**
      * Aliases for cublas status codes
      *
-     * @note unfortunately, this enum can't inherit from @ref status_t
+     * @note unfortunately, this enum can't inherit from status_t
      */
     enum status : std::underlying_type<status_t>::type
     {

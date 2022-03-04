@@ -30,7 +30,7 @@ You can also directly package the project locally
 pip install .
 ```
 
-It will install `emu` both in your python & conan cache execute:
+It will install `emu` both in your python & conan cache.
 
 ## Developer mode
 

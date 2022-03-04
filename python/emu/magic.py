@@ -1,23 +1,29 @@
 import sys
-import pyperclip as clip
 from io import StringIO
+from IPython import get_ipython
+import pyperclip as clip
 from pampy import match
 
+
 class Capturing(list):
+
     def __enter__(self):
         self._stdout = sys.stdout
         sys.stdout = self._stringio = StringIO()
         return self
+
     def __exit__(self, *args):
         self.extend(self._stringio.getvalue().splitlines())
         del self._stringio    # free up some memory
         sys.stdout = self._stdout
 
+
 def parse_args(arg):
     return match(arg,
-                int,   str,
-                tuple, lambda t : ' '.join(map(parse_args, t)),
-                slice, lambda s : f'{s.start}-{s.stop}')
+                 int  , str,
+                 tuple, lambda t: ' '.join(map(parse_args, t)),
+                 slice, lambda s: f'{s.start}-{s.stop}')
+
 
 class Exporter:
     '''Copy to clipboard lines provided as value or ranges in argument.

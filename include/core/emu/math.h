@@ -6,10 +6,7 @@
 
 #include <cmath>
 
-namespace emu
-{
-
-namespace math
+namespace emu::math
 {
 
 namespace std
@@ -37,10 +34,10 @@ namespace detail
 {
 
     template<typename T1, typename T2>
-    using SameTypes      = EnableIf<    Equivalent<T1, T2> or      (IsIntegral<T1> and IsIntegral<T2>), T1>;
+    using SameTypes      = EnableIf<    Equivalent<T1, T2> or      (::std::is_integral_v<T1> and ::std::is_integral_v<T2>), T1>;
 
     template<typename T1, typename T2>
-    using DifferentTypes = EnableIf<not Equivalent<T1, T2> and not (IsIntegral<T1> and IsIntegral<T2>), T1>;
+    using DifferentTypes = EnableIf<not Equivalent<T1, T2> and not (::std::is_integral_v<T1> and ::std::is_integral_v<T2>), T1>;
 
 } // namespace detail
 
@@ -254,8 +251,6 @@ namespace detail
     constexpr auto band = band_t{};
     constexpr auto bxor = bxor_t{};
 
-} // namespace math
-
-} // namespace emu
+} // namespace math::emu
 
 #endif //EMU_MATH_H

@@ -127,158 +127,230 @@ namespace detail
         using location_type   = Location;
 
     private:
-        static constexpr auto DefaultAccessor = IsDefaultConstructible<accessor_type>;
-        static constexpr auto MappingConstructible = IsConstructible<mapping_type, extents_type>;
+        static constexpr auto DefaultAccessor = std::is_default_constructible_v<accessor_type>;
+        static constexpr auto MappingConstructible = std::is_constructible_v<mapping_type, extents_type>;
 
         template<typename SizeType, std::size_t N>
         static constexpr auto array_match =
-            IsConvertible<SizeType, size_type> and
+            std::is_convertible_v<SizeType, size_type> and
             N == extents_type::rank_dynamic();
 
     public:
 
-        EMU_HODE constexpr mdspan_t()                noexcept(IsNothrowDefaultConstructible<location_type>) = default;
-        EMU_HODE constexpr mdspan_t(const mdspan_t&) noexcept(IsNothrowCopyConstructible   <location_type>) = default;
-        EMU_HODE constexpr mdspan_t(mdspan_t&&)      noexcept(IsNothrowMoveConstructible   <location_type>) = default;
 
-        // Constructor with dynamic_extents.
+        MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdspan_t() = default;
+        MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdspan_t(const mdspan_t&) = default;
+        MDSPAN_INLINE_FUNCTION_DEFAULTED constexpr mdspan_t(mdspan_t&&) = default;
 
-        template< bool Dependent = false,
-            EnableIf<
-                Dependent ||
-                MappingConstructible     and
-                DefaultAccessor
-            > = true
-        >
-        EMU_HODE constexpr mdspan_t(pointer p, location_type location = {}) noexcept:
-            base_t(p, mapping_type(extents_type()), accessor_type()), location_(location)
-        {}
+        MDSPAN_TEMPLATE_REQUIRES(
+            class... SizeTypes,
+            /* requires */ (
+            _MDSPAN_FOLD_AND(_MDSPAN_TRAIT(std::is_convertible, SizeTypes, size_type) /* && ... */) &&
+            _MDSPAN_TRAIT(std::is_constructible, extents_type, SizeTypes...) &&
+            _MDSPAN_TRAIT(std::is_constructible, mapping_type, extents_type) &&
+            _MDSPAN_TRAIT(std::is_default_constructible, accessor_type)
+            )
+        )
+        MDSPAN_INLINE_FUNCTION
+        explicit constexpr mdspan_t(pointer p, SizeTypes... dynamic_extents)
+            // TODO @proposal-bug shouldn't I be allowed to do `move(p)` here?
+            : base_t(p, dynamic_extents...), location_()
+        { }
 
-        template<
-            typename SizeType, std::size_t N,
-            EnableIf<
-                array_match<SizeType, N> and
-                MappingConstructible     and
-                DefaultAccessor
-            > = true
-        >
-        EMU_HODE constexpr mdspan_t(pointer p, const std::array<SizeType, N>& dynamic_extents, location_type location = {}) noexcept:
-            base_t(p, mapping_type(extents_type(dynamic_extents)), accessor_type()), location_(location)
-        {}
+        MDSPAN_TEMPLATE_REQUIRES(
+            class SizeType, size_t N,
+            /* requires */ (
+            _MDSPAN_TRAIT(std::is_convertible, SizeType, size_type) &&
+            _MDSPAN_TRAIT(std::is_constructible, extents_type, std::array<SizeType, N>) &&
+            _MDSPAN_TRAIT(std::is_constructible, mapping_type, extents_type) &&
+            _MDSPAN_TRAIT(std::is_default_constructible, accessor_type)
+            )
+        )
+        MDSPAN_CONDITIONAL_EXPLICIT(N != extents_type::rank_dynamic())
+        MDSPAN_INLINE_FUNCTION
+        constexpr mdspan_t(pointer p, const std::array<SizeType, N>& dynamic_extents, location_type location = {})
+            : base_t(p, dynamic_extents), location_(location)
+        { }
 
-        template<
-            typename SizeType, std::size_t N,
-            EnableIf<
-                array_match<SizeType, N> and
-                MappingConstructible
-            > = true
-        >
-        EMU_HODE constexpr mdspan_t(pointer p, const std::array<SizeType, N>& dynamic_extents, const accessor_type& a, location_type location = {}) noexcept:
-            base_t(p, mapping_type(extents_type(dynamic_extents)), a), location_(location)
-        {}
+        MDSPAN_FUNCTION_REQUIRES(
+            (MDSPAN_INLINE_FUNCTION constexpr),
+            mdspan_t, (pointer p, const extents_type& exts, location_type location = {}), ,
+            /* requires */ (_MDSPAN_TRAIT(std::is_default_constructible, accessor_type) &&
+                            _MDSPAN_TRAIT(std::is_constructible, mapping_type, extents_type))
+        ) : base_t(p, exts), location_(location)
+        { }
 
-        // Constructor with extents_type.
+        MDSPAN_FUNCTION_REQUIRES(
+            (MDSPAN_INLINE_FUNCTION constexpr),
+            mdspan_t, (pointer p, const mapping_type& m, location_type location = {}), ,
+            /* requires */ (_MDSPAN_TRAIT(std::is_default_constructible, accessor_type))
+        ) : base_t(p, m), location_(location)
+        { }
 
-        template< bool Dependent = false,
-            EnableIf<Dependent || MappingConstructible and DefaultAccessor> = true
-        >
-        EMU_HODE constexpr mdspan_t(pointer p, const extents_type& exts, location_type location = {}) noexcept:
-            base_t(p, mapping_type(exts), accessor_type()), location_(location)
-        {}
+        MDSPAN_INLINE_FUNCTION
+        constexpr mdspan_t(pointer p, const mapping_type& m, const accessor_type& a, location_type location = {})
+            : base_t(p, m, a), location_(location)
+        { }
 
-        template< bool Dependent = false,
-            EnableIf<Dependent || MappingConstructible> = true
-        >
-        EMU_HODE constexpr mdspan_t(pointer p, const extents_type& exts, const accessor_type& a, location_type location = {}) noexcept:
-            base_t(p, mapping_type(exts), a), location_(location)
-        {}
+        MDSPAN_TEMPLATE_REQUIRES(
+            class OtherElementType, class OtherExtents, class OtherLayoutPolicy, class OtherAccessor,
+            /* requires */ (
+            _MDSPAN_TRAIT(std::is_constructible, mapping_type, typename OtherLayoutPolicy::template mapping<OtherExtents>) &&
+            _MDSPAN_TRAIT(std::is_constructible, accessor_type, OtherAccessor) &&
+            _MDSPAN_TRAIT(std::is_constructible, pointer, typename OtherAccessor::pointer) &&
+            _MDSPAN_TRAIT(std::is_constructible, extents_type, OtherExtents)
+            )
+        )
+        MDSPAN_INLINE_FUNCTION
+        constexpr mdspan_t(const mdspan_t<OtherElementType, OtherExtents, OtherLayoutPolicy, OtherAccessor>& other)
+            : base_t(other), location_(other.location)
+        { }
 
-        // Constructor with mapping_type.
+        MDSPAN_INLINE_FUNCTION_DEFAULTED
+        ~mdspan_t() = default;
 
-        template< bool Dependent = false,
-            EnableIf<Dependent || DefaultAccessor> = true
-        >
-        EMU_HODE constexpr mdspan_t(pointer p, const mapping_type& m, location_type location = {}) noexcept:
-            base_t(p, m), location_(location)
-        {}
+        // EMU_HODE constexpr mdspan_t()                noexcept(IsNothrowDefaultConstructible<location_type>) = default;
+        // EMU_HODE constexpr mdspan_t(const mdspan_t&) noexcept(IsNothrowCopyConstructible   <location_type>) = default;
+        // EMU_HODE constexpr mdspan_t(mdspan_t&&)      noexcept(IsNothrowMoveConstructible   <location_type>) = default;
 
-        EMU_HODE constexpr mdspan_t(pointer p, const mapping_type& m, const accessor_type& a, location_type location = {}) noexcept:
-            base_t(p, m, a), location_(location)
-        {}
+        // // Constructor with dynamic_extents.
 
-        // Other constructor
+        // template< bool Dependent = false,
+        //     EnableIf<
+        //         Dependent ||
+        //         MappingConstructible     and
+        //         DefaultAccessor
+        //     > = true
+        // >
+        // EMU_HODE constexpr mdspan_t(pointer p, location_type location = {}) noexcept:
+        //     base_t(p, mapping_type(extents_type()), accessor_type()), location_(location)
+        // {}
 
-        EMU_HODE constexpr mdspan_t(base_t base, location_type location = {}) noexcept:
-            base_t(base), location_(location)
-        {}
+        // template<
+        //     typename SizeType, std::size_t N,
+        //     EnableIf<
+        //         array_match<SizeType, N> and
+        //         MappingConstructible     and
+        //         DefaultAccessor
+        //     > = true
+        // >
+        // EMU_HODE constexpr mdspan_t(pointer p, const std::array<SizeType, N>& dynamic_extents, location_type location = {}) noexcept:
+        //     base_t(p, mapping_type(extents_type(dynamic_extents)), accessor_type()), location_(location)
+        // {}
 
-        template<class OtherElementType, class OtherExtents, class OtherLayoutPolicy, class OtherAccessor,
-            EnableIf<
-                IsConvertible<typename OtherLayoutPolicy::template mapping<OtherExtents>, mapping_type> &&
-                IsConvertible<OtherAccessor, accessor_type> &&
-                IsConvertible<typename OtherAccessor::pointer, pointer> &&
-                IsConvertible<OtherExtents, extents_type>
-            > = true
-        >
-        EMU_HODE constexpr mdspan_t(const mdspan_t<OtherElementType, Location, OtherExtents, OtherLayoutPolicy, OtherAccessor>& other):
-            base_t(other), location_(other.location())
-        {}
+        // template<
+        //     typename SizeType, std::size_t N,
+        //     EnableIf<
+        //         array_match<SizeType, N> and
+        //         MappingConstructible
+        //     > = true
+        // >
+        // EMU_HODE constexpr mdspan_t(pointer p, const std::array<SizeType, N>& dynamic_extents, const accessor_type& a, location_type location = {}) noexcept:
+        //     base_t(p, mapping_type(extents_type(dynamic_extents)), a), location_(location)
+        // {}
 
-        template<class OtherElementType, class OtherExtents, class OtherLayoutPolicy, class OtherAccessor,
-            EnableIf<
-                IsConvertible<typename OtherLayoutPolicy::template mapping<OtherExtents>, mapping_type> &&
-                IsConvertible<OtherAccessor, accessor_type> &&
-                IsConvertible<typename OtherAccessor::pointer, pointer> &&
-                IsConvertible<OtherExtents, extents_type>
-            > = true
-        >
-        EMU_HODE constexpr mdspan_t(const stdex::mdspan<OtherElementType, OtherExtents, OtherLayoutPolicy, OtherAccessor>& other):
-            base_t(other), location_()
-        {}
+        // // Constructor with extents_type.
 
-        template<bool Dependent = false,
-            class OtherElementType, std::size_t OtherExtents,
-            EnableIf< Dependent or base_t::static_extent(0) == dynamic_extent > = true,
-            EnableIf< Dependent or base_t::rank() == 1 > = true,
-            EnableIf< Dependent or IsAllowedExtentConversion<OtherExtents, base_t::static_extent(0)> > = true,
-            EnableIf< Dependent or IsConvertible<typename detail::span_t<OtherElementType, Location, OtherExtents>::pointer, pointer> > = true
-        >
-        explicit EMU_HODE constexpr mdspan_t(const detail::span_t<OtherElementType, Location, OtherExtents>& other) noexcept:
-            base_t(other.data(), mapping_type(extents_type({other.size()})), accessor_type()), location_(other.location)
-        {}
+        // template< bool Dependent = false,
+        //     EnableIf<Dependent || MappingConstructible and DefaultAccessor> = true
+        // >
+        // EMU_HODE constexpr mdspan_t(pointer p, const extents_type& exts, location_type location = {}) noexcept:
+        //     base_t(p, mapping_type(exts), accessor_type()), location_(location)
+        // {}
 
-        template<bool Dependent = false,
-            class OtherElementType, std::size_t OtherExtents,
-            EnableIf< Dependent or base_t::static_extent(0) != dynamic_extent > = true,
-            EnableIf< Dependent or base_t::rank() == 1 > = true,
-            EnableIf< Dependent or IsAllowedExtentConversion<OtherExtents, base_t::static_extent(0)> > = true,
-            EnableIf< Dependent or IsConvertible<typename detail::span_t<OtherElementType, Location, OtherExtents>::pointer, pointer> > = true
-        >
-        explicit EMU_HODE constexpr mdspan_t(const detail::span_t<OtherElementType, Location, OtherExtents>& other) noexcept:
-            base_t(other.data(), mapping_type(extents_type()), accessor_type()), location_(other.location)
-        {}
+        // template< bool Dependent = false,
+        //     EnableIf<Dependent || MappingConstructible> = true
+        // >
+        // EMU_HODE constexpr mdspan_t(pointer p, const extents_type& exts, const accessor_type& a, location_type location = {}) noexcept:
+        //     base_t(p, mapping_type(exts), a), location_(location)
+        // {}
 
-        template<bool Dependent = false,
-            class OtherElementType, std::size_t OtherExtents,
-            EnableIf< Dependent or base_t::static_extent(0) == dynamic_extent > = true,
-            EnableIf< Dependent or base_t::rank() == 1 > = true,
-            EnableIf< Dependent or IsAllowedExtentConversion<OtherExtents, base_t::static_extent(0)> > = true,
-            EnableIf< Dependent or IsConvertible<typename gsl::span<OtherElementType, OtherExtents>::pointer, pointer> > = true
-        >
-        EMU_HODE constexpr mdspan_t(const gsl::span<OtherElementType, OtherExtents>& other, location_type location = {}) noexcept:
-            base_t(other.data(), mapping_type(extents_type({other.size()})), accessor_type()), location_(location)
-        {}
+        // // Constructor with mapping_type.
 
-        template<bool Dependent = false,
-            class OtherElementType, std::size_t OtherExtents,
-            EnableIf< Dependent or base_t::static_extent(0) != dynamic_extent > = true,
-            EnableIf< Dependent or base_t::rank() == 1 > = true,
-            EnableIf< Dependent or IsAllowedExtentConversion<OtherExtents, base_t::static_extent(0)> > = true,
-            EnableIf< Dependent or IsConvertible<typename gsl::span<OtherElementType, OtherExtents>::pointer, pointer> > = true
-        >
-        EMU_HODE constexpr mdspan_t(const gsl::span<OtherElementType, OtherExtents>& other, location_type location = {}) noexcept:
-            base_t(other.data(), mapping_type(extents_type()), accessor_type()), location_(location)
-        {}
+        // template< bool Dependent = false,
+        //     EnableIf<Dependent || DefaultAccessor> = true
+        // >
+        // EMU_HODE constexpr mdspan_t(pointer p, const mapping_type& m, location_type location = {}) noexcept:
+        //     base_t(p, m), location_(location)
+        // {}
+
+        // EMU_HODE constexpr mdspan_t(pointer p, const mapping_type& m, const accessor_type& a, location_type location = {}) noexcept:
+        //     base_t(p, m, a), location_(location)
+        // {}
+
+        // // Other constructor
+
+        // EMU_HODE constexpr mdspan_t(base_t base, location_type location = {}) noexcept:
+        //     base_t(base), location_(location)
+        // {}
+
+        // template<class OtherElementType, class OtherExtents, class OtherLayoutPolicy, class OtherAccessor,
+        //     EnableIf<
+        //         std::is_convertible_v<typename OtherLayoutPolicy::template mapping<OtherExtents>, mapping_type> &&
+        //         std::is_convertible_v<OtherAccessor, accessor_type> &&
+        //         std::is_convertible_v<typename OtherAccessor::pointer, pointer> &&
+        //         std::is_convertible_v<OtherExtents, extents_type>
+        //     > = true
+        // >
+        // EMU_HODE constexpr mdspan_t(const mdspan_t<OtherElementType, Location, OtherExtents, OtherLayoutPolicy, OtherAccessor>& other):
+        //     base_t(other), location_(other.location())
+        // {}
+
+        // template<class OtherElementType, class OtherExtents, class OtherLayoutPolicy, class OtherAccessor,
+        //     EnableIf<
+        //         std::is_convertible_v<typename OtherLayoutPolicy::template mapping<OtherExtents>, mapping_type> &&
+        //         std::is_convertible_v<OtherAccessor, accessor_type> &&
+        //         std::is_convertible_v<typename OtherAccessor::pointer, pointer> &&
+        //         std::is_convertible_v<OtherExtents, extents_type>
+        //     > = true
+        // >
+        // EMU_HODE constexpr mdspan_t(const stdex::mdspan<OtherElementType, OtherExtents, OtherLayoutPolicy, OtherAccessor>& other):
+        //     base_t(other), location_()
+        // {}
+
+        // template<bool Dependent = false,
+        //     class OtherElementType, std::size_t OtherExtents,
+        //     EnableIf< Dependent or base_t::static_extent(0) == dynamic_extent > = true,
+        //     EnableIf< Dependent or base_t::rank() == 1 > = true,
+        //     EnableIf< Dependent or IsAllowedExtentConversion<OtherExtents, base_t::static_extent(0)> > = true,
+        //     EnableIf< Dependent or std::is_convertible_v<typename detail::span_t<OtherElementType, Location, OtherExtents>::pointer, pointer> > = true
+        // >
+        // explicit EMU_HODE constexpr mdspan_t(const detail::span_t<OtherElementType, Location, OtherExtents>& other) noexcept:
+        //     base_t(other.data(), mapping_type(extents_type({other.size()})), accessor_type()), location_(other.location)
+        // {}
+
+        // template<bool Dependent = false,
+        //     class OtherElementType, std::size_t OtherExtents,
+        //     EnableIf< Dependent or base_t::static_extent(0) != dynamic_extent > = true,
+        //     EnableIf< Dependent or base_t::rank() == 1 > = true,
+        //     EnableIf< Dependent or IsAllowedExtentConversion<OtherExtents, base_t::static_extent(0)> > = true,
+        //     EnableIf< Dependent or std::is_convertible_v<typename detail::span_t<OtherElementType, Location, OtherExtents>::pointer, pointer> > = true
+        // >
+        // explicit EMU_HODE constexpr mdspan_t(const detail::span_t<OtherElementType, Location, OtherExtents>& other) noexcept:
+        //     base_t(other.data(), mapping_type(extents_type()), accessor_type()), location_(other.location)
+        // {}
+
+        // template<bool Dependent = false,
+        //     class OtherElementType, std::size_t OtherExtents,
+        //     EnableIf< Dependent or base_t::static_extent(0) == dynamic_extent > = true,
+        //     EnableIf< Dependent or base_t::rank() == 1 > = true,
+        //     EnableIf< Dependent or IsAllowedExtentConversion<OtherExtents, base_t::static_extent(0)> > = true,
+        //     EnableIf< Dependent or std::is_convertible_v<typename gsl::span<OtherElementType, OtherExtents>::pointer, pointer> > = true
+        // >
+        // EMU_HODE constexpr mdspan_t(const gsl::span<OtherElementType, OtherExtents>& other, location_type location = {}) noexcept:
+        //     base_t(other.data(), mapping_type(extents_type({other.size()})), accessor_type()), location_(location)
+        // {}
+
+        // template<bool Dependent = false,
+        //     class OtherElementType, std::size_t OtherExtents,
+        //     EnableIf< Dependent or base_t::static_extent(0) != dynamic_extent > = true,
+        //     EnableIf< Dependent or base_t::rank() == 1 > = true,
+        //     EnableIf< Dependent or IsAllowedExtentConversion<OtherExtents, base_t::static_extent(0)> > = true,
+        //     EnableIf< Dependent or std::is_convertible_v<typename gsl::span<OtherElementType, OtherExtents>::pointer, pointer> > = true
+        // >
+        // EMU_HODE constexpr mdspan_t(const gsl::span<OtherElementType, OtherExtents>& other, location_type location = {}) noexcept:
+        //     base_t(other.data(), mapping_type(extents_type()), accessor_type()), location_(location)
+        // {}
 
         EMU_HODE constexpr mdspan_t& operator=(const mdspan_t&) noexcept = default;
         EMU_HODE constexpr mdspan_t& operator=(mdspan_t&&) noexcept = default;

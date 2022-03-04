@@ -15,7 +15,7 @@ namespace cusolver
     /**
      * Aliases for cusolver status codes
      *
-     * @note unfortunately, this enum can't inherit from @ref status_t
+     * @note unfortunately, this enum can't inherit from status_t
      */
     enum status : std::underlying_type<status_t>::type
     {

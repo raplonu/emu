@@ -45,20 +45,43 @@ namespace detail
         std::vector<py::ssize_t> strides;
     };
 
-    extents_strides extents_and_stride(py::handle cai, std::size_t word_size);
+    inline extents_strides extents_and_stride(py::handle cai, std::size_t word_size) {
+        // auto shape = as_vector<py::ssize_t>(cai["shape"].cast<py::tuple>());
+        auto extents = cai["shape"].cast<std::vector<py::ssize_t>>();
+
+        auto strides = optional::value_or_invoke(
+            pybind11::not_none(cai["strides"]).map(py::cast<std::vector<py::ssize_t>>),
+            [&extents, word_size]{ return mdspan::strides<py::ssize_t>(extents, word_size); }
+        );
+
+
+        return {mv(extents), mv(strides)};
+    }
 
 } // namespace detail
 
-    py::object to_array(
+    inline py::object to_array(
         const byte* ptr, py::dtype type, bool read_only,
         std::vector<py::ssize_t> extents, std::vector<py::ssize_t> strides,
         location::host_t /* location */
-    );
+    ) {
+        // In order to avoid copying data, we declare a dummy parent.
+        // More info here: https://github.com/pybind/pybind11/issues/323#issuecomment-575717041
+        py::str dummyDataOwner;
+        auto res = py::array{type, mv(extents), mv(strides), ptr, dummyDataOwner};
+
+        // Only way I found to force read only from const span.
+        // More info here: https://github.com/pybind/pybind11/issues/481#issue-187301065
+        if (read_only)
+            py::detail::array_proxy(res.ptr())->flags &= ~py::detail::npy_api::NPY_ARRAY_WRITEABLE_;
+
+        return res;
+    }
 
     template<typename ElementType>
     struct buffer_info_adaptor<ElementType, location::host_t> {
 
-        using value_type = RemoveCV<ElementType>;
+        using value_type = std::remove_cv_t<ElementType>;
 
         static constexpr auto loc_descr() noexcept {
             using namespace py::detail;
@@ -71,7 +94,7 @@ namespace detail
                 try
                 {
                     // Requesting may fail for severals reasons including constness incompatibility.
-                    auto buffer_info = py::buffer(handle, /* is_borrowed = */ true).request(/* writable = */ not IsConst<ElementType>);
+                    auto buffer_info = py::buffer(handle, /* is_borrowed = */ true).request(/* writable = */ not std::is_const_v<ElementType>);
 
                     // Not using `py::format_descriptor` anymore since format are not consistent with buffer_info...
                     // if (py::format_descriptor<value_type>::format() == buffer_info.format)
@@ -102,7 +125,7 @@ namespace detail
 
             return to_array(
                 reinterpret_cast<const byte*>(value.data()), py::dtype::of<ElementType>(),
-                IsConst<ElementType>, extents, strides, value.location()
+                std::is_const_v<ElementType>, extents, strides, value.location()
             );
         }
 
@@ -113,22 +136,49 @@ namespace detail
 namespace detail
 {
 
-    py::module_& cupy_module();
+    inline py::module_& cupy_module() {
+        static py::module_ cupy(py::module_::import("cupy"));
+        return cupy;
+    }
 
-    py::module_& cuda_module();
+    inline py::module_& cuda_module() {
+        static py::module_ cuda(cupy_module().attr("cuda"));
+        return cuda;
+    }
 
 } // namespace detail
 
-    py::object to_array(
+    inline py::object to_array(
         const byte* ptr, py::dtype type, bool read_only,
         std::vector<py::ssize_t> extents, std::vector<py::ssize_t> strides,
-        const location::cuda_t & location
-    );
+        const location::cuda_t & location)
+    {
+        using namespace py::literals; // to bring in the `_a` literal
+
+        auto i_ptr = reinterpret_cast<std::uintptr_t>(ptr);
+
+        auto memory_range = 1;
+        for(std::size_t i = 0; i < extents.size(); ++i)
+            memory_range += (extents[i] - 1) * strides[i];
+
+        auto & cuda = detail::cuda_module();
+
+        auto memory     = cuda.attr("UnownedMemory")(i_ptr, memory_range * type.itemsize(), 0, location.device.id());
+        auto memory_ptr = cuda.attr("MemoryPointer")(memory, 0);
+
+        // There is no way for now to return read only array.
+        return detail::cupy_module().attr("ndarray")(
+            "memptr"_a=memory_ptr,
+            "dtype"_a=type,
+            "shape"_a=py::cast(extents),
+            "strides"_a=py::cast(strides)
+        );
+    }
 
     template<typename ElementType>
     struct buffer_info_adaptor<ElementType, location::cuda_t> {
 
-        using value_type = RemoveCV<ElementType>;
+        using value_type = std::remove_cv_t<ElementType>;
 
         static constexpr auto loc_descr() {
             using namespace py::detail;
@@ -154,7 +204,7 @@ namespace detail
                         reinterpret_cast<value_type*>(cai["data"].cast<py::tuple>()[0].cast<std::uintptr_t>()),
                         mv(e_and_s.extents),
                         mv(e_and_s.strides),
-                        not IsConst<ElementType> // There is no way to check mutability from cuda array...
+                        not std::is_const_v<ElementType> // There is no way to check mutability from cuda array...
                     };
                 }
             }
@@ -184,7 +234,7 @@ namespace detail
 
             return to_array(
                 reinterpret_cast<const byte*>(value.data()), py::dtype::of<ElementType>(),
-                IsConst<ElementType>, extents, strides, value.location()
+                std::is_const_v<ElementType>, extents, strides, value.location()
             );
         }
 

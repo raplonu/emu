@@ -22,10 +22,10 @@ namespace span
 namespace detail
 {
     template<typename Rg>
-    constexpr auto HasPointerIterator = IsPointer<RangeIteratorType<Rg>>;
+    constexpr auto HasPointerIterator = std::is_pointer_v<RangeIteratorType<Rg>>;
 
     template<typename It>
-    constexpr auto IsPointerIterator = IsSame<IteratorValue<It>*, It>;
+    constexpr auto IsPointerIterator = std::is_same_v<IteratorValue<It>*, It>;
 
 } // namespace detail
 
@@ -224,6 +224,24 @@ namespace detail
         }
     };
 
+    // // Deduction Guides
+    // template <class Type, std::size_t Extent>
+    // span_t(Type (&)[Extent]) -> span_t<Type, Extent>;
+
+    // template <class Type, std::size_t Size>
+    // span_t(std::array<Type, Size>&) -> span_t<Type, Size>;
+
+    // template <class Type, std::size_t Size>
+    // span_t(const std::array<Type, Size>&) -> span_t<const Type, Size>;
+
+    // template <class Container,
+    //         class Element = std::remove_pointer_t<decltype(std::declval<Container&>().data())>>
+    // span_t(Container&) -> span_t<Element>;
+
+    // template <class Container,
+    //         class Element = std::remove_pointer_t<decltype(std::declval<const Container&>().data())>>
+    // span_t(const Container&) -> span_t<Element>;
+
 } // namespace detail
 
 } // namespace span
@@ -265,7 +283,7 @@ namespace span
 
     template<
         std::size_t Extent = dynamic_extent, typename Rg,
-        EnableIf<not IsPointer<Rg>> = true,
+        EnableIf<not std::is_pointer_v<Rg>> = true,
         EnableIf<not HasData<Rg>> = true,
         EnableIf<detail::HasPointerIterator<Rg>> = true
     >
@@ -278,7 +296,7 @@ namespace span
 
     template<
         std::size_t Extent = dynamic_extent, typename Rg, typename Location,
-        EnableIf<not IsPointer<Rg>> = true,
+        EnableIf<not std::is_pointer_v<Rg>> = true,
         EnableIf<not HasData<Rg>> = true,
         EnableIf<detail::HasPointerIterator<Rg> and IsLocation<Location>> = true
     >
@@ -291,7 +309,7 @@ namespace span
 
     template<
         std::size_t Extent = dynamic_extent, typename Container,
-        EnableIf<not IsPointer<Container>> = true,
+        EnableIf<not std::is_pointer_v<Container>> = true,
         EnableIf<HasData<Container>> = true,
         EnableIf<IsContainer<Container>> = true
     >
@@ -303,7 +321,7 @@ namespace span
 
     template<
         std::size_t Extent = dynamic_extent, typename Container, typename Location,
-        EnableIf<not IsPointer<Container>> = true,
+        EnableIf<not std::is_pointer_v<Container>> = true,
         EnableIf<HasData<Container>> = true,
         EnableIf<IsContainer<Container> and IsLocation<Location>> = true
     >
@@ -362,7 +380,7 @@ namespace detail
 
     template<typename To, typename From, typename Location, std::size_t Extent,
         // Enable when destination is const or source is not const.
-        EnableIf<IsConst<To> || not IsConst<From> > = true
+        EnableIf<std::is_const_v<To> || not std::is_const_v<From> > = true
     >
     constexpr auto as(span::detail::span_t<From, Location, Extent> s) noexcept
     {

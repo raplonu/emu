@@ -7,7 +7,6 @@
 
 using namespace emu;
 
-
 namespace stdex = std::experimental;
 _MDSPAN_INLINE_VARIABLE constexpr auto dyn = stdex::dynamic_extent;
 
@@ -19,7 +18,31 @@ TEST(TestMdspanCtorDataCArray, test_mdspan_ctor_data_carray) {
   ASSERT_EQ(m.rank_dynamic(), 0);
   ASSERT_EQ(m.extent(0), 1);
   ASSERT_EQ(m.stride(0), 1);
-  ASSERT_EQ(m(0), 42);
+  ASSERT_EQ(__MDSPAN_OP(m, 0), 42);
+  ASSERT_TRUE(m.is_contiguous());
+}
+
+TEST(TestMdspanCtorDataStdArray, test_mdspan_ctor_data_carray) {
+  std::array<int, 1> d = {42};
+  emu::mdspan_t<int, stdex::extents<1>> m(d.data());
+  ASSERT_EQ(m.data(), d.data());
+  ASSERT_EQ(m.rank(), 1);
+  ASSERT_EQ(m.rank_dynamic(), 0);
+  ASSERT_EQ(m.extent(0), 1);
+  ASSERT_EQ(m.stride(0), 1);
+  ASSERT_EQ(__MDSPAN_OP(m, 0), 42);
+  ASSERT_TRUE(m.is_contiguous());
+}
+
+TEST(TestMdspanCtorDataVector, test_mdspan_ctor_data_carray) {
+  std::vector<int> d = {42};
+  emu::mdspan_t<int, stdex::extents<1>> m(d.data());
+  ASSERT_EQ(m.data(), d.data());
+  ASSERT_EQ(m.rank(), 1);
+  ASSERT_EQ(m.rank_dynamic(), 0);
+  ASSERT_EQ(m.extent(0), 1);
+  ASSERT_EQ(m.stride(0), 1);
+  ASSERT_EQ(__MDSPAN_OP(m, 0), 42);
   ASSERT_TRUE(m.is_contiguous());
 }
 
@@ -39,7 +62,7 @@ TEST(TestMdspanCtorExtentsStdArrayConvertibleToSizeT, test_mdspan_ctor_extents_s
 
 TEST(TestMdspanListInitializationLayoutLeft, test_mdspan_list_initialization_layout_left) {
   std::array<int, 1> d{42};
-  emu::mdspan_t<int, stdex::extents<dyn, dyn>, stdex::layout_left> m{d.data(), {{16, 32}}};
+  emu::mdspan_t<int, stdex::extents<dyn, dyn>, stdex::layout_left> m{d.data(), 16, 32};
   ASSERT_EQ(m.data(), d.data());
   ASSERT_EQ(m.rank(), 2);
   ASSERT_EQ(m.rank_dynamic(), 2);
@@ -52,7 +75,7 @@ TEST(TestMdspanListInitializationLayoutLeft, test_mdspan_list_initialization_lay
 
 TEST(TestMdspanListInitializationLayoutRight, test_mdspan_list_initialization_layout_right) {
   std::array<int, 1> d{42};
-  emu::mdspan_t<int, stdex::extents<dyn, dyn>, stdex::layout_right> m{d.data(), {{16, 32}}};
+  emu::mdspan_t<int, stdex::extents<dyn, dyn>, stdex::layout_right> m{d.data(), 16, 32};
   ASSERT_EQ(m.data(), d.data());
   ASSERT_EQ(m.rank(), 2);
   ASSERT_EQ(m.rank_dynamic(), 2);
@@ -65,7 +88,7 @@ TEST(TestMdspanListInitializationLayoutRight, test_mdspan_list_initialization_la
 
 TEST(TestMdspanListInitializationLayoutStride, test_mdspan_list_initialization_layout_stride) {
   std::array<int, 1> d{42};
-  emu::mdspan_t<int, stdex::extents<dyn, dyn>, stdex::layout_stride> m{d.data(), {{16, 32}, {1, 128}}};
+  emu::mdspan_t<int, stdex::extents<dyn, dyn>, stdex::layout_stride> m{d.data(), {stdex::dextents<2>{16, 32}, std::array<std::size_t, 2>{1, 128}}};
   ASSERT_EQ(m.data(), d.data());
   ASSERT_EQ(m.rank(), 2);
   ASSERT_EQ(m.rank_dynamic(), 2);
@@ -76,8 +99,7 @@ TEST(TestMdspanListInitializationLayoutStride, test_mdspan_list_initialization_l
   ASSERT_FALSE(m.is_contiguous());
 }
 
-// Needs to adds class template argument deduction for mdspan_t.
-#if 0 and defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
+#if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
 TEST(TestMdspanCTADExtentsPack, test_mdspan_ctad_extents_pack) {
   std::array<int, 1> d{42};
   emu::mdspan_t m(d.data(), 64, 128);
@@ -89,7 +111,6 @@ TEST(TestMdspanCTADExtentsPack, test_mdspan_ctad_extents_pack) {
   ASSERT_TRUE(m.is_contiguous());
 }
 
-// TODO @proposal-bug We're missing a `mdspan(T*, extents)` constructor.
 TEST(TestMdspanCTADExtentsObject, test_mdspan_ctad_extents_object) {
   std::array<int, 1> d{42};
   emu::mdspan_t m{d.data(), stdex::extents{64, 128}};
@@ -179,6 +200,7 @@ TEST(TestMdspanCTADLayoutStride, test_mdspan_ctad_layout_stride) {
   ASSERT_EQ(m0.stride(1), 128);
   ASSERT_FALSE(m0.is_contiguous());
 
+  /*
   emu::mdspan_t m1{d.data(), stdex::layout_stride::mapping{stdex::extents{16, 32}, stdex::extents{1, 128}}};
   ASSERT_EQ(m1.data(), d.data());
   ASSERT_EQ(m1.rank(), 2);
@@ -188,6 +210,7 @@ TEST(TestMdspanCTADLayoutStride, test_mdspan_ctad_layout_stride) {
   ASSERT_EQ(m1.stride(0), 1);
   ASSERT_EQ(m1.stride(1), 128);
   ASSERT_FALSE(m1.is_contiguous());
+  */
 
 // TODO: Perhaps one day I'll get this to work.
 /*
@@ -203,20 +226,3 @@ TEST(TestMdspanCTADLayoutStride, test_mdspan_ctad_layout_stride) {
 */
 }
 #endif
-
-TEST(TestElementAccess, element_access_with_std_array) {
-    std::array<double, 6> a{};
-    emu::mdspan_t<double, stdex::extents<2, 3>> s(a.data());
-    ASSERT_EQ(s(std::array<int, 2>{1, 2}), 0);
-    s(std::array<int, 2>{0, 1}) = 3.14;
-    ASSERT_EQ(s(std::array<int, 2>{0, 1}), 3.14);
-}
-
-TEST(TestMdspanConversionConst, test_mdspan_conversion_const) {
-  std::array<double, 6> a{};
-  emu::mdspan_t<double, stdex::extents<2, 3>> s(a.data());
-  ASSERT_EQ(s.data(), a.data());
-  s(0, 1) = 3.14;
-  emu::mdspan_t<double const, stdex::extents<2, 3>> c_s(s);
-  ASSERT_EQ(c_s(0, 1), 3.14);
-}

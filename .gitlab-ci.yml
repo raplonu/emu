@@ -1,0 +1,27 @@
+image: aocompass/base-18.04:10.2
+
+stages:
+    - build
+
+before_script:
+    - export PATH="$PATH:/usr/local/cuda"
+
+build_release:
+    stage: build
+    script:
+        - rm -rf ~/.conan/data
+        - tox
+    when: manual
+    # only:
+    #  - develop
+
+build_release_always:
+    stage: build
+    extends: build_release
+    when: always
+    only:
+        - main
+        - rc
+        - tags
+        - merge_requests
+        - develop

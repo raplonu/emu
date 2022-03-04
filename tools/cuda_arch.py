@@ -33,33 +33,40 @@ def ConvertSMVer2Cores(cc):
     # Compute Capability version. There is no way to retrieve that via
     # the API, so it needs to be hard-coded.
     return {
-    # Tesla
-      '10':   8,      # SM 1.0
-      '11':   8,      # SM 1.1
-      '12':   8,      # SM 1.2
-      '13':   8,      # SM 1.3
-    # Fermi
-      '20':  32,      # SM 2.0: GF100 class
-      '21':  48,      # SM 2.1: GF10x class
-    # Kepler
-      '30': 192,      # SM 3.0: GK10x class
-      '32': 192,      # SM 3.2: GK10x class
-      '35': 192,      # SM 3.5: GK11x class
-      '37': 192,      # SM 3.7: GK21x class
-    # Maxwell
-      '50': 128,      # SM 5.0: GM10x class
-      '52': 128,      # SM 5.2: GM20x class
-      '53': 128,      # SM 5.3: GM20x class
-    # Pascal
-      '60':  64,      # SM 6.0: GP100 class
-      '61': 128,      # SM 6.1: GP10x class
-      '62': 128,      # SM 6.2: GP10x class
-    # Volta
-      '70':  64,      # SM 7.0: GV100 class
-      '72':  64,      # SM 7.2: GV11b class
-    # Turing
-      '75':  64,      # SM 7.5: TU10x class
+        # Tesla
+        '10':   8,      # SM 1.0
+        '11':   8,      # SM 1.1
+        '12':   8,      # SM 1.2
+        '13':   8,      # SM 1.3
+        # Fermi
+        '20':  32,      # SM 2.0: GF100 class
+        '21':  48,      # SM 2.1: GF10x class
+        # Kepler
+        '30': 192,      # SM 3.0: GK10x class
+        '32': 192,      # SM 3.2: GK10x class
+        '35': 192,      # SM 3.5: GK11x class
+        '37': 192,      # SM 3.7: GK21x class
+        # Maxwell
+        '50': 128,      # SM 5.0: GM10x class
+        '52': 128,      # SM 5.2: GM20x class
+        '53': 128,      # SM 5.3: GM20x class
+        # Pascal
+        '60':  64,      # SM 6.0: GP100 class
+        '61': 128,      # SM 6.1: GP10x class
+        '62': 128,      # SM 6.2: GP10x class
+        # Volta
+        '70':  64,      # SM 7.0: GV100 class
+        '72':  64,      # SM 7.2: GV11b class
+        # Turing
+        '75':  64,      # SM 7.5: TU10x class
+        # Ampere
+        '80':  64,       # SM 8.0: GA100 class
+        '86':  64,       # SM 8.6: GA10X class
+        '87':  64,       # SM 8.7: GA10B class
+        # Hopper
+        '90':  64,       # SM 9.0: GHX0X class
     }.get(cc, 64)   # unknown architecture, return a default value
+
 
 def check_error(cuda, result):
     if result != CUDA_SUCCESS:
@@ -67,7 +74,6 @@ def check_error(cuda, result):
         cuda.cuGetErrorString(result, ctypes.byref(error_str))
         print(f'Error {result}: {error_str.value.decode()}')
         sys.exit(1)
-
 
 
 def init_cuda_lib():
@@ -81,8 +87,6 @@ def init_cuda_lib():
             break
     else:
         raise OSError("could not load any of: " + ' '.join(libnames))
-
-
 
     class CudaCheck:
         def __init__(self, cuda):
@@ -107,7 +111,7 @@ class Device:
     def __init__(self, id):
         self.id = id
         self.device = ctypes.c_int()
-        result = cuda.cuDeviceGet(ctypes.byref(self.device), self.id)
+        # result = cuda.cuDeviceGet(ctypes.byref(self.device), self.id)
 
     @property
     def name(self):
@@ -156,13 +160,15 @@ def get_device_count():
     cuda.cuDeviceGetCount(ctypes.byref(device_count))
     return device_count.value
 
+
 def compute_capabilities():
     # Get all compute capabilities and keep only unique ones.
     unique_ccs = set(map(lambda i : Device(i).compute_capability, range(get_device_count())))
     # format the set into a semicolon separated string.
     return ';'.join(map(str, unique_ccs))
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     from docopt import docopt
     args = docopt(__doc__)
 
@@ -177,21 +183,3 @@ if __name__=="__main__":
             print(getattr(d, args['<property>']))
         else:
             print(f'Error <property> must be either {" ".join(device_attr)}')
-
-
-
-
-        # result = cuda.cuCtxCreate(ctypes.byref(context), 0, device)
-        # if result != CUDA_SUCCESS:
-        #     cuda.cuGetErrorString(result, ctypes.byref(error_str))
-        #     print("cuCtxCreate failed with error code %d: %s" % (result, error_str.value.decode()))
-        # else:
-        #     result = cuda.cuMemGetInfo(ctypes.byref(freeMem), ctypes.byref(totalMem))
-        #     if result == CUDA_SUCCESS:
-        #         print("  Total Memory: %ld MiB" % (totalMem.value / 1024**2))
-        #         print("  Free Memory: %ld MiB" % (freeMem.value / 1024**2))
-        #     else:
-        #         cuda.cuGetErrorString(result, ctypes.byref(error_str))
-        #         print("cuMemGetInfo failed with error code %d: %s" % (result, error_str.value.decode()))
-        #     cuda.cuCtxDetach(context)
-    # return 0

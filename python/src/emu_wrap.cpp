@@ -6,7 +6,7 @@ int add(int i, int j) {
     return i + j + 12;
 }
 
-PYBIND11_MODULE(emuwrap, m) {
+PYBIND11_MODULE(_emu, m) {
     m.doc() = "pybind11 emuwarp plugin";
 
     m.def("add", &add, "A function which adds two numbers");

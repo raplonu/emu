@@ -10,16 +10,29 @@ namespace emu
 {
 
     template<typename Base, typename Derive>
-    using EnableIfNotBase = EnableIf<not IsBaseOf<RemoveCVRef<Base>, RemoveCVRef<Derive>>>;
+    using EnableIfNotBase = EnableIf<not std::is_base_of_v<RemoveCVRef<Base>, RemoveCVRef<Derive>>>;
 
+    /**
+     * @brief A scoped object that calls a destructor when it goes out of scope.
+     *
+     * @tparam T The type of the object to be destroyed.
+     * @tparam F The type of the destructor function.
+     */
     template<typename T, typename F>
     struct scoped_t
     {
+        /// The type of the object to be destroyed.
         using value_type = T;
+        /// The type of the destructor function.
         using function_type = F;
 
+        /// The object to be destroyed.
         static constexpr bool noexcept_invoke = EMU_NOEXCEPT_EXPR(std::declval<function_type&>()(std::declval<value_type&>()));
 
+        /**
+         * @brief Default constructor.
+         *
+         */
         constexpr scoped_t() = default;
 
         template<typename T1, EnableIfNotBase<scoped_t, T1> = true>
@@ -200,12 +213,20 @@ namespace detail
 
 namespace scoped
 {
-    /// Returns a scoped_t for the given value and function.
-    /// Useful to do type deduction.
-    ///
-    /// Regular T, FunctionObject<U (T)> F where U is not constrained
+
+    /**
+     * @brief Returns a scoped_t for the given value and function.
+     *
+     * Useful to do type deduction.
+     *
+     * @tparam T Regular
+     * @tparam F FunctionObject<U (T)>
+     * @param value The contained value.
+     * @param f The function to call when the scoped_t is destroyed.
+     * @return scoped struct.
+     */
     template<typename T, typename F>
-    constexpr scoped_t<std::decay_t<T>, std::decay_t<F>> create(T&& value, F&& f) {
+    constexpr auto create(T&& value, F&& f) {
         return scoped_t<std::decay_t<T>, std::decay_t<F>>{EMU_FWD(value), EMU_FWD(f)};
     }
 
@@ -214,23 +235,21 @@ namespace scoped
     ///
     /// FunctionObject<U (T)> F where U is not constrained
     template<typename F>
-    constexpr scoped_t<void, std::decay_t<F>> create(F&& f) {
+    constexpr auto create(F&& f) {
         return scoped_t<void, std::decay_t<F>>{EMU_FWD(f)};
     }
 
-#define EMU_INVOKE_AT_SCOPE_EXIT(F)                                         \
-    const auto EMU_UNIQUE_NAME(invoke_at_scope_exit) = ::emu::scoped::create(F)
-
+    /// Returns a scoped_t for the given value and function.
+    /// The function won't be called if the scoped_t is destroyed.
     template<typename T, typename F>
-    constexpr scoped_t<std::decay_t<T>, std::decay_t<F>> wrap(T&& value, F&& f) {
+    constexpr auto wrap(T&& value, F&& f) {
         return scoped_t<std::decay_t<T>, std::decay_t<F>>{EMU_FWD(value), EMU_FWD(f), false};
     }
 
     template<typename F>
-    constexpr scoped_t<void, std::decay_t<F>> wrap(F&& f) {
+    constexpr auto wrap(F&& f) {
         return scoped_t<void, std::decay_t<F>>{EMU_FWD(f), false};
     }
-
 
     template<typename T, typename V>
     constexpr auto assign_for_current_scope(T & t, V && v)
@@ -239,6 +258,9 @@ namespace scoped
         auto old = std::exchange(t, EMU_FWD(v));
         return create([&t, old = mv(old)]{ t = mv(old); });
     }
+
+#define EMU_INVOKE_AT_SCOPE_EXIT(F)                                         \
+    const auto EMU_UNIQUE_NAME(invoke_at_scope_exit) = ::emu::scoped::create(F)
 
 #define EMU_ASSIGN_FOR_CURRENT_SCOPE(T, V)                                                    \
     const auto EMU_UNIQUE_NAME(assign_value_for_scope) = ::emu::scoped::assign_for_current_scope(T, V)

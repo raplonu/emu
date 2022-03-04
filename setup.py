@@ -1,13 +1,10 @@
 import os
 import sys
-import json
 import subprocess
-from glob import glob
-from shutil import copy2
 from pathlib import Path
 
 from setuptools.command.build_ext import build_ext
-from setuptools import setup, Extension, find_packages
+from setuptools import setup, Extension
 from setuptools.command.develop import develop as develop_orig
 from setuptools.command.install import install as install_orig
 
@@ -15,22 +12,14 @@ package_name = 'emu'
 cxx_name = package_name
 py_name = f'{package_name}wrap'
 
-here = Path(__file__).parent.resolve()
+# here = Path(__file__).parent.resolve()
 
-package_version = '0.1'
+package_version = '0.2.0'
 
 # Get the long description from the README file
-long_description = (here / 'README.md').read_text(encoding='utf-8')
+# long_description = (here / 'README.md').read_text(encoding='utf-8')
 
-extra_requires = []
-
-def symlink(target, link_name):
-    while True:
-        try:
-            os.symlink(target, link_name)
-            break
-        except FileExistsError:
-            os.remove(link_name)
+# extra_requires = []
 
 # Hack to let ConanBuild know if we are in install or develop mode
 # Let develop_orig class modify it when editable mode is used
@@ -41,6 +30,7 @@ glob_conan_channel = 'cosmic/stable'
 
 # Additional conan args. Usage: `--install-option="--conan-args=<conan channel>"`
 glob_conan_args = ''
+
 
 def add_commands(base):
     class HandleCommands(base):
@@ -58,20 +48,21 @@ def add_commands(base):
 
         def run(self):
             global glob_conan_channel
-            if not self.channel is None:
+            if self.channel is not None:
                 glob_conan_channel = self.channel
 
             global glob_conan_args
-            if not self.conan_args is None:
+            if self.conan_args is not None:
                 glob_conan_args = self.conan_args
 
             base.run(self)
 
     return HandleCommands
 
-install = add_commands(install_orig)
 
+install = add_commands(install_orig)
 develop_orig = add_commands(develop_orig)
+
 
 class develop(develop_orig):
     def run(self):
@@ -80,13 +71,16 @@ class develop(develop_orig):
 
         develop_orig.run(self)
 
+
 class ConanExtension(Extension):
     def __init__(self, name, sourcedir=''):
         Extension.__init__(self, name, sources=[])
         self.sourcedir = os.path.abspath(sourcedir)
 
+
 def call(command):
     subprocess.check_call(command.split())
+
 
 def build_conan(source_dir, build_dir, ref, channel, args, editable):
     # Install C++ dependencies.
@@ -100,6 +94,7 @@ def build_conan(source_dir, build_dir, ref, channel, args, editable):
         # Cannot export package if package already exist and is editable. Try delete it everytime.
         call(f'conan editable remove {ref}@{channel}')
         call(f'conan export-pkg {source_dir} {channel} -f -bf {build_dir}')
+
 
 class ConanBuild(build_ext):
     def run(self):
@@ -121,7 +116,11 @@ class ConanBuild(build_ext):
         cxx_source_dir = ext.sourcedir
         cxx_build_dir  = f'{build_dir}/build'
         cxx_ref = f'{cxx_name}/{package_version}'
-        cxx_args = f'-s build_type={build_mode} -o python=True -o {cxx_name}:python_version={version} {glob_conan_args}'
+        cxx_args = f'-b missing -s build_type={build_mode}\
+                     -o {cxx_name}:python=True\
+                     -o {cxx_name}:python_version={version}\
+                     -o {cxx_name}:cuda=True\
+                     {glob_conan_args}'
 
         build_conan(cxx_source_dir, cxx_build_dir, cxx_ref, channel, cxx_args, editable)
 
@@ -129,23 +128,18 @@ class ConanBuild(build_ext):
         py_source_dir  = f'{ext.sourcedir}/python'
         py_build_dir   = f'{build_dir}/python/build'
 
-        call(f'conan install {cxx_ref}@{channel} -if {py_build_dir} -g CMakeToolchain -g CMakeDeps -o emu:python=True -o emu:python_version={version}')
-        call(f'cmake {py_source_dir} -B {py_build_dir} -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_MODULE_PATH={py_build_dir} -DCMAKE_INSTALL_PREFIX={export_dir}')
+        call(f'conan install {cxx_ref}@{channel} -if {py_build_dir} -g CMakeToolchain -g cmake_find_package {cxx_args}')
+        call(f'cmake {py_source_dir} -B {py_build_dir}\
+               -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake\
+               -DCMAKE_MODULE_PATH={py_build_dir}\
+               -DCMAKE_INSTALL_PREFIX={export_dir}')
         call(f'cmake --build {py_build_dir}')
         call(f'cmake --install {py_build_dir}')
 
+
 setup(
-    name=package_name,
-    version=package_version,
-    author='Julien Bernard',
-    author_email='raplonu.jb@gmail.com',
-    description='Python & C++ toolkit.',
-    long_description=long_description,
-    long_description_content_type='text/markdown',
-    package_dir={'': 'python'},
-    packages=find_packages(where='python'),
     ext_modules=[ConanExtension(py_name)],
     cmdclass=dict(install=install, develop=develop, build_ext=ConanBuild),
-    install_requires=['funcy', 'boltons'] + extra_requires,
-    zip_safe=False,
+    include_package_data=True,
+    test_suite='python.test',
 )

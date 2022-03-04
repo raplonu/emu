@@ -9,5 +9,6 @@ except :
 #     import cuda_arch
 #     return cuda_arch.compute_capabilities()
 
+
 class Pkg(ConanFile):
     exports = 'cuda_arch.py'

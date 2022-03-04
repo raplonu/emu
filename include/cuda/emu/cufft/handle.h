@@ -1,5 +1,5 @@
-#ifndef EMU_CUBLAS_HANDLE_H
-#define EMU_CUBLAS_HANDLE_H
+#ifndef EMU_CUFFT_HANDLE_H
+#define EMU_CUFFT_HANDLE_H
 
 #include <emu/cublas/error.h>
 
@@ -10,7 +10,7 @@
 namespace emu
 {
 
-namespace cublas
+namespace cufft
 {
 
     struct handle_t;
@@ -18,11 +18,15 @@ namespace cublas
 namespace handle
 {
 
-    using id_t = cublasHandle_t;
+    using id_t = cufftHandle;
 
 namespace detail
 {
-    id_t create();
+
+    id_t create()
+
+    template<typename SizeT>
+    id_t create(emu::span_t<SizeT> shape);
 
     void destroy(id_t id);
 
@@ -30,17 +34,15 @@ namespace detail
         void operator()(id_t id) const { destroy(id); }
     };
 
-    ::cuda::stream::id_t get_stream(id_t handle);
-
     void set_stream(id_t handle, ::cuda::stream::id_t mode);
 
-    cublasMath_t get_math_mode(id_t handle);
+    // cublasMath_t get_math_mode(id_t handle);
 
-    void set_math_mode(id_t handle, cublasMath_t mode);
+    // void set_math_mode(id_t handle, cublasMath_t mode);
 
-    cublasPointerMode_t get_pointer_mode(id_t handle);
+    // cublasPointerMode_t get_pointer_mode(id_t handle);
 
-    void set_pointer_mode(id_t handle, cublasPointerMode_t mode);
+    // void set_pointer_mode(id_t handle, cublasPointerMode_t mode);
 
 } // namespace detail
 
@@ -66,16 +68,6 @@ namespace detail
 
         void set_stream(const ::cuda::stream_t & stream);
 
-        ::cuda::stream_t stream() const;
-
-        void set_math_mode(cublasMath_t mode);
-
-        cublasMath_t math_mode() const;
-
-        void set_pointer_mode(cublasPointerMode_t mode);
-
-        cublasPointerMode_t pointer_mode() const;
-
         handle_t & enable();
 
         const handle_t & enable() const;
@@ -90,21 +82,36 @@ namespace detail
 namespace handle
 {
     /**
-     * Create cublas handle_t on current device.
+     * Create cufft handle_t on current device.
      */
-    handle_t create();
+    template<typename T>
+    handle_t create(emu::span_t<int> shape) {
+
+    }
+
+    template<typename T>
+    handle_t create(emu::span_t<size_t> shape) {
+
+    }
+
+    // template<typename In, typename Out, typename SizeT>
+    // handle_t create(emu::span_t<SizeT> shape);
 
     /**
-     * Create cublas handle_t on current device.
+     * Create cufft handle_t on current device.
      */
-    handle_t create(::cuda::device_t device);
+    // template<typename SizeT>
+    // handle_t create(::cuda::device_t device, emu::span_t<SizeT> shape);
+
+    // template<typename In, typename Out, typename SizeT>
+    // handle_t create(::cuda::device_t device, emu::span_t<SizeT> shape);
 
     handle_t wrap(id_t id, ::cuda::device_t device, bool take_ownership);
 
 } // namespace handle
 
-} // namespace cublas
+} // namespace cufft
 
 } // namespace emu
 
-#endif //EMU_CUBLAS_HANDLE_H
+#endif //EMU_CUFFT_HANDLE_H

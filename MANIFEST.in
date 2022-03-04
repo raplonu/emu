@@ -1,0 +1,7 @@
+include conanfile.py
+include CMakeLists.txt
+recursive-include src     *
+recursive-include include *
+recursive-include python  *
+recursive-include test    *
+recursive-include tools   *

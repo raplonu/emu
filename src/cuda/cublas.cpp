@@ -1,4 +1,5 @@
 #include <emu/cublas.h>
+#include <emu/cublas/error.h>
 
 namespace emu
 {

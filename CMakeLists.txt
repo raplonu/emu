@@ -2,10 +2,11 @@ cmake_minimum_required(VERSION 3.18)
 
 message(CHECK_START "Emu - Configuring")
 
-project(emu VERSION 0.1 LANGUAGES CXX)
+project(emu VERSION 0.2.0 LANGUAGES CXX)
 
 option(emu_verbose      "Print emu info"       OFF)
 option(emu_string_util  "emu string utilies"   OFF)
+option(emu_half         "emu half utilies"     OFF)
 option(emu_build_cuda   "Build cuda module"    ON)
 option(emu_build_python "Build python module"  ON)
 option(emu_build_test   "Build unit test"      OFF)
@@ -23,15 +24,6 @@ message(CHECK_PASS "Done")
 # Emu Core
 #
 
-find_package(Boost REQUIRED)
-find_package(fmt REQUIRED)
-find_package(half REQUIRED)
-find_package(Microsoft.GSL REQUIRED)
-find_package(mdspan REQUIRED)
-find_package(range-v3 REQUIRED)
-find_package(tl-expected REQUIRED)
-find_package(tl-optional REQUIRED)
-
 add_library(emucore
     src/core/fun.cpp
 )
@@ -41,26 +33,42 @@ target_include_directories(emucore PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/core>
 )
 
-target_compile_features(emucore PUBLIC cxx_std_14)
-
-target_link_libraries(emucore PUBLIC
-    boost::boost
-    fmt::fmt
-    half::half
-    Microsoft.GSL::GSL
-    range-v3::range-v3
-    tl-expected::tl-expected
-    tl-optional::tl-optional
-    mdspan::mdspan
-)
+target_compile_features(emucore PUBLIC cxx_std_17)
 
 if(emu_build_cuda)
     target_compile_definitions(emucore PUBLIC EMU_CUDA)
 endif()
 
+find_package(Boost REQUIRED)
+find_package(fmt REQUIRED)
+find_package(Microsoft.GSL REQUIRED)
+find_package(mdspan REQUIRED)
+find_package(range-v3 REQUIRED)
+find_package(tl-expected REQUIRED)
+find_package(tl-optional REQUIRED)
+
+target_link_libraries(emucore PUBLIC
+    Boost::boost
+    fmt::fmt
+    Microsoft.GSL::GSL
+    range-v3::range-v3
+    tl::expected
+    tl::optional
+    std::mdspan
+)
+
 if (emu_string_util)
+    find_package(absl REQUIRED CONFIG)
+
     target_compile_definitions(emucore PUBLIC EMU_STRING_UTIL)
-    target_link_libraries(emucore PUBLIC CONAN_PKG::abseil)
+    target_link_libraries(emucore PUBLIC absl::absl)
+endif()
+
+if (emu_half)
+    find_package(half REQUIRED)
+
+    target_compile_definitions(emucore PUBLIC EMU_HALF)
+    target_link_libraries(emucore PUBLIC half::half)
 endif()
 
 add_library(emu::core ALIAS emucore)
@@ -74,13 +82,14 @@ set(emu_targets emucore)
 if (emu_build_cuda)
     message(CHECK_START "Emu - Configuring CUDA support")
 
-    find_package(CUDAToolkit REQUIRED)
-    find_package(cuda-api-wrappers REQUIRED)
-
     add_library(emucuda
         src/cuda/cublas/handle.cpp
         src/cuda/cublas/error.cpp
         src/cuda/cublas.cpp
+
+        # src/cuda/cufft/handle.cpp
+        # src/cuda/cufft/error.cpp
+        # src/cuda/cufft.cpp
 
         src/cuda/cusolver/handle.cpp
         src/cuda/cusolver/error.cpp
@@ -93,7 +102,14 @@ if (emu_build_cuda)
         $<INSTALL_INTERFACE:include/cuda>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/cuda>)
 
-    target_compile_features(emucuda PUBLIC cxx_std_14)
+    target_compile_options(emucuda PUBLIC
+        $<$<COMPILE_LANGUAGE:CUDA>:
+            --extended-lambda
+            --expt-relaxed-constexpr>
+    )
+
+    find_package(CUDAToolkit REQUIRED)
+    find_package(cuda-api-wrappers REQUIRED)
 
     target_link_libraries(emucuda PUBLIC
         emucore
@@ -101,12 +117,6 @@ if (emu_build_cuda)
         CUDA::cudart
         cuda-api-wrappers::cuda-api-wrappers
     )
-
-    target_compile_options(emucuda PUBLIC
-        $<$<COMPILE_LANGUAGE:CUDA>:
-            --extended-lambda
-            --expt-relaxed-constexpr
-        >)
 
     add_library(emu::cuda ALIAS emucuda)
     list(APPEND emu_targets emucuda)
@@ -122,26 +132,24 @@ endif()
 if (emu_build_python)
     message(CHECK_START "Emu - Configuring python support")
 
-    find_package(pybind11 REQUIRED)
-
     add_library(emupython
-        src/python/cast/common.cpp
+        INTERFACE
     )
 
-    target_include_directories(emupython PUBLIC
+    target_include_directories(emupython INTERFACE
         $<INSTALL_INTERFACE:include/python>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/python>)
 
-    target_link_libraries(emupython PUBLIC
+    if (emu_build_cuda)
+        target_link_libraries(emupython INTERFACE emucuda)
+    endif()
+
+    find_package(pybind11 REQUIRED)
+
+    target_link_libraries(emupython INTERFACE
         emucore
         pybind11::pybind11
     )
-
-    if (emu_build_cuda)
-        target_link_libraries(emupython PUBLIC emucuda)
-    endif()
-
-    target_compile_features(emupython PUBLIC cxx_std_14)
 
     add_library(emu::python ALIAS emupython)
     list(APPEND emu_targets emupython)
@@ -170,6 +178,9 @@ endif()
 # Export public compile flags.
 #
 
+message("CMAKE_SOURCE_DIR = ${CMAKE_SOURCE_DIR}")
+message("CMAKE_CURRENT_SOURCE_DIR = ${CMAKE_CURRENT_SOURCE_DIR}")
+
 # Exporting COMPILE_OPTIONS if exists for emucore and emucuda
 if(emu_export_flags)
     message(CHECK_START "Exporting compile flags")
@@ -180,7 +191,7 @@ if(emu_export_flags)
         if(TMP_CXX_FLAGS)
             message(STATUS "Exporting ${target} compile flags in ${target}_flags.txt")
 
-            configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/flags.txt.in
+            configure_file(${CMAKE_SOURCE_DIR}/tools/flags.txt.in
                 ${CMAKE_CURRENT_BINARY_DIR}/${target}_flags.txt @ONLY)
         endif()
     endforeach()

@@ -62,7 +62,7 @@ FMT_BEGIN_NAMESPACE
  * @tparam Char
  */
 template <typename T, typename Char>
-struct formatter<T, Char, emu::EnableIf< emu::IsBaseOf<pybind11::handle, T>, void > > {
+struct formatter<T, Char, emu::EnableIf< std::is_base_of_v<pybind11::handle, T>, void > > {
 
     std::string format_ = "{}";
 
@@ -120,7 +120,7 @@ FMT_END_NAMESPACE
 // {
 
 //     template<typename T>
-//     struct is_range_<T, emu::EnableIf< emu::IsBaseOf<pybind11::handle, T> >> : std::false_type { };
+//     struct is_range_<T, emu::EnableIf< std::is_base_of_v<pybind11::handle, T> >> : std::false_type { };
 
 // } // namespace detail
 
