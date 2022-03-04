@@ -1,19 +1,29 @@
-image: aocompass/base-18.04:10.2
+image: nvidia/cuda:11.6.0-devel-ubuntu20.04
 
 stages:
     - build
 
 before_script:
-    - export PATH="$PATH:/usr/local/cuda"
+    - export PATH="$PATH:$HOME/conda/bin"
 
 build_release:
     stage: build
     script:
+        - apt-get update
+        - apt-get install -y wget git
+        - wget https://repo.anaconda.com/miniconda/Miniconda3-py39_4.10.3-Linux-x86_64.sh
+        - sh Miniconda3-py39_4.10.3-Linux-x86_64.sh -b -u -p $HOME/conda
         - rm -rf ~/.conan/data
-        - tox
+        - python -m pip install --upgrade pip
+        # - python -m pip install tox conan --upgrade
+        - python -m pip install -r requirements_dev.txt
+        - sh tools/configure_conan.sh
+        - tox -e py3.8 flake8
+        - sphinx-build -b html docs public
     when: manual
-    # only:
-    #  - develop
+    artifacts:
+        paths:
+        - public
 
 build_release_always:
     stage: build

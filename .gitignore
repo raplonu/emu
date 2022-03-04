@@ -1,3 +1,4 @@
 python/*.so
 python/*.dlib
 python/*.dll
+.coverage
