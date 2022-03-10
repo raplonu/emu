@@ -1,11 +1,12 @@
 import sys
 from io import StringIO
+from typing import Any, List
 from IPython import get_ipython
 import pyperclip as clip
 from pampy import match
 
 
-class Capturing(list):
+class Capturing(List[Any]):
 
     def __enter__(self):
         self._stdout = sys.stdout

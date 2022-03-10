@@ -1,12 +1,14 @@
 from collections.abc import Iterable
+from typing import Any
 
 from .operator import eq, ne
 from .functional import apply
 
 
 class AnyOf:
+    __iterable: Iterable[Any]
 
-    def __init__(self, iterable: Iterable):
+    def __init__(self, iterable: Iterable[Any]):
         self.__iterable = iterable
 
     def __eq__(self, other):
@@ -24,8 +26,9 @@ def any_of(*args):
 
 
 class AllOf:
+    __iterable: Iterable[Any]
 
-    def __init__(self, iterable: Iterable):
+    def __init__(self, iterable: Iterable[Any]):
         self.__iterable = iterable
 
     def __eq__(self, other):

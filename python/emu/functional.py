@@ -1,4 +1,5 @@
 import functools as ft
+from typing import Any
 import funcy as fc
 from funcy import partial, compose, rcompose
 
@@ -364,12 +365,12 @@ def apply(fn, *args, **kwargs):
 
 
 @boost_fn
-def rapply(*args, **kwargs):
+def rapply(*args: Any, **kwargs):
     '''
     A function that will store arguments and use the last one as a function that will be call
     '''
-    *args, fn = args
-    return fn(*args, **kwargs)
+    *head_args, fn = args
+    return fn(*head_args, **kwargs)
 
 
 zip_to_dict = b_dict * b_zip

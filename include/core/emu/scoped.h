@@ -83,6 +83,9 @@ namespace emu
             return value;
         }
 
+        // TODO: Adds value methods.
+        // TODO: Adds support for rvalue this (&&) methods.
+
         constexpr T release()
             EMU_NOEXCEPT_EXPR(mv(std::declval<value_type&>()))
         {

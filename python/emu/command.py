@@ -1,36 +1,37 @@
 import subprocess as sp
 from string import Formatter
 from operator import add
+from typing import Any, Dict, List
 
 from .functional import boost_fn, Function, to_function, apply
 
 
 @boost_fn
-def get_stdout(obj):
+def get_stdout(obj: sp.CompletedProcess[str]):
     ''' Get the stdout of a process. '''
     return obj.stdout
 
 
 @boost_fn
-def get_stderr(obj):
+def get_stderr(obj: sp.CompletedProcess[str]):
     ''' Get the stderr of a process. '''
     return obj.stderr
 
 
 @boost_fn
-def get_args(obj):
+def get_args(obj: sp.CompletedProcess[str]):
     ''' Get the arguments of a function. '''
     return obj.args
 
 
 @boost_fn
-def get_returncode(obj):
+def get_returncode(obj: sp.CompletedProcess[str]):
     ''' Get the returncode of a process. '''
     return obj.returncode
 
 
 @boost_fn
-def get_check_returncode(obj):
+def get_check_returncode(obj: sp.CompletedProcess[str]):
     ''' Get the returncode of a process. '''
     return obj.check_returncode()
 
@@ -38,25 +39,25 @@ def get_check_returncode(obj):
 def make_cmd(cmd):
     ''' Make a command. '''
     @boost_fn
-    def run_cmd(*input):
-        input = ' '.join(input) if len(input) else None
-        return sp.run(cmd.split(), input=input, encoding='utf-8', capture_output=True)
+    def run_cmd(*input: str) -> sp.CompletedProcess[str]:
+        cmd_input = ' '.join(input) if input else None
+        return sp.run(cmd.split(), input=cmd_input, encoding='utf-8', capture_output=True)
     return run_cmd
 
 
 _formatter = Formatter()
 
 
-class DefaultFormatList(list):
+class DefaultFormatList(List[Any]):
 
-    def __getitem__(self, pos):
+    def __getitem__(self, pos: Any):
         return list.__getitem__(self, pos) if pos < len(self) else '{}'
 
 
-class DefaultFormatDict(dict):
+class DefaultFormatDict(Dict[str, Any]):
 
-    def __getitem__(self, key):
-        return dict.__getitem__(self, key) if key in self else '{' + str(key) + '}'
+    def __getitem__(self, key: str):
+        return dict.__getitem__(self, key) if key in self else f'{{{key}}}'
 
 
 @boost_fn
