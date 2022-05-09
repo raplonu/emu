@@ -104,8 +104,13 @@ def init_cuda_lib():
     return cuda
 
 
-cuda = init_cuda_lib()
+_cuda = None
 
+def cuda():
+    global _cuda
+    if _cuda is None:
+        _cuda = init_cuda_lib()
+    return _cuda
 
 class Device:
     def __init__(self, id):
@@ -116,20 +121,20 @@ class Device:
     @property
     def name(self):
         name = b' ' * 100
-        cuda.cuDeviceGetName(ctypes.c_char_p(name), len(name), self.device)
+        cuda().cuDeviceGetName(ctypes.c_char_p(name), len(name), self.device)
         return name.split(b'\0', 1)[0].decode()
 
     @property
     def compute_capability(self):
         cc_major = ctypes.c_int()
         cc_minor = ctypes.c_int()
-        cuda.cuDeviceComputeCapability(ctypes.byref(cc_major), ctypes.byref(cc_minor), self.device)
+        cuda().cuDeviceComputeCapability(ctypes.byref(cc_major), ctypes.byref(cc_minor), self.device)
         return f'{cc_major.value}{cc_minor.value}'
 
     @property
     def multiprocessor_count(self):
         cores = ctypes.c_int()
-        cuda.cuDeviceGetAttribute(ctypes.byref(cores), CU_DEVICE_ATTRIBUTE_MULTIPROCESSOR_COUNT, self.device)
+        cuda().cuDeviceGetAttribute(ctypes.byref(cores), CU_DEVICE_ATTRIBUTE_MULTIPROCESSOR_COUNT, self.device)
         return cores.value
 
     @property
@@ -139,25 +144,25 @@ class Device:
     @property
     def max_threads_per_multiprocessor(self):
         threads_per_core = ctypes.c_int()
-        cuda.cuDeviceGetAttribute(ctypes.byref(threads_per_core), CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_MULTIPROCESSOR, self.device)
+        cuda().cuDeviceGetAttribute(ctypes.byref(threads_per_core), CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_MULTIPROCESSOR, self.device)
         return threads_per_core.value
 
     @property
     def clock_rate(self):
         clockrate = ctypes.c_int()
-        cuda.cuDeviceGetAttribute(ctypes.byref(clockrate), CU_DEVICE_ATTRIBUTE_CLOCK_RATE, self.device)
+        cuda().cuDeviceGetAttribute(ctypes.byref(clockrate), CU_DEVICE_ATTRIBUTE_CLOCK_RATE, self.device)
         return clockrate.value
 
     @property
     def memory_clock_rate(self):
         clockrate = ctypes.c_int()
-        cuda.cuDeviceGetAttribute(ctypes.byref(clockrate), CU_DEVICE_ATTRIBUTE_MEMORY_CLOCK_RATE, self.device)
+        cuda().cuDeviceGetAttribute(ctypes.byref(clockrate), CU_DEVICE_ATTRIBUTE_MEMORY_CLOCK_RATE, self.device)
         return clockrate.value
 
 
 def get_device_count():
     device_count = ctypes.c_int()
-    cuda.cuDeviceGetCount(ctypes.byref(device_count))
+    cuda().cuDeviceGetCount(ctypes.byref(device_count))
     return device_count.value
 
 
