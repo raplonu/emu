@@ -4,7 +4,6 @@ message(CHECK_START "Emu - Configuring")
 
 project(emu VERSION 0.2.0 LANGUAGES CXX)
 
-option(emu_verbose      "Print emu info"       OFF)
 option(emu_string_util  "emu string utilies"   OFF)
 option(emu_half         "emu half utilies"     OFF)
 option(emu_build_cuda   "Build cuda module"    ON)
@@ -28,10 +27,7 @@ add_library(emucore
     src/core/fun.cpp
 )
 
-target_include_directories(emucore PUBLIC
-    $<INSTALL_INTERFACE:include/core>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/core>
-)
+target_include_directories(emucore PUBLIC include/core)
 
 target_compile_features(emucore PUBLIC cxx_std_17)
 

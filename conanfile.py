@@ -135,21 +135,21 @@ class EmuConan(ConanFile):
             cmake.test()
 
     def package(self):
-        self.copy("*.so", dst="lib", keep_path=False)
-        self.copy("*.a" , dst="lib", keep_path=False)
+        self.copy('*.so', dst='lib', keep_path=False)
+        self.copy('*.a' , dst='lib', keep_path=False)
 
-        self.copy("*.h" , dst="include", src="include/core")
+        self.copy('*.h' , dst='include', src='include/core')
 
         if self.options.cuda:
-            self.copy("*.h"  , dst="include", src="include/cuda")
-            self.copy("*.cuh", dst="include", src="include/cuda")
+            self.copy('*.h'  , dst='include', src='include/cuda')
+            self.copy('*.cuh', dst='include', src='include/cuda')
 
         if self.options.python:
-            self.copy("*.h"  , dst="include", src="include/python")
+            self.copy('*.h'  , dst='include', src='include/python')
 
         # Each target export its public flags in {target}_flags.txt if there is any flags.
         # Flags are exported in package in order to be used by consumer.
-        self.copy("*_flags.txt", dst="data", keep_path=False)
+        self.copy('*_flags.txt', dst='data', keep_path=False)
 
     def package_info(self):
         self.cpp_info.libs = ['emucore']

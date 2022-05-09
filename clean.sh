@@ -1,5 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 LOCAL_DIR="$(realpath --relative-to=$(pwd) $( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd ))"
+
+# Exit on first error.
+set -e
 
 rm -rf                              \
     $LOCAL_DIR/build                \

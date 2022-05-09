@@ -1,15 +1,15 @@
 #!/bin/bash
-LOCAL_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+# Project build directory relative to current directory.
+BUILD_DIR="$(realpath --relative-to=$(pwd) $( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd ))/build"
 
 # Exit on first error.
 set -e
 
-# Adds cosmic conan repository if it is not already the case.
-conan remote list | grep cosmic || conan remote add cosmic https://odp2.jfrog.io/artifactory/api/conan/cosmic
+mkdir -p $BUILD_DIR
+cd $BUILD_DIR
 
 # Get dependencies and prepare build directory.
-# By default always build missing binary packages.
-conan install $LOCAL_DIR -if $LOCAL_DIR/build -b missing $@
+conan install .. --build=missing -pr default -pr:b=default $@
 
 # Let conan invoke cmake configure.
-conan build $LOCAL_DIR -bf $LOCAL_DIR/build -c
+cmake .. -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_MODULE_PATH=.

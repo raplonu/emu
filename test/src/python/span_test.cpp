@@ -31,4 +31,3 @@ namespace
         EXPECT_EQ(s.size(), res);
     }
 }
-

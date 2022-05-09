@@ -1,7 +1,9 @@
-#!/bin/sh
-LOCAL_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+#!/bin/bash
+# Project build directory relative to current directory.
+BUILD_DIR="$(realpath --relative-to=$(pwd) $( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd ))/build"
 
 # Exit on first error.
 set -e
 
-conan build $LOCAL_DIR -bf $LOCAL_DIR/build -b $@
+cd $BUILD_DIR
+cmake --build . --parallel
