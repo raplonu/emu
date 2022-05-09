@@ -144,7 +144,7 @@ if (emu_build_python)
 
     target_link_libraries(emupython INTERFACE
         emucore
-        pybind11::pybind11
+        pybind11::headers
     )
 
     add_library(emu::python ALIAS emupython)

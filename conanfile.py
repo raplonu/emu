@@ -73,7 +73,7 @@ class EmuConan(ConanFile):
     }
 
     def parse_cuda_compute_capabilities(self):
-        cuda = self.python_requires["cuda_arch"].module
+        cuda = self.python_requires['cuda_arch'].module
 
         if str(self.options.cuda_sm) == 'Auto':
             self.options.cuda_sm = cuda.compute_capabilities()
@@ -152,16 +152,28 @@ class EmuConan(ConanFile):
         self.copy('*_flags.txt', dst='data', keep_path=False)
 
     def package_info(self):
-        self.cpp_info.libs = ['emucore']
-
-        self.cpp_info.cxxflags = load(f'{self.package_folder}/data/emucore_flags.txt', f'{self.package_folder}/build/emucore_flags.txt')
-        self.cpp_info.defines += [f'EMU_STRING_UTIL={1 if self.options.string_util else 0}']
+        self.cpp_info.components['core'].libs = ['emucore']      # Name of the library for the 'LibA' component
+        self.cpp_info.components['core'].requires = [
+            'fmt::fmt',
+            'boost::boost',
+            'ms-gsl::_ms-gsl',
+            'tl-expected::expected',
+            'tl-optional::optional',
+            'range-v3::range-v3',
+            'mdspan::mdspan'
+        ]
+        self.cpp_info.components['core'].cxxflags = load(f'{self.package_folder}/data/emucore_flags.txt', f'{self.package_folder}/build/emucore_flags.txt')
+        self.cpp_info.components['core'].defines = [f'EMU_STRING_UTIL={1 if self.options.string_util else 0}']
 
         if self.options.cuda:
-            self.cpp_info.libs += ['emucuda']
-            self.cpp_info.cxxflags += load(f'{self.package_folder}/data/emucuda_flags.txt', f'{self.package_folder}/build/emucuda_flags.txt')
-            self.cpp_info.defines += ['EMU_CUDA']
+            self.cpp_info.components['cuda'].libs = ['emucuda']
+            self.cpp_info.components['cuda'].requires = ['core', 'cuda-api-wrappers::cuda-api-wrappers']
+            self.cpp_info.components['cuda'].cxxflags = load(f'{self.package_folder}/data/emucuda_flags.txt', f'{self.package_folder}/build/emucuda_flags.txt')
+            self.cpp_info.components['cuda'].defines = ['EMU_CUDA']
 
         if self.options.python:
-            # self.cpp_info.libs += ['emupython']
-            self.cpp_info.cxxflags += load(f'{self.package_folder}/data/emucuda_flags.txt', f'{self.package_folder}/build/emupython_flags.txt')
+            self.cpp_info.components['python'].libs = ['emupython']
+            self.cpp_info.components['python'].requires = ['core', 'pybind11::headers']
+            if self.options.cuda:
+                self.cpp_info.components['python'].requires += ['cuda']
+            self.cpp_info.components['python'].cxxflags = load(f'{self.package_folder}/data/emucuda_flags.txt', f'{self.package_folder}/build/emupython_flags.txt')
