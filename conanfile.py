@@ -20,20 +20,20 @@ class EmuConan(ConanFile):
     description = 'Set of utilities for C++, CUDA and python'
 
     settings = 'os', 'compiler', 'build_type', 'arch'
-    generators = 'cmake_find_package'
+    generators = 'CMakeDeps'
 
     build_policy = 'missing'
     no_copy_source = True
     exports_sources = 'CMakeLists.txt', 'include/*', 'src/*', 'test/*', 'tools/*'
 
     requires = [
-        'fmt/8.1.1',
-        'boost/1.78.0',
-        'ms-gsl/3.1.0',
-        'mdspan/0.2.0@cosmic/stable',
+        'fmt/9.1.0',
+        'boost/1.79.0',
+        'ms-gsl/4.0.0',
+        'mdspan/0.4.0@cosmic/stable',
         'tl-expected/1.0.0',
-        'tl-optional/1.0.0',
-        'range-v3/0.11.0']
+        'tl-optional/1.0.0'
+    ]
 
     # Cannot be optional (link to the use of cuda or not).
     python_requires = 'cuda_arch/0.2.0@cosmic/stable'
@@ -56,9 +56,7 @@ class EmuConan(ConanFile):
         'cuda_sm'       : 'ANY',
         'python_version': 'ANY',
         'test'          : [True, False],
-        'doc'           : [True, False],
-        # Provide or not string utility. Needs abseil.
-        'string_util'   : [True, False]}
+        'doc'           : [True, False]}
 
     default_options = {
         'shared'     : False,
@@ -68,7 +66,6 @@ class EmuConan(ConanFile):
         'python'     : False,
         'test'       : False,
         'doc'        : False,
-        'string_util': False,
         'cuda_sm'    : 'Auto'
     }
 
@@ -92,16 +89,13 @@ class EmuConan(ConanFile):
             self.requires('cuda-api-wrappers/0.4.3@cosmic/stable')
 
         if self.options.python:
-            self.requires('pybind11/2.9.1')
-
-        if self.options.string_util:
-            self.requires('abseil/20211102.0')
+            self.requires('pybind11/2.9.1@cosmic/stable')
 
         if self.options.half:
             self.requires('half/2.2.0')
 
         if self.options.test:
-            self.requires('gtest/1.11.0')
+            self.requires('gtest/1.12.1', private=True)
 
     def generate(self):
 
@@ -109,7 +103,6 @@ class EmuConan(ConanFile):
 
         cmake.variables['emu_build_cuda']   = self.options.cuda
         cmake.variables['emu_build_python'] = self.options.python
-        cmake.variables['emu_string_util']  = self.options.string_util
         cmake.variables['emu_half']         = self.options.half
         cmake.variables['emu_build_test']   = self.options.test
         # Ask the project to generate {target}_flags.txt with the C++ & CUDA flags in it if any.
@@ -126,12 +119,14 @@ class EmuConan(ConanFile):
     def build(self):
         cmake = CMake(self)
 
-        cmake.configure()
-        cmake.build()
+        if self.should_configure:
+            cmake.configure()
+        if self.should_build:
+            cmake.build()
 
         # We did not use `self.should_test` since it is enable by default.
         # But it can be still triggered independently using `-t` argument.
-        if self.options.test:
+        if self.should_test and self.options.test:
             cmake.test()
 
     def package(self):
@@ -159,7 +154,6 @@ class EmuConan(ConanFile):
             'ms-gsl::_ms-gsl',
             'tl-expected::expected',
             'tl-optional::optional',
-            'range-v3::range-v3',
             'mdspan::mdspan'
         ]
         self.cpp_info.components['core'].cxxflags = load(f'{self.package_folder}/data/emucore_flags.txt', f'{self.package_folder}/build/emucore_flags.txt')
@@ -172,7 +166,7 @@ class EmuConan(ConanFile):
             self.cpp_info.components['cuda'].defines = ['EMU_CUDA']
 
         if self.options.python:
-            self.cpp_info.components['python'].libs = ['emupython']
+            # self.cpp_info.components['python'].libs = ['emupython']
             self.cpp_info.components['python'].requires = ['core', 'pybind11::headers']
             if self.options.cuda:
                 self.cpp_info.components['python'].requires += ['cuda']

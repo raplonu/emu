@@ -6,4 +6,4 @@ BUILD_DIR="$(realpath --relative-to=$(pwd) $( cd "$( dirname "${BASH_SOURCE[0]}"
 set -e
 
 cd $BUILD_DIR
-cmake --build . --parallel
+conan build .. -b

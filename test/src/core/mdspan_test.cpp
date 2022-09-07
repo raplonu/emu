@@ -12,7 +12,7 @@ _MDSPAN_INLINE_VARIABLE constexpr auto dyn = stdex::dynamic_extent;
 
 TEST(TestMdspanCtorDataCArray, test_mdspan_ctor_data_carray) {
   int data[1] = {42};
-  emu::mdspan_t<int, stdex::extents<1>> m(data);
+  emu::mdspan_t<int, stdex::extents<std::size_t, 1>> m(data);
   ASSERT_EQ(m.data(), data);
   ASSERT_EQ(m.rank(), 1);
   ASSERT_EQ(m.rank_dynamic(), 0);
@@ -24,7 +24,7 @@ TEST(TestMdspanCtorDataCArray, test_mdspan_ctor_data_carray) {
 
 TEST(TestMdspanCtorDataStdArray, test_mdspan_ctor_data_carray) {
   std::array<int, 1> d = {42};
-  emu::mdspan_t<int, stdex::extents<1>> m(d.data());
+  emu::mdspan_t<int, stdex::extents<std::size_t, 1>> m(d.data());
   ASSERT_EQ(m.data(), d.data());
   ASSERT_EQ(m.rank(), 1);
   ASSERT_EQ(m.rank_dynamic(), 0);
@@ -36,7 +36,7 @@ TEST(TestMdspanCtorDataStdArray, test_mdspan_ctor_data_carray) {
 
 TEST(TestMdspanCtorDataVector, test_mdspan_ctor_data_carray) {
   std::vector<int> d = {42};
-  emu::mdspan_t<int, stdex::extents<1>> m(d.data());
+  emu::mdspan_t<int, stdex::extents<std::size_t, 1>> m(d.data());
   ASSERT_EQ(m.data(), d.data());
   ASSERT_EQ(m.rank(), 1);
   ASSERT_EQ(m.rank_dynamic(), 0);
@@ -49,7 +49,7 @@ TEST(TestMdspanCtorDataVector, test_mdspan_ctor_data_carray) {
 TEST(TestMdspanCtorExtentsStdArrayConvertibleToSizeT, test_mdspan_ctor_extents_std_array_convertible_to_size_t) {
   std::array<int, 4> d{42, 17, 71, 24};
   std::array<int, 2> e{2, 2};
-  emu::mdspan_t<int, stdex::dextents<2>> m(d.data(), e);
+  emu::mdspan_t<int, stdex::dextents<std::size_t, 2>> m(d.data(), e);
   ASSERT_EQ(m.data(), d.data());
   ASSERT_EQ(m.rank(), 2);
   ASSERT_EQ(m.rank_dynamic(), 2);
@@ -62,7 +62,7 @@ TEST(TestMdspanCtorExtentsStdArrayConvertibleToSizeT, test_mdspan_ctor_extents_s
 
 TEST(TestMdspanListInitializationLayoutLeft, test_mdspan_list_initialization_layout_left) {
   std::array<int, 1> d{42};
-  emu::mdspan_t<int, stdex::extents<dyn, dyn>, stdex::layout_left> m{d.data(), 16, 32};
+  emu::mdspan_t<int, stdex::extents<std::size_t, dyn, dyn>, stdex::layout_left> m{d.data(), 16, 32};
   ASSERT_EQ(m.data(), d.data());
   ASSERT_EQ(m.rank(), 2);
   ASSERT_EQ(m.rank_dynamic(), 2);
@@ -75,7 +75,7 @@ TEST(TestMdspanListInitializationLayoutLeft, test_mdspan_list_initialization_lay
 
 TEST(TestMdspanListInitializationLayoutRight, test_mdspan_list_initialization_layout_right) {
   std::array<int, 1> d{42};
-  emu::mdspan_t<int, stdex::extents<dyn, dyn>, stdex::layout_right> m{d.data(), 16, 32};
+  emu::mdspan_t<int, stdex::extents<std::size_t, dyn, dyn>, stdex::layout_right> m{d.data(), 16, 32};
   ASSERT_EQ(m.data(), d.data());
   ASSERT_EQ(m.rank(), 2);
   ASSERT_EQ(m.rank_dynamic(), 2);
@@ -88,7 +88,7 @@ TEST(TestMdspanListInitializationLayoutRight, test_mdspan_list_initialization_la
 
 TEST(TestMdspanListInitializationLayoutStride, test_mdspan_list_initialization_layout_stride) {
   std::array<int, 1> d{42};
-  emu::mdspan_t<int, stdex::extents<dyn, dyn>, stdex::layout_stride> m{d.data(), {stdex::dextents<2>{16, 32}, std::array<std::size_t, 2>{1, 128}}};
+  emu::mdspan_t<int, stdex::extents<std::size_t, dyn, dyn>, stdex::layout_stride> m{d.data(), {stdex::dextents<std::size_t, 2>{16, 32}, std::array<std::size_t, 2>{1, 128}}};
   ASSERT_EQ(m.data(), d.data());
   ASSERT_EQ(m.rank(), 2);
   ASSERT_EQ(m.rank_dynamic(), 2);
@@ -113,7 +113,7 @@ TEST(TestMdspanListInitializationLayoutStride, test_mdspan_list_initialization_l
 
 // TEST(TestMdspanCTADExtentsObject, test_mdspan_ctad_extents_object) {
 //   std::array<int, 1> d{42};
-//   emu::mdspan_t m{d.data(), stdex::extents{64, 128}};
+//   emu::mdspan_t m{d.data(), stdex::extents{std::size_t, 64, 128}};
 //   ASSERT_EQ(m.data(), d.data());
 //   ASSERT_EQ(m.rank(), 2);
 //   ASSERT_EQ(m.rank_dynamic(), 2);
@@ -136,7 +136,7 @@ TEST(TestMdspanListInitializationLayoutStride, test_mdspan_list_initialization_l
 // TEST(TestMdspanCTADLayoutLeft, test_mdspan_ctad_layout_left) {
 //   std::array<int, 1> d{42};
 
-//   emu::mdspan_t m0{d.data(), stdex::layout_left::mapping{stdex::extents{16, 32}}};
+//   emu::mdspan_t m0{d.data(), stdex::layout_left::mapping{stdex::extents{std::size_t, 16, 32}}};
 //   ASSERT_EQ(m0.data(), d.data());
 //   ASSERT_EQ(m0.rank(), 2);
 //   ASSERT_EQ(m0.rank_dynamic(), 2);
@@ -163,7 +163,7 @@ TEST(TestMdspanListInitializationLayoutStride, test_mdspan_list_initialization_l
 // TEST(TestMdspanCTADLayoutRight, test_mdspan_ctad_layout_right) {
 //   std::array<int, 1> d{42};
 
-//   emu::mdspan_t m0{d.data(), stdex::layout_right::mapping{stdex::extents{16, 32}}};
+//   emu::mdspan_t m0{d.data(), stdex::layout_right::mapping{stdex::extents{std::size_t, 16, 32}}};
 //   ASSERT_EQ(m0.data(), d.data());
 //   ASSERT_EQ(m0.rank(), 2);
 //   ASSERT_EQ(m0.rank_dynamic(), 2);
@@ -190,7 +190,7 @@ TEST(TestMdspanListInitializationLayoutStride, test_mdspan_list_initialization_l
 // TEST(TestMdspanCTADLayoutStride, test_mdspan_ctad_layout_stride) {
 //   std::array<int, 1> d{42};
 
-//   emu::mdspan_t m0{d.data(), stdex::layout_stride::mapping{stdex::extents{16, 32}, std::array{1, 128}}};
+//   emu::mdspan_t m0{d.data(), stdex::layout_stride::mapping{stdex::extents{std::size_t, 16, 32}, std::array{1, 128}}};
 //   ASSERT_EQ(m0.data(), d.data());
 //   ASSERT_EQ(m0.rank(), 2);
 //   ASSERT_EQ(m0.rank_dynamic(), 2);
@@ -201,7 +201,7 @@ TEST(TestMdspanListInitializationLayoutStride, test_mdspan_list_initialization_l
 //   ASSERT_FALSE(m0.is_contiguous());
 
 //   /*
-//   emu::mdspan_t m1{d.data(), stdex::layout_stride::mapping{stdex::extents{16, 32}, stdex::extents{1, 128}}};
+//   emu::mdspan_t m1{d.data(), stdex::layout_stride::mapping{stdex::extents{std::size_t, 16, 32}, stdex::extents{std::size_t, 1, 128}}};
 //   ASSERT_EQ(m1.data(), d.data());
 //   ASSERT_EQ(m1.rank(), 2);
 //   ASSERT_EQ(m1.rank_dynamic(), 2);

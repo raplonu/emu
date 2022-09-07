@@ -35,10 +35,10 @@ namespace detail
     using detail::stdex::default_accessor;
 
     template <size_t Rank>
-    using dextents_t = detail::stdex::dextents<Rank>;
+    using dextents_t = detail::stdex::dextents<std::size_t, Rank>;
 
     template <size_t... Extents>
-    using extents_t = detail::stdex::extents<Extents...>;
+    using extents_t = detail::stdex::extents<std::size_t, Extents...>;
 
     using detail::stdex::full_extent_t;
     using detail::stdex::full_extent;
@@ -120,7 +120,7 @@ namespace detail
         using element_type    = typename base_t::element_type;
         using value_type      = typename base_t::value_type;
         using size_type       = typename base_t::size_type;
-        using difference_type = typename base_t::difference_type;
+        // using difference_type = typename base_t::difference_type;
         using pointer         = typename base_t::pointer;
         using reference       = typename base_t::reference;
 
@@ -396,9 +396,9 @@ namespace detail
     template <typename ElementType, typename Extents, typename LayoutPolicy = mdspan::layout_right, typename AccessorPolicy = mdspan::default_accessor<ElementType>>
     using mdspan_t = mdspan::detail::mdspan_t<ElementType, location::host_t, Extents, LayoutPolicy, AccessorPolicy>;
 
-    template<typename ElementType> using mdspan_1d_t = mdspan_t<ElementType, mdspan::dextents_t<1>>;
-    template<typename ElementType> using mdspan_2d_t = mdspan_t<ElementType, mdspan::dextents_t<2>>;
-    template<typename ElementType> using mdspan_3d_t = mdspan_t<ElementType, mdspan::dextents_t<3>>;
+    template<typename ElementType> using mdspan_1d_t   = mdspan_t<ElementType, mdspan::dextents_t<1>>;
+    template<typename ElementType> using mdspan_2d_t   = mdspan_t<ElementType, mdspan::dextents_t<2>>;
+    template<typename ElementType> using mdspan_3d_t   = mdspan_t<ElementType, mdspan::dextents_t<3>>;
 
     template<typename ElementType> using mdspan_1d_c_t = mdspan_t<ElementType, mdspan::dextents_t<1>>;
     template<typename ElementType> using mdspan_2d_c_t = mdspan_t<ElementType, mdspan::dextents_t<2>>;

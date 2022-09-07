@@ -12,4 +12,4 @@ cd $BUILD_DIR
 conan install .. --build=missing -pr default -pr:b=default $@
 
 # Let conan invoke cmake configure.
-cmake .. -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_MODULE_PATH=.
+conan build .. -c

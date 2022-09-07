@@ -5,7 +5,6 @@ find_package(GTest REQUIRED)
 add_executable(emucoretest
     src/core/test.cpp
     src/core/math_test.cpp
-    src/core/byte_test.cpp
     src/core/span_test.cpp
     src/core/span_create_test.cpp
     src/core/mdspan_test.cpp
@@ -13,6 +12,7 @@ add_executable(emucoretest
     src/core/expected_test.cpp
     src/core/optional_test.cpp
     src/core/scoped_test.cpp
+    src/core/container_test.cpp
 )
 
 # Only test string utilities if enable.

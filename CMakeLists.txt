@@ -4,7 +4,6 @@ message(CHECK_START "Emu - Configuring")
 
 project(emu VERSION 0.2.0 LANGUAGES CXX)
 
-option(emu_string_util  "emu string utilies"   OFF)
 option(emu_half         "emu half utilies"     OFF)
 option(emu_build_cuda   "Build cuda module"    ON)
 option(emu_build_python "Build python module"  ON)
@@ -39,7 +38,6 @@ find_package(Boost REQUIRED)
 find_package(fmt REQUIRED)
 find_package(Microsoft.GSL REQUIRED)
 find_package(mdspan REQUIRED)
-find_package(range-v3 REQUIRED)
 find_package(tl-expected REQUIRED)
 find_package(tl-optional REQUIRED)
 
@@ -47,18 +45,10 @@ target_link_libraries(emucore PUBLIC
     Boost::boost
     fmt::fmt
     Microsoft.GSL::GSL
-    range-v3::range-v3
     tl::expected
     tl::optional
-    std::mdspan
+    mdspan::mdspan
 )
-
-if (emu_string_util)
-    find_package(absl REQUIRED CONFIG)
-
-    target_compile_definitions(emucore PUBLIC EMU_STRING_UTIL)
-    target_link_libraries(emucore PUBLIC absl::absl)
-endif()
 
 if (emu_half)
     find_package(half REQUIRED)
