@@ -7,7 +7,15 @@ namespace emu
 namespace location
 {
 
-    struct host_t {};
+    struct host_t {
+        template<typename T>
+        using default_allocator_type = std::allocator<T>;
+
+        template<typename T>
+        default_allocator_type<T> make_default_allocator() {
+            return default_allocator_type<T>();
+        }
+    };
 
 } // namespace location
 

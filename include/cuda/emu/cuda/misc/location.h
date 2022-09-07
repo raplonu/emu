@@ -3,6 +3,7 @@
 
 #include <emu/misc/location.h>
 #include <emu/cuda.h>
+#include <emu/cuda/allocator.h>
 
 namespace emu
 {
@@ -10,13 +11,21 @@ namespace emu
 namespace location
 {
 
-    struct cuda_t {
+    struct cuda_t
+    {
+        template<typename T>
+        using default_allocator_type = emu::cuda::allocator<T>;
 
         ::cuda::device_t device;
 
         cuda_t(): device(::cuda::device::current::get()) {}
 
         cuda_t(::cuda::device_t device) noexcept: device(device) {}
+
+        template<typename T>
+        default_allocator_type<T> make_default_allocator() {
+            return default_allocator_type<T>(device);
+        }
 
     };
 

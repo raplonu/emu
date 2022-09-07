@@ -4,6 +4,8 @@
 #include <emu/cuda.h>
 #include <emu/macro.cuh>
 
+#error SHOULD NOT BE INCLUDED ANYWHERE !
+
 namespace emu
 {
 
@@ -33,7 +35,7 @@ namespace memory
         *ptr = value;
     }
 
-#else // not EMU_DEVICE_CONTEXT
+#else // NOT EMU_DEVICE_CONTEXT
 
     template<typename T>
     EMU_HODE T read(const T * ptr)

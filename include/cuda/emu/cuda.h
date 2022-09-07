@@ -43,6 +43,11 @@ namespace detail
         return static_cast<T*>(::cuda::memory::device::allocate(device, size * sizeof(T)).start());
     }
 
+    template<typename T>
+    inline void deallocate(T* p, ::std::size_t) {
+        ::cuda::memory::device::free(p);
+    }
+
 
 namespace detail
 {
