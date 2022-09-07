@@ -4,7 +4,7 @@
 #include <emu/config.h>
 #include <emu/macro.h>
 
-#include <gsl/gsl_assert>
+#include <gsl/assert>
 #include <boost/assert.hpp>
 
 #define EMU_ASSERT(cond) BOOST_ASSERT(cond)

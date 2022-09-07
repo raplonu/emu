@@ -3,7 +3,6 @@
 
 #include <emu/type_traits.h>
 #include <emu/utility.h>
-#include <emu/byte.h>
 #include <emu/misc/location.h>
 
 #include <gsl/span>

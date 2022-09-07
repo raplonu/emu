@@ -61,7 +61,7 @@ namespace detail
 } // namespace detail
 
     inline py::object to_array(
-        const byte* ptr, py::dtype type, bool read_only,
+        const std::byte* ptr, py::dtype type, bool read_only,
         std::vector<py::ssize_t> extents, std::vector<py::ssize_t> strides,
         location::host_t /* location */
     ) {
@@ -124,7 +124,7 @@ namespace detail
             }
 
             return to_array(
-                reinterpret_cast<const byte*>(value.data()), py::dtype::of<ElementType>(),
+                reinterpret_cast<const std::byte*>(value.data()), py::dtype::of<ElementType>(),
                 std::is_const_v<ElementType>, extents, strides, value.location()
             );
         }
@@ -149,7 +149,7 @@ namespace detail
 } // namespace detail
 
     inline py::object to_array(
-        const byte* ptr, py::dtype type, bool read_only,
+        const std::byte* ptr, py::dtype type, bool read_only,
         std::vector<py::ssize_t> extents, std::vector<py::ssize_t> strides,
         const location::cuda_t & location)
     {
@@ -233,7 +233,7 @@ namespace detail
             }
 
             return to_array(
-                reinterpret_cast<const byte*>(value.data()), py::dtype::of<ElementType>(),
+                reinterpret_cast<const std::byte*>(value.data()), py::dtype::of<ElementType>(),
                 std::is_const_v<ElementType>, extents, strides, value.location()
             );
         }
@@ -244,7 +244,7 @@ namespace detail
 
     template<typename Location>
     py::object to_array(
-        const byte* ptr, py::dtype type, bool read_only,
+        const std::byte* ptr, py::dtype type, bool read_only,
         std::vector<py::ssize_t> extents, Location && location
     ) {
 
