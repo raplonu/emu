@@ -1,7 +1,6 @@
-from conans import ConanFile, tools
-from conan.tools.cmake import CMake, CMakeToolchain
+from conan import ConanFile
+from conan.tools.cmake import CMakeToolchain, CMake, cmake_layout
 import os
-
 
 def load(*filenames):
     for filename in filenames:
@@ -14,30 +13,13 @@ def load(*filenames):
 class EmuConan(ConanFile):
     name = 'emu'
     version = '0.2.0'
+
     license = 'MIT'
     author = 'Julien Bernard jbernard@obspm.fr'
     url = 'https://gitlab.obspm.fr/cosmic/tools/emu'
     description = 'Set of utilities for C++, CUDA and python'
 
     settings = 'os', 'compiler', 'build_type', 'arch'
-    generators = 'CMakeDeps'
-
-    build_policy = 'missing'
-    no_copy_source = True
-    exports_sources = 'CMakeLists.txt', 'include/*', 'src/*', 'test/*', 'tools/*'
-
-    requires = [
-        'fmt/9.1.0',
-        'boost/1.79.0',
-        'ms-gsl/4.0.0',
-        'mdspan/0.4.0@cosmic/stable',
-        'tl-expected/1.0.0',
-        'tl-optional/1.0.0'
-    ]
-
-    # Cannot be optional (link to the use of cuda or not).
-    python_requires = 'cuda_arch/0.2.0@cosmic/stable'
-
     options = {
         'shared'        : [True, False],
         'fPIC'          : [True, False],
@@ -53,11 +35,11 @@ class EmuConan(ConanFile):
         # NUM: Any number. Only those pairs are currently accepted by NVCC though:
         #    20 21 30 32 35 37 50 52 53 60 62
         # For more information refer to https://cmake.org/cmake/help/latest/variable/CMAKE_CUDA_ARCHITECTURES.html
-        'cuda_sm'       : 'ANY',
-        'python_version': 'ANY',
+        'cuda_sm'       : ['ANY'],
+        'python_version': ['ANY'],
         'test'          : [True, False],
-        'doc'           : [True, False]}
-
+        'doc'           : [True, False]
+    }
     default_options = {
         'shared'     : False,
         'fPIC'       : True,
@@ -69,6 +51,8 @@ class EmuConan(ConanFile):
         'cuda_sm'    : 'Auto'
     }
 
+    exports_sources = 'CMakeLists.txt', 'include/*', 'src/*', 'test/*', 'tools/*'
+
     def parse_cuda_compute_capabilities(self):
         cuda = self.python_requires['cuda_arch'].module
 
@@ -77,56 +61,90 @@ class EmuConan(ConanFile):
 
     def configure(self):
         if not self.options.cuda:
-            self.options.remove('cuda_sm')
+            del self.options.cuda_sm
         else:
             self.parse_cuda_compute_capabilities()
 
         if not self.options.python:
-            self.options.remove('python_version')
+            del self.options.python_version
+
+    requires = [
+        'fmt/9.1.0',
+        'boost/1.81.0',
+        'ms-gsl/4.0.0',
+        'mdspan/0.5.0@cosmic/stable',
+        'tl-expected/1.0.0',
+        'tl-optional/1.0.0'
+    ]
 
     def requirements(self):
         if self.options.cuda:
             self.requires('cuda-api-wrappers/0.4.3@cosmic/stable')
 
         if self.options.python:
-            self.requires('pybind11/2.9.1@cosmic/stable')
+            self.requires('pybind11/2.10.1')
 
         if self.options.half:
             self.requires('half/2.2.0')
 
+    def build_requirements(self):
         if self.options.test:
-            self.requires('gtest/1.12.1', private=True)
+            self.build_requires('gtest/1.13.0')
+
+    # Cannot be optional (link to the use of cuda or not).
+    python_requires = 'cuda_arch/0.4.0@cosmic/stable'
+
+    def layout(self):
+        cmake_layout(self)
+
+    generators = 'CMakeDeps'
 
     def generate(self):
+        tc = CMakeToolchain(self)
 
-        cmake = CMakeToolchain(self)
-
-        cmake.variables['emu_build_cuda']   = self.options.cuda
-        cmake.variables['emu_build_python'] = self.options.python
-        cmake.variables['emu_half']         = self.options.half
-        cmake.variables['emu_build_test']   = self.options.test
+        tc.variables['emu_build_cuda']   = bool(self.options.cuda)
+        tc.variables['emu_build_python'] = bool(self.options.python)
+        tc.variables['emu_half']         = bool(self.options.half)
+        tc.variables['emu_build_test']   = bool(self.options.test)
         # Ask the project to generate {target}_flags.txt with the C++ & CUDA flags in it if any.
-        cmake.variables['emu_export_flags'] = True
+        tc.variables['emu_export_flags'] = True
 
         if self.options.cuda:
-            cmake.variables['CMAKE_CUDA_ARCHITECTURES'] = self.options.cuda_sm
+            tc.variables['CMAKE_CUDA_ARCHITECTURES'] = self.options.cuda_sm
 
         if self.options.python:
-            cmake.variables['PYBIND11_PYTHON_VERSION'] = self.options.python_version
+            tc.variables['PYBIND11_PYTHON_VERSION'] = self.options.python_version
 
-        cmake.generate()
+        tc.generate()
+
+    # def build(self):
+    #     cmake = CMake(self)
+    #     cmake.configure()
+    #     cmake.build()
+
+
+
+
+
+    # build_policy = 'missing'
+    # no_copy_source = True
+
+
+
+
+
 
     def build(self):
         cmake = CMake(self)
 
-        if self.should_configure:
-            cmake.configure()
-        if self.should_build:
-            cmake.build()
+        # if self.should_configure:
+        cmake.configure()
+        # if self.should_build:
+        cmake.build()
 
         # We did not use `self.should_test` since it is enable by default.
         # But it can be still triggered independently using `-t` argument.
-        if self.should_test and self.options.test:
+        if self.options.test:
             cmake.test()
 
     def package(self):
@@ -156,13 +174,16 @@ class EmuConan(ConanFile):
             'tl-optional::optional',
             'mdspan::mdspan'
         ]
-        self.cpp_info.components['core'].cxxflags = load(f'{self.package_folder}/data/emucore_flags.txt', f'{self.package_folder}/build/emucore_flags.txt')
-        self.cpp_info.components['core'].defines = [f'EMU_STRING_UTIL={1 if self.options.string_util else 0}']
+        # self.cpp_info.components['core'].cxxflags = load(f'{self.package_folder}/data/emucore_flags.txt', f'{self.package_folder}/build/emucore_flags.txt')
 
         if self.options.cuda:
-            self.cpp_info.components['cuda'].libs = ['emucuda']
+            cuda_prop = self.python_requires['cuda_arch'].module.properties()
+
+            self.cpp_info.components['cuda'].libs = ['emucuda', 'cudart', 'cublas']
+            self.cpp_info.components['cuda'].libdirs += [cuda_prop.library]
+            self.cpp_info.components['cuda'].includedirs += [cuda_prop.include]
             self.cpp_info.components['cuda'].requires = ['core', 'cuda-api-wrappers::cuda-api-wrappers']
-            self.cpp_info.components['cuda'].cxxflags = load(f'{self.package_folder}/data/emucuda_flags.txt', f'{self.package_folder}/build/emucuda_flags.txt')
+            # self.cpp_info.components['cuda'].cxxflags = load(f'{self.package_folder}/data/emucuda_flags.txt', f'{self.package_folder}/build/emucuda_flags.txt')
             self.cpp_info.components['cuda'].defines = ['EMU_CUDA']
 
         if self.options.python:
@@ -170,4 +191,4 @@ class EmuConan(ConanFile):
             self.cpp_info.components['python'].requires = ['core', 'pybind11::headers']
             if self.options.cuda:
                 self.cpp_info.components['python'].requires += ['cuda']
-            self.cpp_info.components['python'].cxxflags = load(f'{self.package_folder}/data/emucuda_flags.txt', f'{self.package_folder}/build/emupython_flags.txt')
+            # self.cpp_info.components['python'].cxxflags = load(f'{self.package_folder}/data/emucuda_flags.txt', f'{self.package_folder}/build/emupython_flags.txt')
