@@ -30,9 +30,9 @@ namespace detail
         void operator()(id_t id) const { destroy(id); }
     };
 
-    ::cuda::stream::id_t get_stream(id_t handle);
+    ::cuda::stream::handle_t get_stream(id_t handle);
 
-    void set_stream(id_t handle, ::cuda::stream::id_t mode);
+    void set_stream(id_t handle, ::cuda::stream::handle_t mode);
 
     cublasMath_t get_math_mode(id_t handle);
 
@@ -44,7 +44,7 @@ namespace detail
 
 } // namespace detail
 
-    using ScopedHandle = emu::scoped_t<const id_t, detail::Destroyer>;
+    using ScopedHandle = scoped<const id_t, detail::Destroyer>;
 
 } // namespace handle
 

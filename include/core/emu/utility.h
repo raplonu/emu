@@ -1,5 +1,4 @@
-#ifndef EMU_UTILITY_H
-#define EMU_UTILITY_H
+#pragma once
 
 #include <emu/config.h>
 #include <emu/macro.h>
@@ -9,88 +8,29 @@
 #include <algorithm>
 #include <functional>
 #include <utility>
+#include <memory>
 
-#define EMU_FWD(v) emu::fwd<decltype(v)>(v)
+#define EMU_FWD(v) ::emu::fwd<decltype(v)>(v)
 
 namespace emu
 {
 
-namespace detail
-{
-
-    template<typename To>
-    struct as_t {
-
-        template<typename From>
-        constexpr EMU_HODE To operator()(From && from) const
-            EMU_NOEXCEPT_EXPR( static_cast<To>(std::forward<From>(from)) )
-        {
-            return static_cast<To>(std::forward<From>(from));
-        }
-    };
-
-} // namespace detail
-
-    /**
-     * @brief Functional equivalent of static_cast.
-     *
-     * @tparam To The destination type.
-     */
-    template<typename To>
-    EMU_HODE_CONSTEXPR auto as = detail::as_t<To>{};
-
     template<typename T>
-    EMU_HODE constexpr T&& fwd(std::remove_reference_t<T>& t) noexcept {
+    constexpr T&& fwd(std::remove_reference_t<T>& t) noexcept {
         return static_cast<T&&>(t);
     }
 
     template<typename T>
-    EMU_HODE constexpr T&& fwd(std::remove_reference_t<T>&& t) noexcept {
+    constexpr T&& fwd(std::remove_reference_t<T>&& t) noexcept {
         return static_cast<T&&>(t);
     }
 
-    template<typename T> constexpr
-    EMU_HODE auto mv(T&& t) noexcept -> std::remove_reference_t<T>&& {
+    template<typename T>
+    constexpr auto mv(T&& t) noexcept -> std::remove_reference_t<T>&& {
         return static_cast<std::remove_reference_t<T>&&>(t);
     }
 
   //###################### SIZE ########################
-
-#if EMU_FROM_CXX17
-
-    using std::size;
-
-#else
-
-    template <class C>
-    constexpr auto size(const C& c) -> decltype(c.size())
-    {
-        return c.size();
-    }
-
-    template <class C>
-    constexpr auto ssize(const C& c)
-        -> std::common_type_t<std::ptrdiff_t,
-                            std::make_signed_t<decltype(c.size())>>
-    {
-        using R = std::common_type_t<std::ptrdiff_t,
-                                    std::make_signed_t<decltype(c.size())>>;
-        return static_cast<R>(c.size());
-    }
-
-    template <class T, std::size_t N>
-    constexpr std::size_t size(const T (&array)[N]) noexcept
-    {
-        return N;
-    }
-
-    template <class T, std::ptrdiff_t N>
-    constexpr std::ptrdiff_t ssize(const T (&array)[N]) noexcept
-    {
-        return N;
-    }
-
-#endif
 
     /**
     * Calculate the ceil result of a / b
@@ -110,73 +50,11 @@ namespace detail
     EMU_HODE constexpr
     T align(T size) noexcept { return next_mul(size, 32); }
 
-    template <typename T>
-    EMU_HODE constexpr
-    const T & min(const T & a, const T & b) noexcept {
-        return (a < b) ? a : b;
-    }
-
-    template<typename T, class Compare>
-    EMU_HODE constexpr
-    const T& min(const T & a, const T& b, Compare comp)
-        EMU_NOEXCEPT_EXPR((comp(a, b)) ? a : b)
-    {
-        return (comp(a, b)) ? a : b;
-    }
-
-    template<typename T>
-    EMU_HODE constexpr
-    T min(std::initializer_list<T> ilist)
-        EMU_NOEXCEPT_EXPR(*std::min_element(ilist.begin(), ilist.end()))
-    {
-        return *std::min_element(ilist.begin(), ilist.end());
-    }
-
-    template<class T, class Compare>
-    EMU_HODE constexpr
-    T min(std::initializer_list<T> ilist, Compare comp)
-        EMU_NOEXCEPT_EXPR(*std::min_element(ilist.begin(), ilist.end(), comp))
-    {
-        return *std::min_element(ilist.begin(), ilist.end(), comp);
-    }
-
     template<std::size_t key_id, typename Tuple>
     EMU_HODE constexpr
     const Tuple & min(const Tuple & t1, const Tuple & t2) noexcept {
         using std::get;
         return get<key_id>(t1) < get<key_id>(t2) ? t1 : t2;
-    }
-
-    template <typename T>
-    EMU_HODE constexpr
-    const T & max(const T & a, const T & b)
-        EMU_NOEXCEPT_EXPR((a < b) ? b : a)
-    {
-        return (a < b) ? b : a;
-    }
-
-    template<typename T, class Compare>
-    EMU_HODE constexpr
-    const T& max(const T & a, const T& b, Compare comp)
-        EMU_NOEXCEPT_EXPR((comp(a, b)) ? b : a)
-    {
-        return (comp(a, b)) ? b : a;
-    }
-
-    template<typename T>
-    EMU_HODE constexpr
-    T max(std::initializer_list<T> ilist)
-        EMU_NOEXCEPT_EXPR(*std::max_element(ilist.begin(), ilist.end()))
-    {
-        return *std::max_element(ilist.begin(), ilist.end());
-    }
-
-    template<class T, class Compare>
-    EMU_HODE constexpr
-    T max(std::initializer_list<T> ilist, Compare comp)
-        EMU_NOEXCEPT_EXPR(*std::max_element(ilist.begin(), ilist.end(), comp))
-    {
-        return *std::max_element(ilist.begin(), ilist.end(), comp);
     }
 
     template<std::size_t key_id, typename Tuple>
@@ -219,8 +97,12 @@ namespace detail
     int item_per_group_local_nb(int item_nb, int group_id, int group_size) {
         int item_pg = item_per_group_nb(item_nb, group_size);
 
-        return max(0, min(item_nb, (group_id + 1) * item_pg) - group_id * item_pg);
+        return std::max(0, std::min(item_nb, (group_id + 1) * item_pg) - group_id * item_pg);
     }
-}
 
-#endif //EMU_UTILITY_H
+    template<typename T, typename Alloc>
+    constexpr auto rebind_alloc(const Alloc& alloc) {
+        return typename std::allocator_traits<Alloc>::template rebind_alloc<T>(alloc);
+    }
+
+} // namespace emu

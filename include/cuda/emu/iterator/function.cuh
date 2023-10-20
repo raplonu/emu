@@ -3,17 +3,31 @@
 
 #include <emu/macro.cuh>
 #include <emu/utility.h>
-#include <emu/functional/apply.h>
 
 #include <thrust/tuple.h>
 #include <thrust/iterator/transform_iterator.h>
 #include <thrust/iterator/zip_iterator.h>
 
-namespace emu
+#include <functional>
+
+namespace emu::iterator
 {
 
-namespace iterator
+namespace detail
 {
+
+    template<typename F>
+    struct apply {
+        F fn;
+
+        template<typename... Ts>
+        constexpr EMU_HODE
+        auto operator()(Ts&&... ts) const noexcept {
+            return std::apply(fn, EMU_FWD(ts)...);
+        }
+    };
+
+} // namespace detail
 
     /**
      * Helper function that return an iterator that iterate on multiple given iterators
@@ -26,13 +40,10 @@ namespace iterator
     auto make_transform_iterator(F fn, Its... its) noexcept {
         return ::thrust::make_transform_iterator(
             ::thrust::make_zip_iterator(::thrust::make_tuple(its...)),
-            functional::make_apply(fwd<F>(fn))
+            detail::apply<F>(fn)
         );
     }
 
-} // namespace iterator
-
-
-} // namespace emu
+} // namespace emu::iterator
 
 #endif //EMU_ITERATOR_FUNCTION_H

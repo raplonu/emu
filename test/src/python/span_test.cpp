@@ -21,7 +21,7 @@ namespace
         py::scoped_interpreter guard{}; // start the interpreter and keep it alive
 
         int data[] = {1,2,3,4,5};
-        emu::span_t<int> s(data);
+        emu::span<int> s(data);
 
         EXPECT_EQ(s.size(), 5);
 

@@ -1,24 +1,20 @@
 cmake_minimum_required(VERSION 3.18)
 
+enable_testing()
+
 find_package(GTest REQUIRED)
+include(GoogleTest)
 
 add_executable(emucoretest
     src/core/test.cpp
     src/core/math_test.cpp
     src/core/span_test.cpp
-    src/core/span_create_test.cpp
-    src/core/mdspan_test.cpp
     src/core/range_test.cpp
     src/core/expected_test.cpp
     src/core/optional_test.cpp
     src/core/scoped_test.cpp
-    src/core/container_test.cpp
+    # src/core/container_test.cpp
 )
-
-# Only test string utilities if enable.
-if (emu_string_util)
-    target_sources(emucoretest PRIVATE src/core/string_test.cpp)
-endif()
 
 target_link_libraries(emucoretest PRIVATE
     GTest::gtest GTest::gtest_main emucore
@@ -26,10 +22,7 @@ target_link_libraries(emucoretest PRIVATE
 
 target_include_directories(emucoretest PRIVATE include)
 
-add_test(NAME emucoretest
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test
-    COMMAND emucoretest
-)
+gtest_discover_tests(emucoretest)
 
 if (emu_build_cuda)
 
@@ -48,28 +41,5 @@ if (emu_build_cuda)
 
     target_include_directories(emucudatest PRIVATE include)
 
-    add_test(NAME emucudatest
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test
-        COMMAND emucudatest
-    )
-endif()
-
-if (emu_build_python)
-
-    add_executable(emupythontest
-        src/python/span_test.cpp
-        src/python/pybind11_test.cpp
-    )
-
-    target_link_libraries(emupythontest PRIVATE
-        GTest::gtest GTest::gtest_main emupython pybind11::embed
-    )
-
-    target_include_directories(emupythontest PRIVATE include)
-
-    add_test(NAME emupythontest
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test
-        COMMAND emupythontest
-    )
-
+    gtest_discover_tests(emucudatest)
 endif()

@@ -25,7 +25,7 @@ namespace detail
         friend EMU_HODE
         ::cuda::status_t synchronize_stream(execute_on_stream_async&) noexcept
         {
-            return cudaSuccess;
+            return CUDA_SUCCESS;
         }
     };
 
@@ -38,7 +38,7 @@ namespace detail
         stream_attachment_type on(const ::cuda::stream_t & stream) const
         {
             stream.device().make_current();
-            return base_t::on(stream.id());
+            return base_t::on(stream.handle());
         }
     };
 
@@ -47,7 +47,7 @@ namespace detail
         execute_on_stream_async on(const ::cuda::stream_t & stream) const
         {
             stream.device().make_current();
-            return execute_on_stream_async(stream.id());
+            return execute_on_stream_async(stream.handle());
         }
 
     };

@@ -4,62 +4,46 @@
 
 ## Requirement
 
+`emu` requires a c++20 compiler and the following tools:
+
+- [cmake](https://cmake.org/) >= 3.18 (or whatever)
+- [cuda](https://developer.nvidia.com/cuda-toolkit) >= 12.1 (the one with device cuda graph feature)
+- [conan](https://conan.io/) >= 2.0.0 with cosmis remote using `conan remote add cosmic https://odp2.jfrog.io/artifactory/api/conan/cosmic`
+- [just](https://just.systems/) optional
+
 `emu` requires `cmake` and by default `conan` to install dependencies and build.
+Also, we recommend to use `just` to simplify the build process.
 
-## Quickstart
-
-- Clone the repository
-
-```bash
-git clone git@gitlab.obspm.fr:cosmic/tools/emu.git
-cd emu
-```
-
-- Install dependencies and build the project
+## Build
 
 ```bash
-./configure.sh
-./build.sh
+conan create . -b missing
+# install python
+conan create python -b missing
 ```
 
-Arguments passed to `configure.sh` will be forwarded to `conan install` command.
+or use `just install`.
 
-You can also directly package the project locally
+This will create `emu` packages in your local conan cache.
+
+## Dev
 
 ```bash
-pip install .
+conan build . -b missing
+conan editable add .
+# dev python
+conan build python -b missing
+conan editable add python
 ```
 
-It will install `emu` both in your python & conan cache.
+or use `just dev`.
 
-## Developer mode
+This will configure and build the project in `build/Release` folder and adds `emu` as an editable package in your local conan cache.
 
-### Editable
-
-emu can be installed in editable mode both for python and C++ using the following command:
+For next build, just run:
 
 ```bash
-pip install -e .
+cmake --build --preset conan-release
 ```
 
-This command will create editable pip & conan packages. That means these packages directly refer to what is in `python`, `build` and `include` folders.
-
-That mean if changes occur in python source code. No additional operations are needed.
-
-On the other side, after any change in your C++ source code, you need to recompile emu libraries using e.g. `build.sh`.
-
-### Conan
-
-By default, pip will install the emu C++ package in conan with `cosmic/stable` channel.
-
-You can edit this channel using the following command:
-
-```bash
-pip install ./emu --install-option=--channel=<custom channel>
-```
-
-Also, it is possible to pass argument to the conan install command using the following command:
-
-```bash
-pip install ./emu --install-option=--conan-args="<conan args>"
-```
+or use `just build`.

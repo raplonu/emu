@@ -29,7 +29,7 @@ namespace
         using namespace emu;
         resource_t r = open_resource();
         {
-            auto s = scoped::create(std::ref(r), close_resource);
+            auto s = scoped(std::ref(r), close_resource);
             EXPECT_TRUE(r.open);
         }
         EXPECT_FALSE(r.open);
@@ -40,7 +40,7 @@ namespace
         using namespace emu;
         resource_t r = open_resource();
         {
-            auto s = scoped::wrap(std::ref(r), close_resource);
+            auto s = scoped(std::ref(r), close_resource, false);
             EXPECT_TRUE(r.open);
         }
         EXPECT_TRUE(r.open);
@@ -56,7 +56,7 @@ namespace
         {
             // setf() returns the old flags and we store them in the scoped_t object.
             // The lambda will set them again.
-            auto s = scoped::create(ss.setf(ios::hex, ios::basefield), [&](ios::fmtflags previous) {
+            auto s = scoped(ss.setf(ios::hex, ios::basefield), [&](ios::fmtflags previous) {
             ss.setf(previous, ios::basefield);
             });
             ss << 255;
@@ -74,7 +74,7 @@ namespace
         using namespace std;
         ostringstream ss;
         {
-            auto s = scoped::create([&]{ss << "out of scope";});
+            auto s = scoped([&]{ss << "out of scope";});
             ss << "in scope - ";
             EXPECT_EQ("in scope - ", ss.str());
         }

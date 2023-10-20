@@ -1,4 +1,4 @@
-python/*.so
-python/*.dlib
-python/*.dll
-.coverage
+build/
+CMakeUserPresets.json
+python/buidl/
+python/CMakeUserPresets.json

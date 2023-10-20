@@ -1,13 +1,9 @@
-#ifndef EMU_CUDA_SPAN_H
-#define EMU_CUDA_SPAN_H
+#pragma once
 
 #include <emu/span.h>
-#include <emu/cuda/misc/location.h>
+#include <emu/cuda/location.h>
 
-namespace emu
-{
-
-namespace cuda
+namespace emu::cuda
 {
 
     /**
@@ -18,14 +14,8 @@ namespace cuda
      * and encoded in the type, or a dynamic extent.
      * Please refer to https://en.cppreference.com/w/cpp/container/span for more detail.
      *
-     * @note Use span from gsl library since it is the closest implementation of c++20 std::span.
      */
-    //TODO: replace gsl::span by std::span when c++20.
-    template<typename ElementType, std::size_t Extent = span::dynamic_extent>
-    using span_t = span::detail::span_t<ElementType, location::cuda_t, Extent>;
+    template<typename ElementType, std::size_t Extent = std::dynamic_extent>
+    using span = emu::detail::span<ElementType, cuda::location::device, Extent>;
 
-} // namespace cuda
-
-} // namespace emu
-
-#endif //EMU_CUDA_SPAN_H
+} // namespace emu::cuda

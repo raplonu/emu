@@ -1,17 +1,12 @@
-#ifndef EMU_SCOPED_H
-#define EMU_SCOPED_H
+#pragma once
 
-#include <emu/type_traits.h>
+#include <emu/concepts.hpp>
 #include <emu/utility.h>
 
 #include <utility>
 
 namespace emu
 {
-
-    template<typename Base, typename Derive>
-    using EnableIfNotBase = EnableIf<not std::is_base_of_v<RemoveCVRef<Base>, RemoveCVRef<Derive>>>;
-
     /**
      * @brief A scoped object that calls a destructor when it goes out of scope.
      *
@@ -19,7 +14,7 @@ namespace emu
      * @tparam F The type of the destructor function.
      */
     template<typename T, typename F>
-    struct scoped_t
+    struct scoped
     {
         /// The type of the object to be destroyed.
         using value_type = T;
@@ -33,33 +28,33 @@ namespace emu
          * @brief Default constructor.
          *
          */
-        constexpr scoped_t() = default;
+        constexpr scoped() = default;
 
-        template<typename T1, EnableIfNotBase<scoped_t, T1> = true>
-        constexpr scoped_t(T1 && value, bool owning = true)
+        template<cpts::not_derived_from<scoped> T1>
+        constexpr scoped(T1 && value, bool owning = true)
             EMU_NOEXCEPT_EXPR(value_type(EMU_FWD(value)), function_type())
         :
             value(EMU_FWD(value)), function(), owning_(owning)
         {}
 
-        template<typename T1, typename F1, EnableIf<not Equivalent<F1, bool>> = true>
-        constexpr scoped_t(T1 && value, F1 && function, bool owning = true)
+        template<typename T1, cpts::not_equivalent<bool> F1>
+        constexpr scoped(T1 && value, F1 && function, bool owning = true)
             EMU_NOEXCEPT_EXPR(value_type(EMU_FWD(value)), function_type(EMU_FWD(function)))
         :
             value(EMU_FWD(value)), function(EMU_FWD(function)), owning_(owning)
         {}
 
-        scoped_t(const scoped_t & oc) = delete;
+        scoped(const scoped & oc) = delete;
 
-        constexpr scoped_t(scoped_t && oc)
+        constexpr scoped(scoped && oc)
             EMU_NOEXCEPT_EXPR(value_type(mv(oc.value)), function_type(mv(oc.function))):
             value(mv(oc.value)), function(mv(oc.function)),
             owning_(std::exchange(oc.owning_, false))
         {}
 
-        scoped_t& operator=(const scoped_t & oc) = delete;
+        scoped& operator=(const scoped & oc) = delete;
 
-        scoped_t& operator=(scoped_t && oc)
+        scoped& operator=(scoped && oc)
             noexcept(noexcept_invoke and noexcept(std::declval<value_type&>() = mv(oc.value), std::declval<function_type&>() = mv(oc.function)))
         {
             invoke();
@@ -71,7 +66,7 @@ namespace emu
             return *this;
         };
 
-        ~scoped_t() noexcept(noexcept_invoke) {
+        ~scoped() noexcept(noexcept_invoke) {
             invoke();
         }
 
@@ -132,32 +127,33 @@ namespace emu
     };
 
     template<typename F>
-    struct scoped_t<void, F>
+    struct scoped<void, F>
     {
+        using value_type = void;
         using function_type = F;
 
         static constexpr bool noexcept_invoke = EMU_NOEXCEPT_EXPR(std::declval<function_type&>()());
 
-        constexpr scoped_t() = default;
+        constexpr scoped() = default;
 
-        template<typename F1, bool = EnableIfNotBase<scoped_t, F1>{}>
-        constexpr scoped_t(F1 function, bool owning = true)
+        template<cpts::not_derived_from<scoped> F1>
+        constexpr scoped(F1 function, bool owning = true)
             EMU_NOEXCEPT_EXPR(function_type(EMU_FWD(function))):
             function(EMU_FWD(function)), owning_(owning)
         {}
 
-        scoped_t(const scoped_t & oc) = delete;
+        scoped(const scoped & oc) = delete;
 
-        constexpr scoped_t(scoped_t && oc)
+        constexpr scoped(scoped && oc)
             EMU_NOEXCEPT_EXPR(function_type(mv(oc.function)))
         :
             function(mv(oc.function)),
             owning_(std::exchange(oc.owning_, false))
         {}
 
-        scoped_t& operator=(const scoped_t & oc) = delete;
+        scoped& operator=(const scoped & oc) = delete;
 
-        scoped_t& operator=(scoped_t && oc)
+        scoped& operator=(scoped && oc)
             noexcept(noexcept_invoke and noexcept(std::declval<function_type&>() = mv(oc.function)))
         {
             invoke();
@@ -168,7 +164,7 @@ namespace emu
             return *this;
         };
 
-        ~scoped_t() noexcept(noexcept_invoke) {
+        ~scoped() noexcept(noexcept_invoke) {
             invoke();
         }
 
@@ -199,10 +195,25 @@ namespace emu
         bool owning_ = true;
     };
 
+    template<typename T, typename F>
+    scoped(T&&, F&&) -> scoped<std::decay_t<T>, std::decay_t<F>>;
+
+    template<typename T, typename F>
+    scoped(T&&, F&&, bool) -> scoped<std::decay_t<T>, std::decay_t<F>>;
+
+    template<typename T, typename F>
+    scoped(scoped<T, F>&&) -> scoped<T, F>;
+
+    template<typename F>
+    scoped(F&&) -> scoped<void, std::decay_t<F>>;
+
+    template<typename F>
+    scoped(F&&, bool) -> scoped<void, std::decay_t<F>>;
+
 namespace detail
 {
 
-    struct deleter_t {
+    struct deleter {
         template<typename T>
         void operator()(T* ptr) {
             delete ptr;
@@ -211,65 +222,21 @@ namespace detail
 
 } // namespace detail
 
-    template<typename T, typename Deleter = detail::deleter_t>
-    using scoped_ptr_t = scoped_t<T*, Deleter>;
-
-namespace scoped
-{
-
-    /**
-     * @brief Returns a scoped_t for the given value and function.
-     *
-     * Useful to do type deduction.
-     *
-     * @tparam T Regular
-     * @tparam F FunctionObject<U (T)>
-     * @param value The contained value.
-     * @param f The function to call when the scoped_t is destroyed.
-     * @return scoped struct.
-     */
-    template<typename T, typename F>
-    constexpr auto create(T&& value, F&& f) {
-        return scoped_t<std::decay_t<T>, std::decay_t<F>>{EMU_FWD(value), EMU_FWD(f)};
-    }
-
-    /// Returns a scoped_t for the given function.
-    /// Useful to do type deduction.
-    ///
-    /// FunctionObject<U (T)> F where U is not constrained
-    template<typename F>
-    constexpr auto create(F&& f) {
-        return scoped_t<void, std::decay_t<F>>{EMU_FWD(f)};
-    }
-
-    /// Returns a scoped_t for the given value and function.
-    /// The function won't be called if the scoped_t is destroyed.
-    template<typename T, typename F>
-    constexpr auto wrap(T&& value, F&& f) {
-        return scoped_t<std::decay_t<T>, std::decay_t<F>>{EMU_FWD(value), EMU_FWD(f), false};
-    }
-
-    template<typename F>
-    constexpr auto wrap(F&& f) {
-        return scoped_t<void, std::decay_t<F>>{EMU_FWD(f), false};
-    }
+    template<typename T, typename Deleter = detail::deleter>
+    using scoped_ptr = scoped<T*, Deleter>;
 
     template<typename T, typename V>
     constexpr auto assign_for_current_scope(T & t, V && v)
         EMU_NOEXCEPT_EXPR(std::exchange(t, EMU_FWD(v)))
     {
         auto old = std::exchange(t, EMU_FWD(v));
-        return create([&t, old = mv(old)]{ t = mv(old); });
+        return scoped([&t, old = mv(old)]{ t = mv(old); });
     }
-
-#define EMU_INVOKE_AT_SCOPE_EXIT(F)                                         \
-    const auto EMU_UNIQUE_NAME(invoke_at_scope_exit) = ::emu::scoped::create(F)
-
-#define EMU_ASSIGN_FOR_CURRENT_SCOPE(T, V)                                                    \
-    const auto EMU_UNIQUE_NAME(assign_value_for_scope) = ::emu::scoped::assign_for_current_scope(T, V)
-
-} // namespace scope
 
 } // namespace emu
 
-#endif //EMU_SCOPED_H
+#define EMU_INVOKE_AT_SCOPE_EXIT(F)                              \
+    const ::emu::scoped EMU_UNIQUE_NAME(invoke_at_scope_exit)(F)
+
+#define EMU_ASSIGN_FOR_CURRENT_SCOPE(T, V)                                                     \
+    const auto EMU_UNIQUE_NAME(assign_value_for_scope) = ::emu::assign_for_current_scope(T, V)

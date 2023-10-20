@@ -23,13 +23,13 @@ namespace detail
         throw_if_error(cublasDestroy(id));
     }
 
-    ::cuda::stream::id_t get_stream(id_t handle) {
-        ::cuda::stream::id_t stream;
+    ::cuda::stream::handle_t get_stream(id_t handle) {
+        ::cuda::stream::handle_t stream;
         throw_if_error(cublasGetStream(handle, &stream));
         return stream;
     }
 
-    void set_stream(id_t handle, ::cuda::stream::id_t stream) {
+    void set_stream(id_t handle, ::cuda::stream::handle_t stream) {
         throw_if_error(cublasSetStream(handle, stream));
     }
 
@@ -73,11 +73,18 @@ handle_t::handle_t(::cuda::device::id_t device_id):
 {}
 
 void handle_t::set_stream(const ::cuda::stream_t & stream) {
-    handle::detail::set_stream(id(), stream.id());
+    handle::detail::set_stream(id(), stream.handle());
 }
 
 ::cuda::stream_t handle_t::stream() const {
-    return ::cuda::stream::detail_::wrap(device_id_, handle::detail::get_stream(id()), false);
+	auto pc = ::cuda::device::get(device_id_).primary_context(::cuda::do_not_hold_primary_context_refcount_unit);
+	::cuda::device::primary_context::detail_::increase_refcount(device_id_);
+
+    return ::cuda::stream::wrap(
+        device_id_,
+        pc.handle(),
+        handle::detail::get_stream(id()),
+        false, ::cuda::do_hold_primary_context_refcount_unit);
 }
 
 void handle_t::set_math_mode(cublasMath_t mode) {

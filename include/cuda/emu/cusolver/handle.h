@@ -29,10 +29,10 @@ namespace handle
             void operator()(id_t id) const { destroy(id); }
         };
 
-        void set_stream(id_t handle, ::cuda::stream::id_t mode);
+        void set_stream(id_t handle, ::cuda::stream::handle_t mode);
     }
 
-    using ScopedHandle = emu::scoped_t<const id_t, detail::Destroyer>;
+    using ScopedHandle = scoped<const id_t, detail::Destroyer>;
 }
 
 struct handle_t

@@ -19,8 +19,8 @@ namespace emu
     template<typename T = use_default, typename R>
     constexpr auto as_vector(R && range)
     {
-        using value_type = NotDefaultOr<T, RemoveCVRef<RangeValue<R>>>;
-        using std::begin; using std::end;
+        using value_type = not_default_or<T, std::ranges::range_value_t<std::remove_cvref_t<R>>>;
+        using std::ranges::begin; using std::ranges::end;
         return std::vector<value_type>(begin(range), end(range));
     }
 
@@ -34,7 +34,7 @@ namespace emu
     template<typename T = use_default, typename R, std::size_t N>
     constexpr auto as_vector(R (&range)[N])
     {
-        using value_type = NotDefaultOr<T, RemoveCVRef<R>>;
+        using value_type = not_default_or<T, std::remove_cvref_t<R>>;
         using std::begin; using std::end;
         return std::vector<value_type>(begin(range), end(range));
     }
@@ -47,7 +47,7 @@ namespace emu
     template<typename T>
     constexpr auto as_vector(std::vector<T> && range) noexcept
     {
-        return emu::mv(range);
+        return mv(range);
     }
 }
 

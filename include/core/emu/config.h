@@ -16,14 +16,4 @@
 
 #endif
 
-#define EMU_FROM_CXX14 __cplusplus >= 201402L
-#define EMU_UNTIL_CXX14 __cplusplus < 201402L
-
-#define EMU_FROM_CXX17 __cplusplus >= 201703L
-#define EMU_UNTIL_CXX17 __cplusplus < 201703L
-
-#define EMU_FROM_CXX20 __cplusplus >= 202002L
-#define EMU_UNTIL_CXX20 __cplusplus < 202002L
-
-
 #endif //EMU_CONFIG_H

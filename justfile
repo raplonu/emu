@@ -1,41 +1,37 @@
+default: install
 
-default: configure build
+# Install emu and emu-python
+install *args:
+    conan create . -b missing {{args}}
+    conan create python -b missing {{args}}
 
-python_version := `python --version | cut -d' ' -f2 | cut -d'.' -f1,2`
+# Install emu and emu-python in developer mode (editable)
+dev *args:
+    conan build . -b missing {{args}}
+    conan editable add .
+    conan build python -b missing {{args}}
+    conan editable add python
 
-# install deps and configure project
+# Simply configure and build project locally
 configure *args:
-    mkdir -p build
-    conan install . -if build -pr default -pr:b=default --build=missing -o python_version={{python_version}} {{args}}
-    conan build -c . -if build -bf build
+    conan build . -b missing {{args}}
 
-configure_test *args: (configure "-o test=True " + args)
-
-# Build project
+# Build project locally
 build:
-    cmake --build build --parallel
+    cmake --build --preset conan-release
 
+# Call make with arguments
 make *args:
-    make -C build {{args}}
+    make -C build/Release {{args}}
 
-# export PYTHONPATH := "build/python:$PYTHONPATH"
-
-# python:
-# 	ipython -i -c "print(\"import _sardine\"); import _sardine"
-
+# Run tests
 test:
-	ctest --test-dir build
+    cmake --build --preset conan-release --target test
 
-# Clean
+# Clean build directory
 clean:
-    @ rm -rf                \
-        build/*               \
-        python/build          \
-        python/*.so           \
-        python/*.egg-info     \
-        python/*/__pycache__  \
-        .tox                  \
-        .coverage             \
-        .mypy_cache           \
-        .pytest_cache         \
-        dist
+    @rm -rf                             \
+        build/*                         \
+        python/build/*                  \
+        CMakeUserPresets.json           \
+        python/CMakeUserPresets.json

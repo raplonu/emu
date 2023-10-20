@@ -5,6 +5,10 @@
 
 #include <cuda/runtime_api.hpp>
 
+#define EMU_CUDA_DEVICE_FOR_THIS_SCOPE(device) \
+    EMU_INVOKE_AT_SCOPE_EXIT([d = ::cuda::device::current::get()]() { ::cuda::device::current::set(d); }); \
+    ::cuda::device::current::set(device)
+
 namespace emu
 {
 
@@ -21,7 +25,7 @@ namespace detail
     inline ::std::pair<void*, ::std::size_t> allocate_pitch(::cuda::device_t device, ::std::size_t width_bytes, ::std::size_t height)
     {
         ::std::pair<void*, ::std::size_t> result{nullptr, 0};
-    	CUDA_DEVICE_FOR_THIS_SCOPE(device);
+    	EMU_CUDA_DEVICE_FOR_THIS_SCOPE(device);
         ::cuda::throw_if_error(cudaMallocPitch(&result.first, &result.second, width_bytes, height));
 
         return result;
@@ -58,7 +62,7 @@ namespace detail
     	::cuda::throw_if_error(result, "Synchronously copying data");
     }
 
-    inline void copy_2d(void *destination, ::std::size_t d_pitch, const void * source, ::std::size_t s_pitch, ::std::size_t width_bytes, ::std::size_t height, ::cuda::stream::id_t stream_id) {
+    inline void copy_2d(void *destination, ::std::size_t d_pitch, const void * source, ::std::size_t s_pitch, ::std::size_t width_bytes, ::std::size_t height, ::cuda::stream::handle_t stream_id) {
         auto result = cudaMemcpy2DAsync(destination, d_pitch, source, s_pitch, width_bytes, height, cudaMemcpyDefault, stream_id);
 
     	::cuda::throw_if_error(result, "Scheduling a memory copy on stream " + ::cuda::detail_::ptr_as_hex(stream_id));
@@ -73,7 +77,7 @@ namespace detail
 
     template<typename T>
     void copy_2d(T *destination, ::std::size_t d_pitch, const T * source, ::std::size_t s_pitch, ::std::size_t width, ::std::size_t height, stream_cref_t stream) {
-        detail::copy_2d(destination, d_pitch * sizeof(T), source, s_pitch * sizeof(T), width * sizeof(T), height, stream.id());
+        detail::copy_2d(destination, d_pitch * sizeof(T), source, s_pitch * sizeof(T), width * sizeof(T), height, stream.handle());
     }
 
     template<typename T>
@@ -83,7 +87,7 @@ namespace detail
 
     template<typename T>
     void copy(T * destination, const T * source, ::std::size_t count, stream_cref_t stream) {
-        ::cuda::memory::async::detail_::copy((void*)destination, (const void*)source, count * sizeof(T), stream.id());
+        ::cuda::memory::async::detail_::copy((void*)destination, (const void*)source, count * sizeof(T), stream.handle());
     }
 
     inline ::cuda::launch_configuration_t make_linear_launch_config(
@@ -97,8 +101,8 @@ namespace detail
         return ::cuda::make_launch_config(num_blocks, threads_per_block, ::cuda::no_dynamic_shared_memory);
     }
 
-    template<typename T>
-    using DataContainer = emu::scoped_t<T*, ::cuda::memory::device::detail_::deleter>;
+    // template<typename T>
+    // using DataContainer = emu::scoped_t<T*, ::cuda::memory::device::detail_::deleter>;
 
 } // namespace cuda
 

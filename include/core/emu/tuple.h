@@ -1,15 +1,35 @@
-#ifndef EMU_TUPLE_H
-#define EMU_TUPLE_H
+#pragma once
 
 #include <emu/macro.h>
 #include <emu/type_traits.h>
 #include <emu/utility.h>
-#include <emu/functional/invoke.h>
 
 #include <tuple>
+#include <functional>
 
 #if EMU_CUDACC
 #include <thrust/tuple.h>
+
+template<typename... T>
+struct std::tuple_size<::thrust::tuple<T...>>
+    : std::integral_constant<std::size_t, ::thrust::tuple_size<::thrust::tuple<T...>>::value > {};
+
+template<std::size_t I, typename... T>
+struct std::tuple_element<I, ::thrust::tuple<T...>> { using type = ::thrust::tuple_element<I, ::thrust::tuple<T...>>::type; };
+
+namespace thrust
+{
+
+    template<std::size_t I, typename... T>
+    constexpr auto get(::thrust::tuple<T...> & t) -> decltype(auto) { return ::thrust::get<I>(t); }
+
+    template<std::size_t I, typename... T>
+    constexpr auto get(const ::thrust::tuple<T...> & t) -> decltype(auto) { return ::thrust::get<I>(t); }
+
+} // namespace std
+
+
+
 #endif
 
 namespace emu
@@ -36,7 +56,7 @@ namespace detail
 } // namespace detail
 
     template<typename T>
-    using Size = detail::SizeImpl<RemoveCVRef<T>>;
+    using Size = detail::SizeImpl<std::remove_cvref_t<T>>;
 
 namespace detail
 {
@@ -71,9 +91,9 @@ namespace detail
     template<typename Tuple, typename... Types >
     constexpr EMU_HODE
     auto make_tuple_base_on( Types&&... args )
-        EMU_NOEXCEPT_EXPR( detail::MakeBased<RemoveCVRef<Tuple>>::make(EMU_FWD(args)...) )
+        EMU_NOEXCEPT_EXPR( detail::MakeBased<std::remove_cvref_t<Tuple>>::make(EMU_FWD(args)...) )
     {
-        return detail::MakeBased<RemoveCVRef<Tuple>>::make(EMU_FWD(args)...);
+        return detail::MakeBased<std::remove_cvref_t<Tuple>>::make(EMU_FWD(args)...);
     }
 
 namespace detail
@@ -84,7 +104,7 @@ namespace detail
     auto transform_impl_at(Fn && fn, Tuple && tuple, Tuples &&... tuples)
     {
         using std::get;
-        return functional::invoke(EMU_FWD(fn), EMU_FWD(get<I>(tuple)), EMU_FWD(get<I>(tuples))...);
+        return std::invoke(EMU_FWD(fn), EMU_FWD(get<I>(tuple)), EMU_FWD(get<I>(tuples))...);
     }
 
     template<typename Fn, typename Tuple, std::size_t... I, typename... Tuples>
@@ -113,5 +133,3 @@ namespace detail
 } // namespace tuple
 
 } // namespace emu
-
-#endif //EMU_TUPLE_H

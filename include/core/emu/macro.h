@@ -65,6 +65,10 @@
 #define EMU_COMMA ,
 
 #define EMU_CONCAT(a, b) BOOST_PP_CAT(a, b)
+#define EMU_CONCAT_2(a, b)          BOOST_PP_CAT(a, b)
+#define EMU_CONCAT_3(a, b, c)       BOOST_PP_CAT(a, EMU_CONCAT_2(b, c))
+#define EMU_CONCAT_4(a, b, c, d)    BOOST_PP_CAT(a, EMU_CONCAT_3(b, c, d))
+#define EMU_CONCAT_5(a, b, c, d, e) BOOST_PP_CAT(a, EMU_CONCAT_4(b, c, d, e))
 
 #define EMU_UNIQUE_NAME(base) EMU_CONCAT(base, __COUNTER__)
 

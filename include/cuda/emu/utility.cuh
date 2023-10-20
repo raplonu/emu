@@ -7,17 +7,17 @@
 
 namespace emu
 {
-    template <typename T>
-    EMU_HODE constexpr T ceil    (T a, Identity<T> b) noexcept { return (a + b - 1) / b; }
+    // template <typename T>
+    // EMU_HODE constexpr T ceil    (T a, T b) noexcept { return (a + b - 1) / b; }
 
-    template<typename T>
-    EMU_HODE constexpr T next_mul(T a, Identity<T> b) noexcept { return ( (a - 1) / b + 1) * b; }
-
-    template <typename T>
-    EMU_HODE constexpr T max     (T a, Identity<T> b) noexcept { return (a < b) ? b : a; }
+    // template<typename T>
+    // EMU_HODE constexpr T next_mul(T a, T b) noexcept { return ( (a - 1) / b + 1) * b; }
 
     template <typename T>
-    EMU_HODE constexpr T min     (T a, Identity<T> b) noexcept { return (a < b) ? a : b; }
+    EMU_HODE constexpr T max     (T a, T b) noexcept { return (a < b) ? b : a; }
+
+    template <typename T>
+    EMU_HODE constexpr T min     (T a, T b) noexcept { return (a < b) ? a : b; }
 
     EMU_DEVICE inline bool is_not_last_block() { return EMU_BID < (EMU_SIZE_G - 1); }
 
@@ -54,7 +54,7 @@ namespace emu
     std::size_t item_per_group_local_nb(std::size_t item_nb, std::size_t group_id, std::size_t group_size) {
         std::size_t item_pg = item_per_group_nb(item_nb, group_size);
 
-        return max(0, min(item_nb, (group_id + 1) * item_pg) - group_id * item_pg);
+        return max(0, int(min(item_nb, std::size_t((group_id + 1) * item_pg))) - int(group_id * item_pg));
     }
 
     /**

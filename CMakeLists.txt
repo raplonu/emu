@@ -1,21 +1,12 @@
 cmake_minimum_required(VERSION 3.18)
 
-message(CHECK_START "Emu - Configuring")
-
 project(emu VERSION 0.2.0 LANGUAGES CXX)
 
-option(emu_half         "emu half utilies"     OFF)
-option(emu_build_cuda   "Build cuda module"    ON)
-option(emu_build_python "Build python module"  ON)
-option(emu_build_test   "Build unit test"      OFF)
-option(emu_export_flags "Export compile flags" OFF)
+option(emu_build_cuda "Build cuda module" ON)
 
 if (emu_build_cuda)
     enable_language(CUDA)
 endif()
-
-
-message(CHECK_PASS "Done")
 
 ########################################################################
 #
@@ -28,7 +19,7 @@ add_library(emucore
 
 target_include_directories(emucore PUBLIC include/core)
 
-target_compile_features(emucore PUBLIC cxx_std_17)
+target_compile_features(emucore PUBLIC cxx_std_20)
 
 if(emu_build_cuda)
     target_compile_definitions(emucore PUBLIC EMU_CUDA)
@@ -40,6 +31,7 @@ find_package(Microsoft.GSL REQUIRED)
 find_package(mdspan REQUIRED)
 find_package(tl-expected REQUIRED)
 find_package(tl-optional REQUIRED)
+find_package(half REQUIRED)
 
 target_link_libraries(emucore PUBLIC
     Boost::boost
@@ -47,18 +39,14 @@ target_link_libraries(emucore PUBLIC
     Microsoft.GSL::GSL
     tl::expected
     tl::optional
-    mdspan::mdspan
+    std::mdspan
+    half::half
 )
 
-if (emu_half)
-    find_package(half REQUIRED)
-
-    target_compile_definitions(emucore PUBLIC EMU_HALF)
-    target_link_libraries(emucore PUBLIC half::half)
-endif()
-
 add_library(emu::core ALIAS emucore)
-set(emu_targets emucore)
+
+install(TARGETS emucore)
+install(DIRECTORY include/core/emu DESTINATION include)
 
 ########################################################################
 #
@@ -84,15 +72,16 @@ if (emu_build_cuda)
         src/cuda/thrust/execution_policy.cu
     )
 
-    target_include_directories(emucuda PUBLIC
-        $<INSTALL_INTERFACE:include/cuda>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/cuda>)
+    target_include_directories(emucuda PUBLIC include/cuda)
 
     target_compile_options(emucuda PUBLIC
         $<$<COMPILE_LANGUAGE:CUDA>:
             --extended-lambda
-            --expt-relaxed-constexpr>
+            --expt-relaxed-constexpr
+        >
     )
+    # Only needed for CUDA source file but it's easier to just set it
+    target_compile_definitions(emucuda PUBLIC FMT_USE_CONSTEXPR=1)
 
     find_package(CUDAToolkit REQUIRED)
     find_package(cuda-api-wrappers REQUIRED)
@@ -101,11 +90,14 @@ if (emu_build_cuda)
         emucore
         CUDA::cublas
         CUDA::cudart
+        CUDA::cuda_driver
         cuda-api-wrappers::cuda-api-wrappers
     )
 
     add_library(emu::cuda ALIAS emucuda)
-    list(APPEND emu_targets emucuda)
+
+    install(TARGETS emucuda)
+    install(DIRECTORY include/cuda/emu DESTINATION include)
 
     message(CHECK_PASS "Done")
 endif()
@@ -115,72 +107,44 @@ endif()
 # Emu python
 #
 
-if (emu_build_python)
-    message(CHECK_START "Emu - Configuring python support")
+# if (emu_build_python)
+#     message(CHECK_START "Emu - Configuring python support")
 
-    add_library(emupython
-        INTERFACE
-    )
+#     add_library(emupython INTERFACE
+#         # src/python/cast/common.cpp
+#     )
 
-    target_include_directories(emupython INTERFACE
-        $<INSTALL_INTERFACE:include/python>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/python>)
+#     target_include_directories(emupython INTERFACE include/python)
 
-    if (emu_build_cuda)
-        target_link_libraries(emupython INTERFACE emucuda)
-    endif()
+#     find_package(pybind11 REQUIRED)
 
-    find_package(pybind11 REQUIRED)
+#     target_link_libraries(emupython INTERFACE
+#         emucore
+#         pybind11::pybind11
+#     )
 
-    target_link_libraries(emupython INTERFACE
-        emucore
-        pybind11::headers
-    )
+#     if (emu_build_cuda)
+#         target_link_libraries(emupython INTERFACE emucuda)
+#     endif()
 
-    add_library(emu::python ALIAS emupython)
-    list(APPEND emu_targets emupython)
+#     add_library(emu::python ALIAS emupython)
 
-    message(CHECK_PASS "Done")
-endif()
+#     # install(TARGETS emupython)
+#     install(DIRECTORY include/python/emu DESTINATION include)
+
+#     message(CHECK_PASS "Done")
+# endif()
 
 ########################################################################
 #
 # Test
 #
-# The tests are not built by default.  To build them, set the
-# emu_build_test option to ON.  You can do it by running ccmake
-# or specifying the -Demu_build_test=ON flag when running cmake.
-if (emu_build_test)
+include(CTest)
+if (BUILD_TESTING)
     # This must be set in the root directory for the tests to be run by
     # 'make test' or ctest.
     message(CHECK_START "Emu - Configuring test")
-    enable_testing()
     add_subdirectory(test)
     message(CHECK_PASS "Done")
 endif()
 
-########################################################################
-#
-# Export public compile flags.
-#
-
-message("CMAKE_SOURCE_DIR = ${CMAKE_SOURCE_DIR}")
-message("CMAKE_CURRENT_SOURCE_DIR = ${CMAKE_CURRENT_SOURCE_DIR}")
-
-# Exporting COMPILE_OPTIONS if exists for emucore and emucuda
-if(emu_export_flags)
-    message(CHECK_START "Exporting compile flags")
-
-    foreach(target IN LISTS emu_targets)
-        get_target_property(TMP_CXX_FLAGS ${target} COMPILE_OPTIONS)
-
-        if(TMP_CXX_FLAGS)
-            message(STATUS "Exporting ${target} compile flags in ${target}_flags.txt")
-
-            configure_file(${CMAKE_SOURCE_DIR}/tools/flags.txt.in
-                ${CMAKE_CURRENT_BINARY_DIR}/${target}_flags.txt @ONLY)
-        endif()
-    endforeach()
-
-    message(CHECK_PASS "Done")
-endif()

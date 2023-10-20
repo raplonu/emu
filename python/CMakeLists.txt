@@ -1,24 +1,44 @@
 cmake_minimum_required(VERSION 3.18)
 
-message(STATUS "EmuWrap - Configuring")
+message(CHECK_START "Emu - Configuring")
 
-project(_emu VERSION 0.2.0 LANGUAGES CXX)
+project(emu VERSION 0.2.0 LANGUAGES CXX)
 
-find_package(pybind11 REQUIRED)
+message(CHECK_PASS "Done")
+
+########################################################################
+#
+# Emu Core
+#
+
+add_library(emupython INTERFACE)
+
+target_include_directories(emupython INTERFACE include)
+
+target_compile_features(emupython INTERFACE cxx_std_20)
+
 find_package(emu REQUIRED)
+find_package(pybind11 REQUIRED)
 
-if (PYBIND11_PYTHON_VERSION)
-    message(STATUS "Python version: ${PYBIND11_PYTHON_VERSION}")
-endif()
-
-pybind11_add_module(_emu MODULE
-    src/emu_wrap.cpp
+target_link_libraries(emupython INTERFACE
+    emu::emu
+    pybind11::pybind11
 )
 
-target_compile_features(_emu PUBLIC cxx_std_17)
+add_library(emu::python ALIAS emupython)
 
-target_include_directories(_emu PUBLIC include)
+install(DIRECTORY include/emu DESTINATION include)
 
-target_link_libraries(_emu PRIVATE emu::emu)
+########################################################################
+#
+# Test
+#
+include(CTest)
+if (BUILD_TESTING)
+    # This must be set in the root directory for the tests to be run by
+    # 'make test' or ctest.
+    message(CHECK_START "Emu - Configuring test")
+    add_subdirectory(test)
+    message(CHECK_PASS "Done")
+endif()
 
-install(TARGETS _emu LIBRARY DESTINATION .)
