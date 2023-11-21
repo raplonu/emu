@@ -3,7 +3,7 @@
 
 #include <emu/utility.h>
 #include <emu/macro.cuh>
-#include <emu/type_traits.h>
+#include <emu/type_traits.hpp>
 
 namespace emu
 {

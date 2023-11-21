@@ -169,8 +169,9 @@ constexpr auto TRAIT_NAME = decltype(detail::TRAIT_NAME##Impl::test<T>(0))::valu
  * @brief Return false if condition is false, continue otherwise.
  *
  */
-#define EMU_TRUE_OR_RETURN_FALSE( expr__ ) if (!(expr__)) return false
-#define EMU_TRUE_OR_RETURN_NULLOPT( expr__ ) if (!(expr__)) return emu::nullopt
+#define EMU_TRUE_OR_RETURN_FALSE( expr__... ) if (!(expr__)) return false
+#define EMU_TRUE_OR_RETURN_NULLOPT( expr__... ) if (!(expr__)) return emu::nullopt
+#define EMU_TRUE_OR_RETURN_UNEXPECTED( expr__, err ) if (!(expr__)) return emu::unexpected(err)
 
 
 #endif //EMU_MACRO_H

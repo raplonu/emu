@@ -1,8 +1,8 @@
 #ifndef EMU_PYBIND_H
 #define EMU_PYBIND_H
 
-#include <emu/type_traits.h>
-#include <emu/optional.h>
+#include <emu/type_traits.hpp>
+#include <emu/optional.hpp>
 
 #include <pybind11/pybind11.h>
 

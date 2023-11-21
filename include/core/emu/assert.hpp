@@ -1,5 +1,4 @@
-#ifndef EMU_ASSERT_H
-#define EMU_ASSERT_H
+#pragma once
 
 #include <emu/config.h>
 #include <emu/macro.h>
@@ -40,5 +39,3 @@
 
 #define EMU_LIKELY(cond)   GSL_LIKELY(cond)
 #define EMU_UNLIKELY(cond) GSL_UNLIKELY(cond)
-
-#endif //EMU_ASSERT_H

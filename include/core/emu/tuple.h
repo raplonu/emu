@@ -1,7 +1,7 @@
 #pragma once
 
 #include <emu/macro.h>
-#include <emu/type_traits.h>
+#include <emu/type_traits.hpp>
 #include <emu/utility.h>
 
 #include <tuple>

@@ -2,7 +2,7 @@
 #include <utility_test.h>
 
 #include <emu/range.h>
-#include <emu/utility.h>
+#include <emu/utility.hpp>
 
 #include <array>
 

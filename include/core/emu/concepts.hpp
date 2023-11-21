@@ -1,7 +1,7 @@
 #pragma once
 
 #include <emu/fwd.hpp>
-#include <emu/type_traits.h>
+#include <emu/type_traits.hpp>
 
 #include <fmt/core.h>
 
@@ -9,38 +9,30 @@
 #include <type_traits>
 #include <span>
 
-namespace emu::cpts
+namespace emu
+{
+
+namespace cpts
 {
 
     template<typename T1, typename T2>
-    concept equivalent = std::same_as<std::decay_t<T1>, std::decay_t<T2>>;
+    concept equivalent = std::same_as<decay<T1>, decay<T2>>;
 
     template<typename T1, typename T2>
     concept not_equivalent = not equivalent<T1, T2>;
 
     template<class T, template<class...> class Template>
-    concept specialization_of = is_specialization<std::decay_t<T>, Template>;
+    concept specialization_of = is_specialization<T, Template>;
 
     template<typename Derived, typename Base>
-    concept not_derived_from = not std::derived_from<std::decay_t<Derived>, Base>;
-
-    template<typename T>
-    concept location = is_location<T>;
-
-    template<typename T>
-    concept has_location = requires (const T& v) {
-        { v.location() } -> location;
-    };
+    concept not_derived_from = not std::derived_from<Derived, Base>;
 
     // cannot use is_specialization here because second span argument is not a type.
     template<typename T>
-    concept span = std::derived_from<std::decay_t<T>, std::span<typename std::decay_t<T>::element_type, std::decay_t<T>::extent>>;
+    concept span = std::same_as<T, std::span<typename T::element_type, T::extent>>;
 
     template<typename T>
-    concept device_span = std::derived_from<std::decay_t<T>, emu::detail::span<typename std::decay_t<T>::element_type, cuda::location::device, std::decay_t<T>::extent>>;
-
-    template<typename T>
-    concept mdspan = is_specialization<std::decay_t<T>, std::experimental::mdspan>;
+    concept mdspan = specialization_of<T, std::experimental::mdspan>;
 
     template<typename T>
     concept formattable = requires (const T& v, fmt::format_context ctx) {
@@ -56,4 +48,23 @@ namespace emu::cpts
         { r.size() } -> std::convertible_to<std::size_t>;
     };
 
-} // namespace emu::cpts
+    template<typename T>
+    concept contigious_sized_range
+        =   std::ranges::contiguous_range<decay<T>>
+        and std::ranges::sized_range<decay<T>>;
+
+} // namespace cpts
+
+namespace cuda::cpts
+{
+
+    template<typename T>
+    concept span = std::same_as<decay<T>, span<typename decay<T>::element_type, decay<T>::extent>>;
+
+    template<typename T>
+    concept mdspan = emu::cpts::specialization_of<T, mdspan>;
+
+} // namespace cuda::cpts
+
+
+} // namespace emu

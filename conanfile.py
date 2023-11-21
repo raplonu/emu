@@ -37,6 +37,7 @@ class EmuConan(ConanFile):
 
         if self.options.cuda:
             self.requires('cuda-api-wrappers/0.6.3', transitive_headers=True)
+            self.requires('matx/0.6.0', transitive_headers=True)
 
         self.test_requires('gtest/1.13.0')
 
@@ -99,7 +100,8 @@ class EmuConan(ConanFile):
             self.cpp_info.components['cuda'].includedirs += [cuda_prop.include]
             self.cpp_info.components['cuda'].requires = [
                 'core',
-                'cuda-api-wrappers::cuda-api-wrappers'
+                'cuda-api-wrappers::cuda-api-wrappers',
+                'matx::matx'
             ]
             self.cpp_info.components['cuda'].defines = ['EMU_CUDA', 'FMT_USE_CONSTEXPR=1']
             # not supported by conan.

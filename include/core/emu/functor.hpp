@@ -1,6 +1,6 @@
 #pragma once
 
-#include <emu/utility.h>
+#include <emu/utility.hpp>
 
 #include <algorithm>
 #include <utility>

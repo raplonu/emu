@@ -1,7 +1,7 @@
 #pragma once
 
 #include <emu/concepts.hpp>
-#include <emu/utility.h>
+#include <emu/utility.hpp>
 
 #include <utility>
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <emu/concepts.hpp>
-#include <emu/assert.h>
+#include <emu/assert.hpp>
 
 #include <string_view>
 #include <concepts>

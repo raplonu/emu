@@ -8,12 +8,10 @@ include(GoogleTest)
 add_executable(emucoretest
     src/core/test.cpp
     src/core/math_test.cpp
-    src/core/span_test.cpp
     src/core/range_test.cpp
     src/core/expected_test.cpp
     src/core/optional_test.cpp
     src/core/scoped_test.cpp
-    # src/core/container_test.cpp
 )
 
 target_link_libraries(emucoretest PRIVATE
@@ -29,8 +27,6 @@ if (emu_build_cuda)
     add_executable(emucudatest
         src/cuda/test.cu
         src/cuda/math_test.cu
-        src/cuda/device_span_test.cu
-        src/cuda/device_mdspan_test.cu
         src/cuda/iterator/coordinate_test.cu
         src/cuda/iterator/function_test.cu
     )

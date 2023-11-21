@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <emu/cast/span.h>
+#include <emu/cast/span.hpp>
 
 #include <pybind11/embed.h>
 

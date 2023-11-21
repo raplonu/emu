@@ -2,7 +2,7 @@
 #define EMU_DETAIL_ERROR_H
 
 #include <emu/macro.h>
-#include <emu/assert.h>
+#include <emu/assert.hpp>
 
 #include <fmt/core.h>
 

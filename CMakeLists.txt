@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.18)
 
-project(emu VERSION 0.2.0 LANGUAGES CXX)
+project(emu VERSION 1.0.0 LANGUAGES CXX)
 
 option(emu_build_cuda "Build cuda module" ON)
 
@@ -85,6 +85,7 @@ if (emu_build_cuda)
 
     find_package(CUDAToolkit REQUIRED)
     find_package(cuda-api-wrappers REQUIRED)
+    find_package(matx REQUIRED)
 
     target_link_libraries(emucuda PUBLIC
         emucore
@@ -92,6 +93,7 @@ if (emu_build_cuda)
         CUDA::cudart
         CUDA::cuda_driver
         cuda-api-wrappers::cuda-api-wrappers
+        matx::matx
     )
 
     add_library(emu::cuda ALIAS emucuda)
@@ -104,45 +106,10 @@ endif()
 
 ########################################################################
 #
-# Emu python
-#
-
-# if (emu_build_python)
-#     message(CHECK_START "Emu - Configuring python support")
-
-#     add_library(emupython INTERFACE
-#         # src/python/cast/common.cpp
-#     )
-
-#     target_include_directories(emupython INTERFACE include/python)
-
-#     find_package(pybind11 REQUIRED)
-
-#     target_link_libraries(emupython INTERFACE
-#         emucore
-#         pybind11::pybind11
-#     )
-
-#     if (emu_build_cuda)
-#         target_link_libraries(emupython INTERFACE emucuda)
-#     endif()
-
-#     add_library(emu::python ALIAS emupython)
-
-#     # install(TARGETS emupython)
-#     install(DIRECTORY include/python/emu DESTINATION include)
-
-#     message(CHECK_PASS "Done")
-# endif()
-
-########################################################################
-#
 # Test
 #
 include(CTest)
 if (BUILD_TESTING)
-    # This must be set in the root directory for the tests to be run by
-    # 'make test' or ctest.
     message(CHECK_START "Emu - Configuring test")
     add_subdirectory(test)
     message(CHECK_PASS "Done")

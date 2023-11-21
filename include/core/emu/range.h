@@ -1,8 +1,8 @@
 #ifndef EMU_RANGE_H
 #define EMU_RANGE_H
 
-#include <emu/type_traits.h>
-#include <emu/utility.h>
+#include <emu/type_traits.hpp>
+#include <emu/utility.hpp>
 
 #include <vector>
 #include <iostream>

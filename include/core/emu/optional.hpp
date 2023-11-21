@@ -2,7 +2,7 @@
 
 #include <emu/macro.h>
 #include <emu/concepts.hpp>
-#include <emu/utility.h>
+#include <emu/utility.hpp>
 #include <emu/functor.hpp>
 
 #include <tl/optional.hpp>

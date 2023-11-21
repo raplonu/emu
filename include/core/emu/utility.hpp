@@ -2,7 +2,7 @@
 
 #include <emu/config.h>
 #include <emu/macro.h>
-#include <emu/type_traits.h>
+#include <emu/type_traits.hpp>
 
 #include <type_traits>
 #include <algorithm>
@@ -10,7 +10,7 @@
 #include <utility>
 #include <memory>
 
-#define EMU_FWD(v) ::emu::fwd<decltype(v)>(v)
+#define EMU_FWD(v) ::std::forward<decltype(v)>(v)
 
 namespace emu
 {

@@ -13,32 +13,30 @@ namespace std::experimental
 namespace emu
 {
 
-namespace location
-{
-
-    struct host;
-
-} // namespace location
-
     template<typename T, typename F>
     struct scoped;
 
-namespace detail
+namespace cuda
 {
 
-    template<typename T, typename Location, std::size_t Extent>
+    template<typename T, std::size_t Extent>
     struct span;
 
-    template <typename ElementType, typename Location, typename Extents, typename LayoutPolicy, typename AccessorPolicy>
+    template <typename ElementType, typename Extents, typename LayoutPolicy, typename AccessorPolicy>
     struct mdspan;
 
-} // namespace detail
+} // namespace cuda
 
-namespace cuda::location
+namespace spe
 {
+    // see emu/info.hpp
+    template <typename T>
+    struct info_t;
 
-    struct device;
+    // see emu/functor.hpp
+    template<typename From>
+    struct map;
 
-} // namespace cuda::location
+} // namespace spe
 
 } // namespace emu

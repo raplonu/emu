@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <emu/optional.h>
+#include <emu/optional.hpp>
 
 using namespace emu;
 
