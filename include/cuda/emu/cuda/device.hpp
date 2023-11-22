@@ -1,6 +1,12 @@
 #pragma once
 
+#include <emu/scoped.hpp>
+
 #include <cuda/runtime_api.hpp>
+
+#define EMU_CUDA_DEVICE_FOR_THIS_SCOPE(device) \
+    EMU_INVOKE_AT_SCOPE_EXIT([d = ::cuda::device::current::get()]() { ::cuda::device::current::set(d); }); \
+    ::cuda::device::current::set(device)
 
 namespace emu
 {

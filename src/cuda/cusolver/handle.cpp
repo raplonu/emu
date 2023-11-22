@@ -25,8 +25,8 @@ namespace detail
             throw_if_error(cusolverDnSetStream(handle, stream));
     }
 
-    cuda::stream::handle_t get_stream(id_t handle) {
-            cuda::stream::handle_t stream;
+    ::cuda::stream::handle_t get_stream(id_t handle) {
+            ::cuda::stream::handle_t stream;
             throw_if_error(cusolverDnGetStream(handle, &stream));
             return stream;
     }
@@ -46,7 +46,7 @@ handle_t::handle_t(handle::id_t id, ::cuda::device::id_t device_id, bool owning)
 {}
 
 handle_t::handle_t(::cuda::device::id_t device_id):
-    id_(emu::set_and_invoke(::cuda::device::get(device_id), handle::detail::create), true),
+    id_(emu::set_and_invoke(::cuda::device::get(device_id), handle::detail::create), /* owning = */ true),
     device_id_(device_id)
 {}
 
@@ -56,8 +56,8 @@ void handle_t::set_stream(const ::cuda::stream_t & stream) {
 }
 
 
-cuda::stream_t handle_t::stream() const {
-    return cuda::stream::detail::wrap(device_id_, handle::detail::get_stream(id()), false);
+::cuda::stream_t handle_t::stream() const {
+    return cuda::stream::wrap(device_id_, handle::detail::get_stream(id()), /* take_ownership = */ false);
 }
 
 namespace handle

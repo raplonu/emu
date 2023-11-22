@@ -1,6 +1,6 @@
 #include <emu/cublas/handle.hpp>
 
-#include <emu/device.hpp>
+#include <emu/cuda/device.hpp>
 
 namespace emu
 {

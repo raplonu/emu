@@ -4,7 +4,7 @@
 
 #include <emu/cuda.hpp>
 #include <emu/scoped.hpp>
-#include <emu/device.hpp>
+#include <emu/cuda/device.hpp>
 
 namespace emu
 {

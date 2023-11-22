@@ -144,9 +144,8 @@ namespace cusolver
     template<typename T,typename F>
     void gesvd(const handle_t & handle, char jobu, char jobvt, int m, int n, T *A, int lda,
         F *S, T *U, int ldu, T *VT, int ldvt, T *work, int lwork, F *rwork, int *devInfo){
-            emu::cusolver::status_t stat = CuSolver<T>::gesvd(handle.id(),jobu, jobvt, m, n, A, lda,
-                S, U, ldu, VT, ldvt, work, lwork, rwork, devInfo);
-            throw_if_error(  stat  ,fmt::format("with status {}",stat));
+            throw_if_error(CuSolver<T>::gesvd(handle.id(),jobu, jobvt, m, n, A, lda,
+                S, U, ldu, VT, ldvt, work, lwork, rwork, devInfo));
     }
     template void gesvd<float,float>(const handle_t & handle, char jobu, char jobvt, int m, int n,
         float *A, int lda, float *S, float *U, int ldu, float *VT, int ldvt, float *work, int lwork,
