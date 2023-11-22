@@ -1,5 +1,4 @@
-#ifndef EMU_FIBER_H
-#define EMU_FIBER_H
+#pragma once
 
 #include <emu/cuda.h>
 
@@ -42,7 +41,4 @@ namespace fiber
 
 } // namespace cuda
 
-
 } // namespace emu
-
-#endif //EMU_FIBER_H

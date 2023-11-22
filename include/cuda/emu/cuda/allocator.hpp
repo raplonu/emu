@@ -1,5 +1,4 @@
-#ifndef EMU_CUDA_CUDA_ALLOCATOR_H
-#define EMU_CUDA_CUDA_ALLOCATOR_H
+#pragma once
 
 #include <emu/cuda.h>
 
@@ -61,5 +60,3 @@ namespace emu::cuda
     };
 
 } // namespace emu::cuda
-
-#endif // EMU_CUDA_CUDA_ALLOCATOR_H

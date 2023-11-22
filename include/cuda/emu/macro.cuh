@@ -1,5 +1,4 @@
-#ifndef EMU_MACRO_CUH
-#define EMU_MACRO_CUH
+#pragma once
 
 #include <emu/macro.h>
 
@@ -21,5 +20,3 @@
 #define EMU_SIZE_G (gridDim.x)
 
 #define EMU_SIZE_TOT (blockDim.x * gridDim.x)
-
-#endif //EMU_MACRO_CUH

@@ -1,5 +1,4 @@
-#ifndef EMU_RANGE_H
-#define EMU_RANGE_H
+#pragma once
 
 #include <emu/type_traits.hpp>
 #include <emu/utility.hpp>
@@ -50,5 +49,3 @@ namespace emu
         return mv(range);
     }
 }
-
-#endif //EMU_RANGE_H

@@ -1,5 +1,4 @@
-#ifndef EMU_FUN_H
-#define EMU_FUN_H
+#pragma once
 
 namespace emu
 {
@@ -7,5 +6,3 @@ namespace emu
     void fun();
 
 }
-
-#endif //EMU_FUN_H

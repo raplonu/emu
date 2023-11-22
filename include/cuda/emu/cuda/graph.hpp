@@ -1,5 +1,4 @@
-#ifndef EMU_CUDA_GRAPH_H
-#define EMU_CUDA_GRAPH_H
+#pragma once
 
 #include <emu/cuda.h>
 #include <emu/scoped.h>
@@ -186,5 +185,3 @@ namespace exec
 } // namespace cuda
 
 } // namespace emu
-
-#endif //EMU_CUDA_GRAPH_H

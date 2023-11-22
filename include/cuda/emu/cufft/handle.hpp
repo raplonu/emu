@@ -1,11 +1,10 @@
-#ifndef EMU_CUFFT_HANDLE_H
-#define EMU_CUFFT_HANDLE_H
+#pragma once
 
-#include <emu/cublas/error.h>
+#include <emu/cublas/error.hpp>
 
-#include <emu/cuda.h>
-#include <emu/scoped.h>
-#include <emu/device.h>
+#include <emu/cuda.hpp>
+#include <emu/scoped.hpp>
+#include <emu/device.hpp>
 
 namespace emu
 {
@@ -113,5 +112,3 @@ namespace handle
 } // namespace cufft
 
 } // namespace emu
-
-#endif //EMU_CUFFT_HANDLE_H

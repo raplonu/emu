@@ -1,8 +1,7 @@
-#ifndef EMU_CUFFT_H
-#define EMU_CUFFT_H
+#pragma once
 
-#include <emu/cufft/handle.h>
-#include <emu/cublas/type.h>
+#include <emu/cufft/handle.hpp>
+#include <emu/cublas/type.hpp>
 
 #include <cufft.h>
 
@@ -21,5 +20,3 @@ namespace cufft
 } // namespace cufft
 
 } // namespace emu
-
-#endif //EMU_CUFFT_H

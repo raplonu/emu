@@ -1,5 +1,4 @@
-#ifndef EMU_MEMORY_CUH
-#define EMU_MEMORY_CUH
+#pragma once
 
 #include <emu/cuda.h>
 #include <emu/macro.cuh>
@@ -80,5 +79,3 @@ namespace memory
 } // namespace cuda
 
 } // namespace emu
-
-#endif //EMU_MEMORY_CUH

@@ -1,5 +1,4 @@
-#ifndef EMU_CUDA_CUDA_CONTAINER_H
-#define EMU_CUDA_CUDA_CONTAINER_H
+#pragma once
 
 #include <emu/container.h>
 
@@ -12,5 +11,3 @@ namespace emu::cuda
     using container_t = container::detail::container_t<T, location::cuda_t, mdspan::default_accessor<T>>;
 
 } // namespace emu::cuda
-
-#endif // EMU_CUDA_CUDA_CONTAINER_H

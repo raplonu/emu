@@ -1,5 +1,4 @@
-#ifndef EMU_CUSOLVER_ERROR_H
-#define EMU_CUSOLVER_ERROR_H
+#pragma once
 
 #include <emu/detail/error.hpp>
 
@@ -36,5 +35,3 @@ namespace cusolver
 } // namespace cusolver
 
 } // namespace emu
-
-#endif //EMU_CUSOLVER_ERROR_H

@@ -1,5 +1,4 @@
-#ifndef EMU_CONFIG_H
-#define EMU_CONFIG_H
+#pragma once
 
 #include <boost/config.hpp>
 
@@ -15,5 +14,3 @@
 #define EMU_CUDACC 0
 
 #endif
-
-#endif //EMU_CONFIG_H

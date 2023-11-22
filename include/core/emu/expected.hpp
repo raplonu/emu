@@ -1,5 +1,4 @@
-#ifndef EMU_EXPECTED_H
-#define EMU_EXPECTED_H
+#pragma once
 
 #include <tl/expected.hpp>
 
@@ -47,5 +46,3 @@ namespace emu
     using tl::unexpected;
 
 }
-
-#endif //EMU_EXPECTED_H

@@ -1,14 +1,10 @@
-#ifndef EMU_CUFFT_ERROR_H
-#define EMU_CUFFT_ERROR_H
+#pragma once
 
-#include <emu/detail/error.h>
+#include <emu/detail/error.hpp>
 
 #include <cufft.h>
 
-namespace emu
-{
-
-namespace cufft
+namespace emu::cufft
 {
     using status_t = cufftResult;
 
@@ -37,8 +33,4 @@ namespace cufft
 
     EMU_GENERATE_ERROR_HANDLER("Cufft", runtime_error, std::runtime_error, status_t, status::success, describe)
 
-} // namespace cufft
-
-} // namespace emu
-
-#endif //EMU_CUFFT_ERROR_H
+} // namespace emu::cufft

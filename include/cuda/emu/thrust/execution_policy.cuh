@@ -1,5 +1,4 @@
-#ifndef EMU_THRUST_EXECUTION_POLICY_CUH
-#define EMU_THRUST_EXECUTION_POLICY_CUH
+#pragma once
 
 #include <emu/macro.hpp>
 #include <emu/cuda.hpp>
@@ -60,5 +59,3 @@ namespace detail
 } // namespace thrust
 
 } // namespace emu
-
-#endif //EMU_THRUST_EXECUTION_POLICY_CUH

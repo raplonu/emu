@@ -1,5 +1,4 @@
-#ifndef EMU_CUDA_H
-#define EMU_CUDA_H
+#pragma once
 
 #include <emu/scoped.hpp>
 
@@ -107,5 +106,3 @@ namespace detail
 } // namespace cuda
 
 } // namespace emu
-
-#endif //EMU_CUDA_H

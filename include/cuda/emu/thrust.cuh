@@ -1,5 +1,4 @@
-#ifndef EMU_THRUST_CUH
-#define EMU_THRUST_CUH
+#pragma once
 
 #include <thrust/device_ptr.h>
 
@@ -28,5 +27,3 @@ namespace thrust
 } // namespace thrust
 
 } // namespace emu
-
-#endif //EMU_THRUST_CUH

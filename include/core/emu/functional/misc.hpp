@@ -1,5 +1,4 @@
-#ifndef EMU_FUNCTIONAL_MISC_H
-#define EMU_FUNCTIONAL_MISC_H
+#pragma once
 
 #include <emu/macro.h>
 #include <emu/tuple.h>
@@ -121,5 +120,3 @@ namespace functional
 
 
 } // namespace emu
-
-#endif //EMU_FUNCTIONAL_MISC_H

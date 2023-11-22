@@ -1,5 +1,4 @@
-#ifndef EMU_BLAS_H
-#define EMU_BLAS_H
+#pragma once
 
 namespace emu
 {
@@ -13,5 +12,3 @@ namespace blas
 } // namespace blas
 
 } // namespace emu
-
-#endif //EMU_BLAS_H

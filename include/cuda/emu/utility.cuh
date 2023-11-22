@@ -1,5 +1,4 @@
-#ifndef EMU_UTILITY_CUH
-#define EMU_UTILITY_CUH
+#pragma once
 
 #include <emu/utility.h>
 #include <emu/macro.cuh>
@@ -119,5 +118,3 @@ namespace emu
     }
 
 }
-
-#endif //EMU_UTILITY_CUH

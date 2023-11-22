@@ -1,5 +1,4 @@
-#ifndef EMU_CUBLAS_H
-#define EMU_CUBLAS_H
+#pragma once
 
 #include <emu/cublas/handle.hpp>
 #include <emu/cublas/type.hpp>
@@ -188,4 +187,3 @@ namespace cublas
 
 } // namespace emu
 
-#endif // EMU_CUBLAS_H

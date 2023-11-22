@@ -1,5 +1,4 @@
-#ifndef EMU_CUSOLVER_HANDLE_H
-#define EMU_CUSOLVER_HANDLE_H
+#pragma once
 
 #include <emu/cusolver/error.hpp>
 
@@ -7,10 +6,7 @@
 #include <emu/scoped.hpp>
 #include <emu/device.hpp>
 
-namespace emu
-{
-
-namespace cusolver
+namespace emu::cusolver
 {
 
 class handle_t;
@@ -33,7 +29,7 @@ namespace handle
     }
 
     using ScopedHandle = scoped<const id_t, detail::Destroyer>;
-}
+} // namespace handle
 
 struct handle_t
 {
@@ -74,10 +70,7 @@ namespace handle
     handle_t create(::cuda::device_t device);
 
     handle_t wrap(id_t id, ::cuda::device_t device, bool take_ownership);
-}
 
-}
+} // namespace handle
 
-}
-
-#endif //EMU_CUSOLVER_HANDLE_H
+} // namespace emu::cusolver

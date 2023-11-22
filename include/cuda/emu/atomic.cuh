@@ -1,8 +1,7 @@
-#ifndef EMU_ATOMIC_CUH
-#define EMU_ATOMIC_CUH
+#pragma once
 
 #include <emu/macro.cuh>
-#include <emu/math.h>
+#include <emu/math.hpp>
 
 #include <cstdint>
 
@@ -89,5 +88,3 @@ EMU_ADD_ATOMIC_FUNCTION(bxor, math::bxor_t, atomicXor);
 } // namespace atomic
 
 } // namespace emu
-
-#endif //EMU_ATOMIC_CUH

@@ -1,5 +1,4 @@
-#ifndef EMU_CUBLAS_TYPE_H
-#define EMU_CUBLAS_TYPE_H
+#pragma once
 
 #include <emu/macro.hpp>
 #include <emu/assert.hpp>
@@ -103,5 +102,3 @@ namespace cublas
 } // namespace cublas
 
 } // namespace emu
-
-#endif //EMU_CUBLAS_TYPE_H

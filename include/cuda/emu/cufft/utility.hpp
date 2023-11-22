@@ -1,7 +1,6 @@
-#ifndef EMU_CUFFT_UTILITY_H
-#define EMU_CUFFT_UTILITY_H
+#pragma once
 
-#include <emu/cufft/type.h>
+#include <emu/cufft/type.hpp>
 
 namespace emu
 {
@@ -36,5 +35,3 @@ namespace detail
 } // namespace cufft
 
 } // namespace emu
-
-#endif //EMU_CUFFT_UTILITY_H

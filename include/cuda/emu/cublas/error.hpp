@@ -1,5 +1,4 @@
-#ifndef EMU_CUBLAS_ERROR_H
-#define EMU_CUBLAS_ERROR_H
+#pragma once
 
 #include <emu/detail/error.hpp>
 
@@ -42,5 +41,3 @@ namespace cublas
 } // namespace cublas
 
 } // namespace emu
-
-#endif //EMU_CUBLAS_ERROR_H

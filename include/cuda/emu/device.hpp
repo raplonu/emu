@@ -1,7 +1,6 @@
-#ifndef EMU_DEVICE_H
-#define EMU_DEVICE_H
+#pragma once
 
-#include "cuda/api/device.hpp"
+#include <cuda/runtime_api.hpp>
 
 namespace emu
 {
@@ -40,5 +39,3 @@ namespace emu
 
 
 }
-
-#endif //EMU_DEVICE_H

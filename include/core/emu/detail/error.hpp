@@ -1,5 +1,4 @@
-#ifndef EMU_DETAIL_ERROR_H
-#define EMU_DETAIL_ERROR_H
+#pragma once
 
 #include <emu/macro.hpp>
 #include <emu/assert.hpp>
@@ -49,6 +48,3 @@ inline void throw_if_error(STATUS_T status, std::string message) noexcept(false)
 	if (EMU_UNLIKELY(is_failure(status)))                                                                                \
         [&] () EMU_NOINLINE { throw EXCEPTION_T(status, message); }();                                                   \
 }
-
-
-#endif //EMU_DETAIL_ERROR_H

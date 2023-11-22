@@ -1,7 +1,6 @@
-#ifndef EMU_CUFFT_TYPE_H
-#define EMU_CUFFT_TYPE_H
+#pragma once
 
-#include <emu/assert.h>
+#include <emu/assert.hpp>
 
 namespace emu
 {
@@ -56,5 +55,3 @@ namespace cufft
 } // namespace cufft
 
 } // namespace emu
-
-#endif //EMU_CUFFT_TYPE_H

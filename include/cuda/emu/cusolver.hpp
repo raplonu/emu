@@ -1,5 +1,4 @@
-#ifndef EMU_CUSOLVER_H
-#define EMU_CUSOLVER_H
+#pragma once
 
 #include <emu/cusolver/handle.hpp>
 #include <emu/cublas/type.hpp>
@@ -39,5 +38,3 @@ namespace cusolver
 } // namespace cusolver
 
 } // namespace emu
-
-#endif // EMU_CUSOLVER_H

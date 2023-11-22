@@ -1,5 +1,4 @@
-#ifndef EMU_ITERATOR_FUNCTION_H
-#define EMU_ITERATOR_FUNCTION_H
+#pragma once
 
 #include <emu/macro.cuh>
 #include <emu/utility.h>
@@ -45,5 +44,3 @@ namespace detail
     }
 
 } // namespace emu::iterator
-
-#endif //EMU_ITERATOR_FUNCTION_H
