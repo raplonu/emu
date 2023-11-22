@@ -35,6 +35,12 @@ namespace cusolver
     template<typename T>
     void getrs(const handle_t & handle, Operation uplo,int n, int nrhs, const T *A, int lda, const int *devIpiv, T *B, int ldb, int *devInfo);
 
+    template<typename T>
+    int gesvd_bufferSize(const handle_t & handle, int m, int n);
+
+    template<typename T, typename F>
+    void gesvd(const handle_t & handle, char jobu, char jobvt, int m, int n, T *A, int lda, F *S, T *U, int ldu, T *VT, int ldvt, T *work, int lwork, F *rwork, int *devInfo);
+
 } // namespace cusolver
 
 } // namespace emu

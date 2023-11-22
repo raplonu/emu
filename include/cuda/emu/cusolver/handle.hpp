@@ -26,6 +26,8 @@ namespace handle
         };
 
         void set_stream(id_t handle, ::cuda::stream::handle_t mode);
+
+        ::cuda::stream::handle_t get_stream(id_t handle);
     }
 
     using ScopedHandle = scoped<const id_t, detail::Destroyer>;
@@ -50,6 +52,7 @@ struct handle_t
     ~handle_t() = default;
 
     void set_stream(const ::cuda::stream_t & stream);
+    ::cuda::stream_t stream() const;
 
 private:
     handle::ScopedHandle id_;

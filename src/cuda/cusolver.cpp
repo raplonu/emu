@@ -1,7 +1,7 @@
 #include <emu/cusolver.hpp>
 #include <emu/cublas/type.hpp>
 
-#include <string>
+#include <fmt/core.h>
 
 namespace emu
 {
@@ -25,6 +25,8 @@ namespace cusolver
         constexpr static auto getrf_bufferSize = cusolverDnSgetrf_bufferSize;
         constexpr static auto getrf            = cusolverDnSgetrf;
         constexpr static auto getrs            = cusolverDnSgetrs;
+        constexpr static auto gesvd_bufferSize = cusolverDnSgesvd_bufferSize;
+        constexpr static auto gesvd            = cusolverDnSgesvd;
 
     };
 
@@ -36,6 +38,8 @@ namespace cusolver
         constexpr static auto getrf_bufferSize = cusolverDnDgetrf_bufferSize;
         constexpr static auto getrf            = cusolverDnDgetrf;
         constexpr static auto getrs            = cusolverDnDgetrs;
+        constexpr static auto gesvd_bufferSize = cusolverDnDgesvd_bufferSize;
+        constexpr static auto gesvd            = cusolverDnDgesvd;
 
     };
 
@@ -47,6 +51,8 @@ namespace cusolver
         constexpr static auto getrf_bufferSize = cusolverDnCgetrf_bufferSize;
         constexpr static auto getrf            = cusolverDnCgetrf;
         constexpr static auto getrs            = cusolverDnCgetrs;
+        constexpr static auto gesvd_bufferSize = cusolverDnCgesvd_bufferSize;
+        constexpr static auto gesvd            = cusolverDnCgesvd;
 
     };
 
@@ -58,6 +64,8 @@ namespace cusolver
         constexpr static auto getrf_bufferSize = cusolverDnZgetrf_bufferSize;
         constexpr static auto getrf            = cusolverDnZgetrf;
         constexpr static auto getrs            = cusolverDnZgetrs;
+        constexpr static auto gesvd_bufferSize = cusolverDnZgesvd_bufferSize;
+        constexpr static auto gesvd            = cusolverDnZgesvd;
 
     };
 
@@ -121,6 +129,37 @@ namespace cusolver
     template void getrs<cuComplex>      (const handle_t & handle, Operation uplo,int n, int nrhs, const cuComplex       *A, int lda, const int *devIpiv, cuComplex       *B, int ldb, int *devInfo);
     template void getrs<cuDoubleComplex>(const handle_t & handle, Operation uplo,int n, int nrhs, const cuDoubleComplex *A, int lda, const int *devIpiv, cuDoubleComplex *B, int ldb, int *devInfo);
 
+
+    template<typename T>
+    int gesvd_bufferSize(const handle_t & handle, int m, int n){
+        int lwork=0;
+        throw_if_error(CuSolver<T>::gesvd_bufferSize(handle.id(), m, n, &lwork));
+        return lwork;
+    }
+    template int gesvd_bufferSize<float>(const handle_t & handle, int m, int n);
+    template int gesvd_bufferSize<double>(const handle_t & handle, int m, int n);
+    template int gesvd_bufferSize<cuComplex>(const handle_t & handle, int m, int n);
+    template int gesvd_bufferSize<cuDoubleComplex>(const handle_t & handle, int m, int n);
+
+    template<typename T,typename F>
+    void gesvd(const handle_t & handle, char jobu, char jobvt, int m, int n, T *A, int lda,
+        F *S, T *U, int ldu, T *VT, int ldvt, T *work, int lwork, F *rwork, int *devInfo){
+            emu::cusolver::status_t stat = CuSolver<T>::gesvd(handle.id(),jobu, jobvt, m, n, A, lda,
+                S, U, ldu, VT, ldvt, work, lwork, rwork, devInfo);
+            throw_if_error(  stat  ,fmt::format("with status {}",stat));
+    }
+    template void gesvd<float,float>(const handle_t & handle, char jobu, char jobvt, int m, int n,
+        float *A, int lda, float *S, float *U, int ldu, float *VT, int ldvt, float *work, int lwork,
+        float *rwork, int *devInfo);
+    template void gesvd<double,double>(const handle_t &handle, char jobu, char jobvt, int m, int n,
+        double *A, int lda, double *S, double *U, int ldu, double *VT, int ldvt, double *work,
+        int lwork, double *rwork, int *devInfo);
+    template void gesvd<cuComplex,float>(const handle_t &handle, char jobu, char jobvt, int m, int n,
+        cuComplex *A, int lda, float *S, cuComplex *U, int ldu, cuComplex *VT, int ldvt,
+        cuComplex *work, int lwork, float *rwork, int *devInfo);
+    template void gesvd<cuDoubleComplex,double>(const handle_t &handle, char jobu, char jobvt, int m, int n,
+        cuDoubleComplex *A, int lda, double *S, cuDoubleComplex *U, int ldu, cuDoubleComplex *VT,
+        int ldvt, cuDoubleComplex *work, int lwork, double *rwork, int *devInfo);
 
 } // namespace cusolver
 
