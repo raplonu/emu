@@ -1,7 +1,7 @@
 #ifndef EMU_DETAIL_ERROR_H
 #define EMU_DETAIL_ERROR_H
 
-#include <emu/macro.h>
+#include <emu/macro.hpp>
 #include <emu/assert.hpp>
 
 #include <fmt/core.h>

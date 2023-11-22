@@ -1,7 +1,7 @@
 #ifndef EMU_MACRO_H
 #define EMU_MACRO_H
 
-#include <emu/config.h>
+#include <emu/config.hpp>
 
 #include <boost/preprocessor/cat.hpp>
 

@@ -1,7 +1,7 @@
 #ifndef EMU_CUBLAS_TYPE_H
 #define EMU_CUBLAS_TYPE_H
 
-#include <emu/macro.h>
+#include <emu/macro.hpp>
 #include <emu/assert.hpp>
 
 #include <cublas_v2.h>

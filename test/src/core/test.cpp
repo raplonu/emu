@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <emu/fun.h>
+#include <emu/fun.hpp>
 #include <iostream>
 
 

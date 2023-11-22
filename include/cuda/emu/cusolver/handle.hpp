@@ -1,11 +1,11 @@
 #ifndef EMU_CUSOLVER_HANDLE_H
 #define EMU_CUSOLVER_HANDLE_H
 
-#include <emu/cusolver/error.h>
+#include <emu/cusolver/error.hpp>
 
-#include <emu/cuda.h>
-#include <emu/scoped.h>
-#include <emu/device.h>
+#include <emu/cuda.hpp>
+#include <emu/scoped.hpp>
+#include <emu/device.hpp>
 
 namespace emu
 {

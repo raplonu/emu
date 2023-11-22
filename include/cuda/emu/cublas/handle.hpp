@@ -1,11 +1,11 @@
 #ifndef EMU_CUBLAS_HANDLE_H
 #define EMU_CUBLAS_HANDLE_H
 
-#include <emu/cublas/error.h>
+#include <emu/cublas/error.hpp>
 
-#include <emu/cuda.h>
-#include <emu/scoped.h>
-#include <emu/device.h>
+#include <emu/cuda.hpp>
+#include <emu/scoped.hpp>
+#include <emu/device.hpp>
 
 namespace emu
 {

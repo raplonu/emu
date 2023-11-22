@@ -1,5 +1,5 @@
 
-#include <emu/cusolver/error.h>
+#include <emu/cusolver/error.hpp>
 
 namespace emu
 {

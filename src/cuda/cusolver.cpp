@@ -1,7 +1,7 @@
-#include <emu/cusolver.h>
-#include <emu/cublas/type.h>
-#include <string>
+#include <emu/cusolver.hpp>
+#include <emu/cublas/type.hpp>
 
+#include <string>
 
 namespace emu
 {

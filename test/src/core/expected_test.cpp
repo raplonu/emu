@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <emu/expected.h>
+#include <emu/expected.hpp>
 
 // Tests from https://github.com/TartanLlama/expected
 

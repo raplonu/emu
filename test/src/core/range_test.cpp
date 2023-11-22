@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <utility_test.h>
 
-#include <emu/range.h>
+#include <emu/range.hpp>
 #include <emu/utility.hpp>
 
 #include <array>

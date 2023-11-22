@@ -1,6 +1,6 @@
 #pragma once
 
-#include <emu/macro.h>
+#include <emu/macro.hpp>
 
 #include <type_traits>
 #include <iterator>

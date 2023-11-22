@@ -1,8 +1,8 @@
 #ifndef EMU_CUBLAS_H
 #define EMU_CUBLAS_H
 
-#include <emu/cublas/handle.h>
-#include <emu/cublas/type.h>
+#include <emu/cublas/handle.hpp>
+#include <emu/cublas/type.hpp>
 
 #include <cublas_v2.h>
 

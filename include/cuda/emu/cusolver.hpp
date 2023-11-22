@@ -1,8 +1,8 @@
 #ifndef EMU_CUSOLVER_H
 #define EMU_CUSOLVER_H
 
-#include <emu/cusolver/handle.h>
-#include <emu/cublas/type.h>
+#include <emu/cusolver/handle.hpp>
+#include <emu/cublas/type.hpp>
 
 #include <cusolverDn.h>
 

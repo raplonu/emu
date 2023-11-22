@@ -1,7 +1,7 @@
 #ifndef EMU_CUDA_H
 #define EMU_CUDA_H
 
-#include <emu/scoped.h>
+#include <emu/scoped.hpp>
 
 #include <cuda/runtime_api.hpp>
 

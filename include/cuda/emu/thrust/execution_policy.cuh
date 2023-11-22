@@ -1,8 +1,8 @@
 #ifndef EMU_THRUST_EXECUTION_POLICY_CUH
 #define EMU_THRUST_EXECUTION_POLICY_CUH
 
-#include <emu/macro.h>
-#include <emu/cuda.h>
+#include <emu/macro.hpp>
+#include <emu/cuda.hpp>
 
 #include <thrust/execution_policy.h>
 

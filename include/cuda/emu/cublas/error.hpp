@@ -1,7 +1,7 @@
 #ifndef EMU_CUBLAS_ERROR_H
 #define EMU_CUBLAS_ERROR_H
 
-#include <emu/detail/error.h>
+#include <emu/detail/error.hpp>
 
 #include <cublas_v2.h>
 

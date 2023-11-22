@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <emu/scoped.h>
+#include <emu/scoped.hpp>
 
 #include <sstream>
 

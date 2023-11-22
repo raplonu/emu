@@ -1,7 +1,7 @@
 #pragma once
 
-#include <emu/config.h>
-#include <emu/macro.h>
+#include <emu/config.hpp>
+#include <emu/macro.hpp>
 
 #include <gsl/assert>
 #include <boost/assert.hpp>
