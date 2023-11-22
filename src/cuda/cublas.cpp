@@ -18,66 +18,94 @@ namespace cublas
 
     template<>
     struct CuBLAS<float> {
+        // Level 1
         constexpr static auto amax = cublasIsamax;
         constexpr static auto amin = cublasIsamin;
         constexpr static auto asum = cublasSasum;
         constexpr static auto axpy = cublasSaxpy;
+        constexpr static auto scal = cublasSscal;
 
+        // Level 2
         constexpr static auto gemv = cublasSgemv;
+
+        // Level 3
         constexpr static auto gemm = cublasSgemm;
         constexpr static auto syrk = cublasSsyrk;
         constexpr static auto trsm = cublasStrsm;
         constexpr static auto getrf_batched = cublasSgetrfBatched;
         constexpr static auto getri_batched = cublasSgetriBatched;
 
+        // Extension
+        constexpr static auto dgmm = cublasSdgmm;
     };
 
     template<>
     struct CuBLAS<double> {
+        // Level 1
         constexpr static auto amax = cublasIdamax;
         constexpr static auto amin = cublasIdamin;
         constexpr static auto asum = cublasDasum;
         constexpr static auto axpy = cublasDaxpy;
+        constexpr static auto scal = cublasDscal;
 
+        //  Level 2
         constexpr static auto gemv = cublasDgemv;
+
+        // Level 3
         constexpr static auto gemm = cublasDgemm;
         constexpr static auto syrk = cublasDsyrk;
         constexpr static auto trsm = cublasDtrsm;
         constexpr static auto getrf_batched = cublasDgetrfBatched;
         constexpr static auto getri_batched = cublasDgetriBatched;
 
+        // Extension
+        constexpr static auto dgmm = cublasDdgmm;
     };
 
     template<>
     struct CuBLAS<cuComplex> {
+        // Level 1
         constexpr static auto amax = cublasIcamax;
         constexpr static auto amin = cublasIcamin;
         constexpr static auto asum = cublasScasum;
         constexpr static auto axpy = cublasCaxpy;
+        constexpr static auto scal = cublasCscal;
 
+        // Level 2
         constexpr static auto gemv = cublasCgemv;
+
+        // Level 3
         constexpr static auto gemm = cublasCgemm;
         constexpr static auto syrk = cublasCsyrk;
         constexpr static auto trsm = cublasCtrsm;
         constexpr static auto getrf_batched = cublasCgetrfBatched;
         constexpr static auto getri_batched = cublasCgetriBatched;
 
+        // Extension
+        constexpr static auto dgmm = cublasCdgmm;
     };
 
     template<>
     struct CuBLAS<cuDoubleComplex> {
+        // Level 1
         constexpr static auto amax = cublasIzamax;
         constexpr static auto amin = cublasIzamin;
         constexpr static auto asum = cublasDzasum;
         constexpr static auto axpy = cublasZaxpy;
+        constexpr static auto scal = cublasZscal;
 
+        // Level 2
         constexpr static auto gemv = cublasZgemv;
+
+        // Level 3
         constexpr static auto gemm = cublasZgemm;
         constexpr static auto syrk = cublasZsyrk;
         constexpr static auto trsm = cublasZtrsm;
         constexpr static auto getrf_batched = cublasZgetrfBatched;
         constexpr static auto getri_batched = cublasZgetriBatched;
 
+        // Extension
+        constexpr static auto dgmm = cublasZdgmm;
     };
 
 
@@ -120,6 +148,27 @@ namespace cublas
     template void axpy<double>         (const handle_t & handle, int n, const double          *alpha, const double          *x, int incx, double          *y, int incy);
     template void axpy<cuComplex>      (const handle_t & handle, int n, const cuComplex       *alpha, const cuComplex       *x, int incx, cuComplex       *y, int incy);
     template void axpy<cuDoubleComplex>(const handle_t & handle, int n, const cuDoubleComplex *alpha, const cuDoubleComplex *x, int incx, cuDoubleComplex *y, int incy);
+
+    template<typename T>
+    void scal(const handle_t & handle, int n, const T *alpha, T *x, int incx) {
+        throw_if_error(CuBLAS<T>::scal(handle.enable().id(), n, alpha, x, incx));
+    }
+
+    template void scal<float>          (const handle_t & handle, int n, const float           *alpha, float           *x, int incx);
+    template void scal<double>         (const handle_t & handle, int n, const double          *alpha, double          *x, int incx);
+    template void scal<cuComplex>      (const handle_t & handle, int n, const cuComplex       *alpha, cuComplex       *x, int incx);
+    template void scal<cuDoubleComplex>(const handle_t & handle, int n, const cuDoubleComplex *alpha, cuDoubleComplex *x, int incx);
+
+
+    template<typename T>
+    void dgmm(const handle_t & handle, SideMode side, int m, int n, const T *A, int lda, const T *x, int incx, T *C, int ldc) {
+        throw_if_error(CuBLAS<T>::dgmm(handle.enable().id(), convert(side), m,n, A, lda, x, incx, C, ldc));
+    }
+
+    template void dgmm<float>          (const handle_t & handle, SideMode side, int m, int n, const float *A, int lda, const float *x, int incx, float *C, int ldc);
+    template void dgmm<double>         (const handle_t & handle, SideMode side, int m, int n, const double *A, int lda, const double *x, int incx, double *C, int ldc);
+    template void dgmm<cuComplex>      (const handle_t & handle, SideMode side, int m, int n, const cuComplex *A, int lda, const cuComplex *x, int incx, cuComplex *C, int ldc);
+    template void dgmm<cuDoubleComplex>(const handle_t & handle, SideMode side, int m, int n, const cuDoubleComplex *A, int lda, const cuDoubleComplex *x, int incx, cuDoubleComplex *C, int ldc);
 
     template<typename T>
     void gemv(const handle_t & handle, Operation trans, int m, int n, const T *alpha, const T *A, int lda, const T *x, int incx, const T *beta, T *y, int incy) {

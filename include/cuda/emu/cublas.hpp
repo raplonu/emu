@@ -157,6 +157,9 @@ namespace cublas
     // Blas-like extension
 
     template<typename T>
+    void dgmm(const handle_t & handle, SideMode side, int m, int n, const T *A, int lda, const T *x, int incx, T *C, int ldc);
+
+    template<typename T>
     void trmm(const handle_t & handle, SideMode side, FillMode uplo, Operation trans, DiagonalType diag, int m, int n, const T *alpha, const T *A, int lda, const T *B, int ldb, T *C, int ldc);
 
     template<typename T>
