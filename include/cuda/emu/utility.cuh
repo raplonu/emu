@@ -18,6 +18,10 @@ namespace emu
     template <typename T>
     EMU_HODE constexpr T min     (T a, T b) noexcept { return (a < b) ? a : b; }
 
+    template <typename T>
+    EMU_HODE constexpr
+    T align(T size) noexcept { return next_mul(size, 32); }
+
     EMU_DEVICE inline bool is_not_last_block() { return EMU_BID < (EMU_SIZE_G - 1); }
 
     /**

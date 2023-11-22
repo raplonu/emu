@@ -46,10 +46,6 @@ namespace emu
     EMU_HODE constexpr
     T next_mul(T a, T b) { return ( (a - 1) / b + 1) * b; }
 
-    template <typename T>
-    EMU_HODE constexpr
-    T align(T size) noexcept { return next_mul(size, 32); }
-
     template<std::size_t key_id, typename Tuple>
     EMU_HODE constexpr
     const Tuple & min(const Tuple & t1, const Tuple & t2) noexcept {
