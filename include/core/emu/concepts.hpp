@@ -35,6 +35,26 @@ namespace cpts
     concept mdspan = specialization_of<T, std::experimental::mdspan>;
 
     template<typename T>
+    concept view = span<T> or mdspan<T>;
+
+    // template<typename T>
+    // concept array = std::same_as<T, std::array<typename T::value_type, std::tuple_size_v<T>>>;
+
+namespace detail
+{
+
+    template<typename T>
+    struct is_std_array : std::false_type {};
+
+    template<typename T, std::size_t N>
+    struct is_std_array<std::array<T, N>> : std::true_type {};
+
+} // namespace detail
+
+    template<typename T>
+    concept array = detail::is_std_array<decay<T>>::value;
+
+    template<typename T>
     concept formattable = requires (const T& v, fmt::format_context ctx) {
         fmt::formatter<T>().format(v, ctx);
     };
@@ -49,9 +69,9 @@ namespace cpts
     };
 
     template<typename T>
-    concept contigious_sized_range
-        =   std::ranges::contiguous_range<decay<T>>
-        and std::ranges::sized_range<decay<T>>;
+    concept contiguous_sized_range
+        =   std::ranges::contiguous_range<T>
+        and std::ranges::sized_range<T>;
 
 } // namespace cpts
 

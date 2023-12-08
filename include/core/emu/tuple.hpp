@@ -1,8 +1,8 @@
 #pragma once
 
-#include <emu/macro.h>
+#include <emu/macro.hpp>
 #include <emu/type_traits.hpp>
-#include <emu/utility.h>
+#include <emu/utility.hpp>
 
 #include <tuple>
 #include <functional>

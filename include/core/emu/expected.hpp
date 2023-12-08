@@ -2,6 +2,8 @@
 
 #include <tl/expected.hpp>
 
+#include <fmt/core.h>
+
 namespace emu
 {
     /**
@@ -46,3 +48,19 @@ namespace emu
     using tl::unexpected;
 
 }
+
+template<typename T, typename E>
+struct fmt::formatter<tl::expected<T, E>>
+{
+    constexpr auto parse(format_parse_context& ctx) {
+        return ctx.begin();
+    }
+
+    template<typename FormatContext>
+    auto format(const tl::expected<T, E>& exp, FormatContext& ctx) {
+        if (exp)
+            return fmt::format_to(ctx.out(), "expected({})", exp.value());
+        else
+            return fmt::format_to(ctx.out(), "unexpected({})", exp.error());
+    }
+};

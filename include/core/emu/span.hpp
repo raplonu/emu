@@ -1,6 +1,7 @@
 #pragma once
 
 #include <emu/fwd.hpp>
+#include <emu/concepts.hpp>
 #include <emu/type_name.hpp>
 
 #include <span>
@@ -42,7 +43,7 @@ namespace detail
         auto size = sp.size_bytes() / sizeof(NewType);
         constexpr auto extent = detail::type_extent<NewType, Extent>;
 
-        return std::span<const NewType, extent>{data, size};
+        return span<const NewType, extent>{data, size};
     }
 
 namespace detail
@@ -54,6 +55,16 @@ namespace detail
             : fmt::format_to(it, "{}", extent);
     }
 
+    template<cpts::span Span>
+    auto c_contigous(const Span&) {
+        return true;
+    }
+
+    template<cpts::span Span>
+    auto f_contigous(const Span&) {
+        return true;
+    }
+
 } // namespace detail
 
 namespace spe
@@ -61,13 +72,13 @@ namespace spe
     template <typename T, std::size_t Extent>
     struct info_t< span<T, Extent> >
     {
-        constexpr auto name(fmt::format_context::iterator it) const {
+        constexpr auto format_type(fmt::format_context::iterator it) const {
             it = fmt::format_to(it, "span<{}, ", type_name<T>);
             it = detail::format_extent(it, Extent);
             return fmt::format_to(it, ">");
         }
 
-        constexpr auto format_to(const span<T, Extent> &t, fmt::format_context::iterator it) const {
+        constexpr auto format_value(const span<T, Extent> &t, fmt::format_context::iterator it) const {
             return fmt::format_to(it, "@{}[{}]", fmt::ptr(t.data()), t.size());
         }
     };

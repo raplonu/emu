@@ -25,6 +25,14 @@ namespace emu
     template<typename T> using add_lref = std::add_lvalue_reference_t<T>;
     template<typename T> using add_rref = std::add_rvalue_reference_t<T>;
 
+    template<typename T> constexpr bool is_const = std::is_const_v<T>;
+    template<typename T> constexpr bool is_volatile = std::is_volatile_v<T>;
+    template<typename T> constexpr bool is_ref = std::is_reference_v<T>;
+    template<typename T> constexpr bool is_lref = std::is_lvalue_reference_v<T>;
+    template<typename T> constexpr bool is_rref = std::is_rvalue_reference_v<T>;
+    template<typename T> constexpr bool is_ptr = std::is_pointer_v<T>;
+
+
     struct use_default{};
 
     template<typename T, typename Other>

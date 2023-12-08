@@ -1,7 +1,7 @@
 #pragma once
 
 #include <emu/macro.cuh>
-#include <emu/utility.h>
+#include <emu/utility.hpp>
 
 #include <thrust/tuple.h>
 #include <thrust/iterator/transform_iterator.h>

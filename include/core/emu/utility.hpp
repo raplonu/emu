@@ -10,8 +10,6 @@
 #include <utility>
 #include <memory>
 
-#define EMU_FWD(v) ::std::forward<decltype(v)>(v)
-
 namespace emu
 {
 

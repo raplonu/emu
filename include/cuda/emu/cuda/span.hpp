@@ -31,8 +31,6 @@ namespace cuda
 
         using base::extent;
 
-        using base::base;
-
         template< std::size_t N >
         span( std::type_identity_t<element_type> (&arr)[N] ) = delete;
 

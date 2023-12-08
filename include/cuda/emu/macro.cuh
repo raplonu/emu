@@ -1,6 +1,6 @@
 #pragma once
 
-#include <emu/macro.h>
+#include <emu/macro.hpp>
 
 #include <emu/config.cuh>
 

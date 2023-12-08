@@ -1,5 +1,6 @@
 #pragma once
 
+#include <emu/macro.hpp>
 #include <emu/concepts.hpp>
 #include <emu/utility.hpp>
 

@@ -7,6 +7,8 @@ include(GoogleTest)
 
 add_executable(emucoretest
     src/core/test.cpp
+    src/core/capsule_test.cpp
+    src/core/container_test.cpp
     src/core/math_test.cpp
     src/core/range_test.cpp
     src/core/expected_test.cpp

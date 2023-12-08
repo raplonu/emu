@@ -11,6 +11,8 @@
 
 #include <boost/core/demangle.hpp>
 
+#include <string_view>
+
 namespace emu
 {
 
@@ -35,7 +37,6 @@ namespace emu
     using stdex::full_extent_t;
     using stdex::full_extent;
 
-    using stdex::mdspan;
 
     template<std::size_t N>
     using _nd = dextents<std::size_t, N>;
@@ -44,6 +45,8 @@ namespace emu
     using _1d = _nd<1>;
     using _2d = _nd<2>;
     using _3d = _nd<3>;
+
+    using stdex::mdspan;
 
     template<typename ElementType> using mdspan_0d   = mdspan<ElementType, _0d>;
 
@@ -65,20 +68,91 @@ namespace emu
 
     using stdex::submdspan;
 
-    template<typename LayoutPolicy> inline const char* layout_name();
+    template<typename LayoutPolicy> inline const char* layout_name() { return "unknow"; }
     template<> inline const char* layout_name<layout_right>() { return "C/right"; }
     template<> inline const char* layout_name<layout_left>() { return "F/left"; }
     template<> inline const char* layout_name<layout_stride>() { return "stride"; }
+
+    // not sure about that...
+    template <typename T>
+    constexpr auto as_mdspan(T& t) noexcept {
+        return mdspan_0d<T>{&t};
+    }
 
     template<typename T, std::size_t Extent>
     constexpr auto as_mdspan(span<T, Extent> s) noexcept {
         return mdspan_1d<T>{s.data(), s.size()};
     }
 
-    // template<typename T, std::size_t Extent>
-    // constexpr auto as_span(mdspan<T, Extent> s) noexcept {
-    //     return mdspan_1d<T>{s.data(), s.size()};
-    // }
+    template <typename ElementType, typename Extents, typename LayoutPolicy, typename AccessorPolicy>
+    constexpr auto as_mdspan(mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy> md) noexcept {
+        return md;
+    }
+
+namespace detail
+{
+
+    template<typename Mapping>
+    struct stride_t{
+        const Mapping& m;
+        std::string_view sep;
+    };
+
+    template<typename Mapping>
+    struct extent_t{
+        const Mapping& m;
+        std::string_view sep;
+    };
+
+} // namespace detail
+
+    template<typename Map>
+    auto stride(const Map& m, std::string_view sep = ", ") {
+        return detail::stride_t{m, sep};
+    }
+
+    template<cpts::mdspan MdSpan>
+    auto stride(const MdSpan& m, std::string_view sep = ", ") {
+        return detail::stride_t{m.mapping(), sep};
+    }
+
+    template<typename Map>
+    auto extent(const Map& m, std::string_view sep = ", ") {
+        return detail::extent_t{m, sep};
+    }
+
+    template<cpts::mdspan MdSpan>
+    auto extent(const MdSpan& m, std::string_view sep = ", ") {
+        return detail::extent_t{m.mapping(), sep};
+    }
+
+namespace detail
+{
+    template<cpts::mdspan MdSpan>
+    auto c_contigous(const MdSpan& mdspan) {
+        std::size_t size = 1;
+        for (std::size_t i = MdSpan::rank(); i == 0; --i) {
+            if (mdspan.stride(i - 1) != size) {
+                return false;
+            }
+            size *= mdspan.extent(i - 1);
+        }
+        return true;
+    }
+
+    template<cpts::mdspan MdSpan>
+    auto f_contigous(const MdSpan& mdspan) {
+        std::size_t size = 1;
+        for (std::size_t i = 0; i < MdSpan::rank(); ++i) {
+            if (mdspan.stride(i) != size) {
+                return false;
+            }
+            size *= mdspan.extent(i);
+        }
+        return true;
+    }
+
+} // namespace detail
 
 namespace spe
 {
@@ -87,7 +161,7 @@ namespace spe
     {
         using type = mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy>;
 
-        constexpr auto name(fmt::format_context::iterator it) const {
+        constexpr auto format_type(fmt::format_context::iterator it) const {
             return []<std::size_t...Is>(fmt::format_context::iterator it, std::index_sequence<Is...>) {
                 it = fmt::format_to(it, "mdspan<{}, [", boost::core::demangle(typeid(ElementType).name()));
 
@@ -102,17 +176,55 @@ namespace spe
             }(it, std::make_index_sequence<Extents::rank()>{});
         }
 
-        constexpr auto format_to(const type &t, fmt::format_context::iterator it) const {
-            return []<std::size_t... Is>(const type &t, fmt::format_context::iterator it, std::index_sequence<Is...>) {
-                it = fmt::format_to(it, "@{}{}", fmt::ptr(t.data_handle()), std::array{t.extent(Is)...});
+        constexpr auto format_value(const type &t, fmt::format_context::iterator it) const {
+            return [&]<std::size_t... Is>(std::index_sequence<Is...>) {
+                it = fmt::format_to(it, "@{} {}", fmt::ptr(t.data_handle()), std::array{t.extent(Is)...});
                 if constexpr (std::same_as<LayoutPolicy, layout_stride>) {
                     it = fmt::format_to(it, "[{}]", std::array{t.stride(Is)...});
                 }
                 return it;
-            }(t, it, std::make_index_sequence<Extents::rank()>{});
+            }(std::make_index_sequence<Extents::rank()>{});
         }
     };
 
 } // namespace spe
 
 } // namespace emu
+
+template<typename Mapping>
+struct fmt::formatter<emu::detail::stride_t<Mapping>>
+{
+    constexpr auto parse(format_parse_context& ctx) {
+        return ctx.begin();
+    }
+
+    template<typename FormatContext>
+    auto format(const emu::detail::stride_t<Mapping>& s, FormatContext& ctx) {
+        auto it = ctx.out();
+        if constexpr (Mapping::extents_type::rank() > 0) {
+            it = fmt::format_to(it, "{}", s.m.stride(0));
+            for (auto i = 1; i < Mapping::extents_type::rank(); ++i)
+                it = fmt::format_to(it, "{}{}", s.sep, s.m.stride(i));
+        }
+        return it;
+    }
+};
+
+template<typename Mapping>
+struct fmt::formatter<emu::detail::extent_t<Mapping>>
+{
+    constexpr auto parse(format_parse_context& ctx) {
+        return ctx.begin();
+    }
+
+    template<typename FormatContext>
+    auto format(const emu::detail::extent_t<Mapping>& s, FormatContext& ctx) {
+        auto it = ctx.out();
+        if constexpr (Mapping::extents_type::rank() > 0) {
+            it = fmt::format_to(it, "{}", s.m.extents().extent(0));
+            for (auto i = 1; i < Mapping::extents_type::rank(); ++i)
+                it = fmt::format_to(it, "{}{}", s.sep, s.m.extents().extent(i));
+        }
+        return it;
+    }
+};

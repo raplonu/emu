@@ -44,6 +44,7 @@ namespace detail
         }
         return true;
     }
+
 } // namespace detail
 
     template<cpts::tensor Tensor>
@@ -136,6 +137,10 @@ namespace spe
 
 } // namespace spe
 
+    template <typename T, int RANK>
+    constexpr auto rank(const matx::tensor_t<T, RANK>&) {
+        return RANK;
+    }
 
 } // namespace emu
 

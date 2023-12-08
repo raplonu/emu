@@ -1,38 +1,14 @@
 #pragma once
 
+#include <emu/concepts.hpp>
+#include <emu/capsule.hpp>
+
 #include <span>
-#include <memory>
 #include <span>
 #include <ranges>
 
 namespace emu
 {
-
-    struct capsule {
-
-        struct interface {
-            virtual ~interface() = default;
-        };
-
-        template<typename DataHolder>
-        struct impl : interface {
-            impl(auto&& d) : data_holder(EMU_FWD(d)) {}
-
-            DataHolder data_holder;
-        };
-
-        capsule() = default;
-
-        template<typename DataHolder>
-            requires (not std::same_as<capsule, std::decay_t<DataHolder>>)
-        capsule(DataHolder&& d) : holder(std::make_shared<impl<DataHolder>>(EMU_FWD(d))) {}
-
-        std::shared_ptr<interface> holder;
-
-        std::size_t use_count() const {
-            return holder.use_count();
-        }
-    };
 
     template<typename T, std::size_t Extent = std::dynamic_extent>
     struct container;
@@ -53,7 +29,7 @@ namespace cpts
 } // namespace cpts
 
     template<typename T, std::size_t Extent>
-    struct container : std::span<T, Extent>
+    struct container : protected std::span<T, Extent>
     {
         using base = std::span<T, Extent>;
 
@@ -76,34 +52,42 @@ namespace cpts
 
         container() = default;
 
+        template<typename U, std::size_t N>
+        container(std::array<U, N>&) = delete;
+
         template<typename DataHolder>
-            requires (not cpts::container<DataHolder>)
+            requires (not is_lref<DataHolder>) and (not cpts::container<DataHolder>)
         container(T* ptr, std::size_t size, DataHolder&& dh)
             : base(ptr, ptr + size)
             , capsule(EMU_FWD(dh))
         {}
 
-
         template<typename DataHolder>
-            requires (not cpts::container<DataHolder>)
+            requires (not is_lref<DataHolder>) and (not cpts::container<DataHolder>)
         container(base s, DataHolder&& dh)
             : base(s)
             , capsule(EMU_FWD(dh))
         {}
 
-        template<typename D>
-            requires (not cpts::container<D>) and (not std::ranges::borrowed_range<D>) /* and cpts::contigious_sized_range<D> */
-        container(D&& d)
-            : base(std::ranges::data(d), std::ranges::size(d))
-            , capsule(EMU_FWD(d))
+        template<cpts::contiguous_sized_range DataHolder>
+            requires (not is_lref<DataHolder>)
+                 and (not cpts::container<DataHolder>)
+                 and (not std::ranges::borrowed_range<DataHolder>)
+                 and (not cpts::array<DataHolder>)
+        container(DataHolder&& d)
+            : base(d) // needs to be contiguous and sized
+            , capsule(EMU_FWD(d)) // not borrowed, so we need to keep it alive.
         {}
 
-        // template<typename Deleter>
-        //     requires std::is_invocable_v<Deleter>
-        // container(T* ptr, std::size_t size, Deleter&& deleter )
-        //     : base(ptr, ptr + size)
-        //     , capsule(std::make_shared<detail::impl<scoped<void, std::decay_t<Deleter>>>>(std::forward<Deleter>(deleter)))
-        // {}
+        template<cpts::contiguous_sized_range DataHolder>
+            requires is_lref<DataHolder>
+                 and (not cpts::container<DataHolder>)
+                //  and (std::ranges::borrowed_range<DataHolder>)
+                 and (not cpts::array<DataHolder>)
+        container(DataHolder&& d)
+            : base(d) // needs to be contiguous and sized
+            , capsule() // borrowed, so we don't need to keep it alive.
+        {}
 
         container(base s, emu::capsule capsule)
             : base(s), capsule(std::move(capsule))
@@ -167,6 +151,23 @@ namespace cpts
 
     };
 
+    template< class It, class EndOrSize >
+    container( It, EndOrSize ) -> container<std::remove_reference_t<std::iter_reference_t<It>>>;
+    template< class T, std::size_t N >
+    container( T (&)[N] ) -> container<T, N>;
+    template< class T, std::size_t N >
+    container( std::array<T, N>& ) -> container<T, N>;
+    template< class T, std::size_t N >
+    container( const std::array<T, N>& ) -> container<const T, N>;
+    template< class R >
+    container( R&& ) -> container<std::remove_reference_t<std::ranges::range_reference_t<R>>>;
+
+    template<typename T>
+    container<T> make_container(std::size_t size) {
+        auto u_ptr = std::make_unique<T[]>(size);
+        return container<T>(u_ptr.get(), size, std::move(u_ptr));
+    }
+
     template< class T, std::size_t N >
     auto as_bytes( container<T, N> c ) noexcept {
         return c.from_span(std::as_bytes(c));
@@ -177,67 +178,20 @@ namespace cpts
         return s.from_span(std::as_writable_bytes(s));
     }
 
+    template <typename NewType, std::size_t Extent>
+    constexpr auto as_t(container<std::byte, Extent> sp) noexcept {
+        return sp.from_span(as_t<NewType>(span(sp)));
+    }
+
+    template <typename NewType, std::size_t Extent>
+    constexpr auto as_t(container<const std::byte, Extent> sp) noexcept {
+        return sp.from_span(as_t<const NewType>(span(sp)));
+    }
+
 } // namespace emu
 
-
-
-
-
-
-// #include <emu/utility.h>
-
-// #include <emu/misc/location.h>
-
-// // Include for accessor types.
-// #include <emu/mdspan.h>
-// #include <emu/scoped.h>
-// #include <emu/type_traits.hpp>
-
-// #include <memory>
-
-// namespace emu
-// {
-
-//     template<typename ViewType>
-//     struct container
-//     {
-
-//         using view_type = ViewType;
-
-//         struct interface
-//         {
-//             virtual ~interface() = default;
-//         };
-
-//         template<typename Capsule>
-//         struct implementation : interface
-//         {
-//             Capsule capsule_; // maintain a captured object alive if moved into.
-
-//             template<typename C>
-//             implementation(view_type view, C&& capsule)
-//                 : view(view), capsule_(EMU_FWD(capsule))
-//             {}
-
-//             view_type view() override
-//             {
-//                 return view;
-//             }
-//         };
-
-//         std::shared_ptr<interface> impl_;
-//         view_type view;
-
-//         template<typename C>
-//         container(view_type view, C&& capsule)
-//             : impl_(std::make_shared<implementation<Capsule>>(view, EMU_FWD(capsule)))
-//         {}
-
-//         template<typename C, typename... ViewArgs>
-//         container(C&& con, ViewArgs&&... view_args)
-//             : container(view_type(con, EMU_FWD(view_args)...), EMU_FWD(con))
-//         {}
-
-//     };
-
-// } // namespace emu
+// emu::container may own the data it points to. If it does, it will be destroyed when the last
+// container pointing to it is destroyed.
+// we cannot safely borrow the container.
+template <typename T, std::size_t N>
+inline constexpr bool std::ranges::enable_borrowed_range<emu::container<T, N>> = false;

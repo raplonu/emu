@@ -1,6 +1,6 @@
 #pragma once
 
-#include <emu/utility.h>
+#include <emu/utility.hpp>
 #include <emu/macro.cuh>
 #include <emu/type_traits.hpp>
 

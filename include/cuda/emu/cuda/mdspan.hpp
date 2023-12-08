@@ -13,7 +13,7 @@ namespace cuda
 {
 
     template <typename ElementType, typename Extents, typename LayoutPolicy = layout_right, typename AccessorPolicy = default_accessor<ElementType>>
-    struct mdspan : stdex::mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy> {
+    struct mdspan : protected stdex::mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy> {
 
         using base = stdex::mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy>;
 
