@@ -37,7 +37,6 @@ namespace emu
     using stdex::full_extent_t;
     using stdex::full_extent;
 
-
     template<std::size_t N>
     using _nd = dextents<std::size_t, N>;
 
@@ -92,9 +91,8 @@ namespace emu
 namespace detail
 {
 
-    template<typename Mapping>
-    struct stride_t{
-        const Mapping& m;
+    template<typename Extent>
+    struct static_extent_t{
         std::string_view sep;
     };
 
@@ -104,16 +102,22 @@ namespace detail
         std::string_view sep;
     };
 
+    template<typename Mapping>
+    struct stride_t{
+        const Mapping& m;
+        std::string_view sep;
+    };
+
 } // namespace detail
 
     template<typename Map>
-    auto stride(const Map& m, std::string_view sep = ", ") {
-        return detail::stride_t{m, sep};
+    auto static_extent(std::string_view sep = ", ") {
+        return detail::static_extent_t<typename Map::extents_type>{sep};
     }
 
     template<cpts::mdspan MdSpan>
-    auto stride(const MdSpan& m, std::string_view sep = ", ") {
-        return detail::stride_t{m.mapping(), sep};
+    auto static_extent(std::string_view sep = ", ") {
+        return detail::static_extent_t<typename MdSpan::extents_type>{sep};
     }
 
     template<typename Map>
@@ -124,6 +128,16 @@ namespace detail
     template<cpts::mdspan MdSpan>
     auto extent(const MdSpan& m, std::string_view sep = ", ") {
         return detail::extent_t{m.mapping(), sep};
+    }
+
+    template<typename Map>
+    auto stride(const Map& m, std::string_view sep = ", ") {
+        return detail::stride_t{m, sep};
+    }
+
+    template<cpts::mdspan MdSpan>
+    auto stride(const MdSpan& m, std::string_view sep = ", ") {
+        return detail::stride_t{m.mapping(), sep};
     }
 
 namespace detail
@@ -162,28 +176,16 @@ namespace spe
         using type = mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy>;
 
         constexpr auto format_type(fmt::format_context::iterator it) const {
-            return []<std::size_t...Is>(fmt::format_context::iterator it, std::index_sequence<Is...>) {
-                it = fmt::format_to(it, "mdspan<{}, [", boost::core::demangle(typeid(ElementType).name()));
-
-                bool first = true;
-                for (auto e : std::array{type::static_extent(Is)...}) {
-                    if (not first) it = fmt::format_to(it, ", "); else first = false;
-                    it = detail::format_extent(it, e);
-                }
-
-                return fmt::format_to(it, "], {}>", layout_name<LayoutPolicy>());
-
-            }(it, std::make_index_sequence<Extents::rank()>{});
+            it = fmt::format_to(it, "mdspan<{}, [", emu::type_name<ElementType>);
+            it = fmt::format_to(it, "{}", emu::static_extent<type>());
+            return fmt::format_to(it, "], {}>", layout_name<LayoutPolicy>());
         }
 
         constexpr auto format_value(const type &t, fmt::format_context::iterator it) const {
-            return [&]<std::size_t... Is>(std::index_sequence<Is...>) {
-                it = fmt::format_to(it, "@{} {}", fmt::ptr(t.data_handle()), std::array{t.extent(Is)...});
-                if constexpr (std::same_as<LayoutPolicy, layout_stride>) {
-                    it = fmt::format_to(it, "[{}]", std::array{t.stride(Is)...});
-                }
-                return it;
-            }(std::make_index_sequence<Extents::rank()>{});
+            it = fmt::format_to(it, "@ {}, extent [{}]", fmt::ptr(t.data_handle()), emu::extent(t));
+            if constexpr (not t.is_always_exhaustive())
+                it = fmt::format_to(it, ", stride [{}]", emu::stride(t));
+            return it;
         }
     };
 
@@ -191,31 +193,30 @@ namespace spe
 
 } // namespace emu
 
-template<typename Mapping>
-struct fmt::formatter<emu::detail::stride_t<Mapping>>
+template<typename Extent>
+struct fmt::formatter<emu::detail::static_extent_t<Extent>>
 {
-    constexpr auto parse(format_parse_context& ctx) {
-        return ctx.begin();
-    }
+    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
 
     template<typename FormatContext>
-    auto format(const emu::detail::stride_t<Mapping>& s, FormatContext& ctx) {
+    auto format(const emu::detail::static_extent_t<Extent>& s, FormatContext& ctx) {
         auto it = ctx.out();
-        if constexpr (Mapping::extents_type::rank() > 0) {
-            it = fmt::format_to(it, "{}", s.m.stride(0));
-            for (auto i = 1; i < Mapping::extents_type::rank(); ++i)
-                it = fmt::format_to(it, "{}{}", s.sep, s.m.stride(i));
+        if constexpr (Extent::rank() > 0) {
+            it = emu::detail::format_extent(it, Extent::static_extent(0));
+            for (auto i = 1; i < Extent::rank(); ++i) {
+                it = fmt::format_to(it, "{}", s.sep);
+                it = emu::detail::format_extent(it, Extent::static_extent(i));
+            }
         }
         return it;
     }
 };
 
+
 template<typename Mapping>
 struct fmt::formatter<emu::detail::extent_t<Mapping>>
 {
-    constexpr auto parse(format_parse_context& ctx) {
-        return ctx.begin();
-    }
+    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
 
     template<typename FormatContext>
     auto format(const emu::detail::extent_t<Mapping>& s, FormatContext& ctx) {
@@ -224,6 +225,23 @@ struct fmt::formatter<emu::detail::extent_t<Mapping>>
             it = fmt::format_to(it, "{}", s.m.extents().extent(0));
             for (auto i = 1; i < Mapping::extents_type::rank(); ++i)
                 it = fmt::format_to(it, "{}{}", s.sep, s.m.extents().extent(i));
+        }
+        return it;
+    }
+};
+
+template<typename Mapping>
+struct fmt::formatter<emu::detail::stride_t<Mapping>>
+{
+    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
+    template<typename FormatContext>
+    auto format(const emu::detail::stride_t<Mapping>& s, FormatContext& ctx) {
+        auto it = ctx.out();
+        if constexpr (Mapping::extents_type::rank() > 0) {
+            it = fmt::format_to(it, "{}", s.m.stride(0));
+            for (auto i = 1; i < Mapping::extents_type::rank(); ++i)
+                it = fmt::format_to(it, "{}{}", s.sep, s.m.stride(i));
         }
         return it;
     }

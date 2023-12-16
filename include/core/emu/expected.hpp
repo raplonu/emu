@@ -1,5 +1,7 @@
 #pragma once
 
+#include <emu/assert.hpp>
+
 #include <tl/expected.hpp>
 
 #include <fmt/core.h>
@@ -47,7 +49,19 @@ namespace emu
      **/
     using tl::unexpected;
 
-}
+} // namespace emu
+
+/**
+ * @brief Macro to check if an expression is true, and return an unexpected value if not.
+ *
+ * The return value is lazy evaluated, so the expression is only evaluated if the test is false.
+ *
+ */
+#define EMU_TRUE_OR_RETURN_UNEXPECTED( expr__, err ) \
+    if (EMU_UNLIKELY(!(expr__)))                     \
+        [&] () EMU_NOINLINE {                        \
+            return ::emu::unexpected(err);             \
+        }()
 
 template<typename T, typename E>
 struct fmt::formatter<tl::expected<T, E>>

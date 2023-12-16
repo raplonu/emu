@@ -5,6 +5,13 @@
 namespace std::experimental
 {
 
+    class layout_right;
+    class layout_left;
+    class layout_stride;
+
+    template <class IndexType, size_t... Extents>
+    class extents;
+
     template <typename ElementType, typename Extents, typename LayoutPolicy, typename AccessorPolicy>
     class mdspan;
 

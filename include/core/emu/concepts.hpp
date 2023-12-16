@@ -37,6 +37,26 @@ namespace cpts
     template<typename T>
     concept view = span<T> or mdspan<T>;
 
+    template<typename T>
+    concept extents = is_extents<T>;
+
+    template<typename T>
+    concept mapping = requires (const T& m) {
+        // TODO: complete the list...
+        { m.required_span_size() } -> std::convertible_to<std::size_t>;
+
+        { m.is_always_unique()     } -> std::convertible_to<bool>;
+        { m.is_always_exhaustive() } -> std::convertible_to<bool>;
+        { m.is_always_strided()    } -> std::convertible_to<bool>;
+        { m.is_unique()            } -> std::convertible_to<bool>;
+        { m.is_exhaustive()        } -> std::convertible_to<bool>;
+        { m.is_strided()           } -> std::convertible_to<bool>;
+    };
+
+    template<typename T>
+    // the only thing that determine a layout is the inner mapping type.
+    concept layout = mapping< typename T::mapping<std::experimental::extents<std::size_t>> >;
+
     // template<typename T>
     // concept array = std::same_as<T, std::array<typename T::value_type, std::tuple_size_v<T>>>;
 

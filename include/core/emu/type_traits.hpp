@@ -1,6 +1,7 @@
 #pragma once
 
 #include <emu/macro.hpp>
+#include <emu/fwd.hpp>
 
 #include <type_traits>
 #include <iterator>
@@ -32,19 +33,29 @@ namespace emu
     template<typename T> constexpr bool is_rref = std::is_rvalue_reference_v<T>;
     template<typename T> constexpr bool is_ptr = std::is_pointer_v<T>;
 
-
     struct use_default{};
 
     template<typename T, typename Other>
     using not_default_or = std::conditional_t<std::is_same_v<T, use_default>, Other, T>;
-
-    template<typename T1, typename T2>
-    constexpr auto equivalent = std::is_same_v<decay<T1>, decay<T2>>;
 
     template<class, template<class...> class>
     constexpr bool is_specialization = false;
 
     template<template<class...> class T, class... Args>
     constexpr bool is_specialization<T<Args...>, T> = true;
+
+namespace detail
+{
+
+    template<typename T>
+    struct is_extents : std::false_type {};
+
+    template<typename IndexType, std::size_t... Extents>
+    struct is_extents<std::experimental::extents<IndexType, Extents...>> : std::true_type {};
+
+} // namespace detail
+
+    template<typename T>
+    constexpr bool is_extents = detail::is_extents<T>::value;
 
 } // namespace emu
