@@ -63,18 +63,22 @@ namespace emu
             return ::emu::unexpected(err);             \
         }()
 
-template<typename T, typename E>
-struct fmt::formatter<tl::expected<T, E>>
+template<typename T, typename E, typename Char>
+struct fmt::formatter<tl::expected<T, E>, Char> : fmt::formatter<T, Char>
 {
-    constexpr auto parse(format_parse_context& ctx) {
-        return ctx.begin();
-    }
+    using base = fmt::formatter<T, Char>;
 
     template<typename FormatContext>
     auto format(const tl::expected<T, E>& exp, FormatContext& ctx) {
-        if (exp)
-            return fmt::format_to(ctx.out(), "expected({})", exp.value());
-        else
+        if (exp) {
+            // First print the prefix and update the context to the end of it.
+            ctx.advance_to(format_to(ctx.out(), "expected("));
+            // Format the hold value using its own formatter.
+            base::format(exp.value(), ctx);
+            // Finally print the suffix.
+            return format_to(ctx.out(), ")");
+        } else
+            //Note: The error has no `parse` method. It cannot be personalized.
             return fmt::format_to(ctx.out(), "unexpected({})", exp.error());
     }
 };

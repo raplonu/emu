@@ -85,12 +85,6 @@ namespace emu
         return static_cast<sv_t>(lhs) <=> static_cast<sv_t>(rhs);
     }
 
-    template<typename CharT, typename Traits>
-    auto format_as(basic_cstring_view<CharT, Traits> csv) {
-        using sv_t = basic_cstring_view<CharT, Traits>::string_view_type;
-        return static_cast<sv_t>(csv);
-    }
-
 namespace literals
 {
     constexpr basic_cstring_view<char>
@@ -132,5 +126,18 @@ template<typename CharT, typename Traits>
 struct std::hash<emu::basic_cstring_view<CharT, Traits>> : std::hash<std::basic_string_view<CharT, Traits>> {
     constexpr std::size_t operator()(emu::basic_cstring_view<CharT, Traits> csv) const noexcept {
         return std::hash<std::basic_string_view<CharT, Traits>>::operator()(csv);
+    }
+};
+
+template<typename CharT, typename Traits>
+struct fmt::formatter<emu::basic_cstring_view<CharT, Traits>, CharT> : fmt::formatter<std::basic_string_view<CharT, Traits>, CharT> {
+
+    using base = fmt::formatter<std::basic_string_view<CharT, Traits>, CharT>;
+    using cstring_view = emu::basic_cstring_view<CharT, Traits>;
+    using string_view = std::basic_string_view<CharT, Traits>;
+
+    template <typename FormatContext>
+    auto format(cstring_view v, FormatContext& ctx) {
+        return base::format(static_cast<string_view>(v), ctx);
     }
 };

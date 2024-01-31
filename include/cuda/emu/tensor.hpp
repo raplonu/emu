@@ -59,33 +59,30 @@ namespace detail
     }
 
     template<
-        typename LayoutPolicy = use_default,
-        // typename AccessorPolicy = use_default,
+        typename LayoutPolicy = layout_c,
         cpts::tensor Tensor
     >
     auto as_mdspan(Tensor& tensor) {
         using element_type = typename Tensor::value_type;
         constexpr std::size_t rank = Tensor::Rank();
 
-        using layout_policy = not_default_or<LayoutPolicy, layout_c>;
-        // using accessor_policy = not_default_or<AccessorPolicy, default_accessor<element_type>>;
         using extents = _nd<rank>;
 
-        if constexpr (std::is_same_v<layout_policy, layout_c>) {
+        if constexpr (std::is_same_v<LayoutPolicy, layout_c>) {
             EMU_ASSERT_MSG(is_c_contigous(tensor), "Tensor must be order c contiguous");
 
             return stdex::mdspan<element_type, extents, layout_c>{
                 tensor.Data(), tensor.Shape()
             };
-        } else if constexpr (std::is_same_v<layout_policy, layout_f>) {
+        } else if constexpr (std::is_same_v<LayoutPolicy, layout_f>) {
             EMU_ASSERT_MSG(is_f_contigous(tensor), "Tensor must be order f contiguous");
 
             return stdex::mdspan<element_type, extents, layout_f>{
                 tensor.Data(), tensor.Shape()
             };
         } else {
-            using mapping_type = typename layout_policy::template mapping<extents>;
-            return stdex::mdspan<element_type, extents, layout_policy>{
+            using mapping_type = typename LayoutPolicy::template mapping<extents>;
+            return stdex::mdspan<element_type, extents, LayoutPolicy>{
                 tensor.Data(), mapping_type{tensor.Shape(), tensor.Descriptor().Strides()}
             };
         }
@@ -113,10 +110,10 @@ namespace spe
     {
         using type = matx::tensor_t<T, RANK, Storage, Desc>;
 
-        constexpr auto name(fmt::format_context::iterator it) const {
-            return it;
-        }
-        constexpr auto format_to(const type &t, fmt::format_context::iterator it) const {
+        // constexpr auto format_type(fmt::format_context::iterator it) const {
+        //     return it;
+        // }
+        constexpr auto format_value(const type &t, fmt::format_context::iterator it) const {
             auto [layout, is_stride] = [&] {
                 if        (detail::c_contigous(t)) {
                     return std::make_pair("C/right", false);
@@ -127,10 +124,10 @@ namespace spe
                 }
             }();
 
-            // it = fmt::format_to(it, "@{}[{}:{}]", fmt::ptr(t.Data()), t.Shape(), layout);
-            // if (is_stride) {
-            //     it = fmt::format_to(it, "[{}]", t.Stride());
-            // }
+            it = fmt::format_to(it, "@{}[{}:{}]", fmt::ptr(t.Data()), t.Shape(), layout);
+            if (is_stride) {
+                it = fmt::format_to(it, "[{}]", t.Stride());
+            }
             return it;
         }
     };
@@ -163,3 +160,12 @@ namespace std
     }
 
 } // namespace std
+
+namespace fmt
+{
+    // Disable range support for tensor in fmt.
+    template <emu::cpts::tensor Tensor, typename Char>
+    struct is_range<Tensor, Char>: std::false_type{};
+
+} // namespace fmt
+

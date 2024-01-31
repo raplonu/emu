@@ -120,18 +120,21 @@ namespace cpts
 
 } // namespace emu
 
-template<typename T>
-struct fmt::formatter<tl::optional<T>>
+template<typename T, typename Char>
+struct fmt::formatter<tl::optional<T>, Char> : fmt::formatter<T, Char>
 {
-    constexpr auto parse(format_parse_context& ctx) {
-        return ctx.begin();
-    }
+    using base = fmt::formatter<T>;
 
     template<typename FormatContext>
     auto format(const tl::optional<T>& opt, FormatContext& ctx) {
-        if (opt)
-            return format_to(ctx.out(), "optional({})", opt.value());
-        else
+        if (opt) {
+            // First print the prefix and update the context to the end of it.
+            ctx.advance_to(format_to(ctx.out(), "optional("));
+            // Format the hold value using its own formatter.
+            base::format(opt.value(), ctx);
+            // Finally print the suffix.
+            return format_to(ctx.out(), ")");
+        } else
             return format_to(ctx.out(), "none");
     }
 };

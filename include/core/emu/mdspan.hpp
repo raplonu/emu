@@ -170,21 +170,55 @@ namespace detail
 
 namespace spe
 {
+    template<cpts::mapping Mapping>
+        requires (std::same_as<typename Mapping::layout_type, layout_right> or std::same_as<typename Mapping::layout_type, layout_left>)
+    struct info_t< Mapping > {
+
+        constexpr auto format_type(fmt::format_context::iterator it) const {
+            return fmt::format_to(it, "[{}, {}]", emu::static_extent<Mapping>(), layout_name<typename Mapping::layout_type>());
+        }
+
+        constexpr auto format_value(const Mapping &m, fmt::format_context::iterator it) const {
+            return fmt::format_to(it, "[{}]", emu::extent(m));
+        }
+    };
+
+    template<cpts::mapping Mapping>
+        requires (std::same_as<typename Mapping::layout_type, layout_stride>)
+    struct info_t< Mapping > {
+
+        constexpr auto format_type(fmt::format_context::iterator it) const {
+            return fmt::format_to(it, "[{}, {}]", emu::static_extent<Mapping>(), layout_name<typename Mapping::layout_type>());
+        }
+
+        constexpr auto format_value(const Mapping &m, fmt::format_context::iterator it) const {
+            // perform both compile time and runtime check for exhaustive mapping.
+            if constexpr (m.is_always_exhaustive()) /* and */ if (m.is_exhaustive())
+                    return fmt::format_to(it, "[{}]", emu::extent(m));
+
+            // otherwise, the mapping is not exhaustive, so we print the strides.
+            return fmt::format_to(it, "[{}, {}]", emu::extent(m), emu::stride(m));
+        }
+    };
+
     template <typename ElementType, typename Extents, typename LayoutPolicy, typename AccessorPolicy>
     struct info_t< mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy> >
     {
         using type = mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy>;
 
+        using mapping_type = typename type::mapping_type;
+
+        info_t< mapping_type > mapping_info;
+
         constexpr auto format_type(fmt::format_context::iterator it) const {
-            it = fmt::format_to(it, "mdspan<{}, [", emu::type_name<ElementType>);
-            it = fmt::format_to(it, "{}", emu::static_extent<type>());
-            return fmt::format_to(it, "], {}>", layout_name<LayoutPolicy>());
+            it = fmt::format_to(it, "mdspan<{}, ", emu::type_name<ElementType>);
+            it = mapping_info.format_type(it);
+            return fmt::format_to(it, ">");
         }
 
         constexpr auto format_value(const type &t, fmt::format_context::iterator it) const {
-            it = fmt::format_to(it, "@ {}, extent [{}]", fmt::ptr(t.data_handle()), emu::extent(t));
-            if constexpr (not t.is_always_exhaustive())
-                it = fmt::format_to(it, ", stride [{}]", emu::stride(t));
+            it = fmt::format_to(it, "@ {}, ", fmt::ptr(t.data_handle()));
+            it = mapping_info.format_value(t.mapping(), it);
             return it;
         }
     };
