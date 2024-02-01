@@ -29,7 +29,7 @@ namespace emu
     auto format_as(numeric_name_t<T>);
 
 #define MAP_NUM_NAME(T, name)                                         \
-    template<> auto format_as<T>(numeric_name_t<T>) { return #name; }
+    template<> inline auto format_as<T>(numeric_name_t<T>) { return #name; }
 
     MAP_NUM_NAME(bool,     bool    )
     MAP_NUM_NAME(int8_t,   int8    )
@@ -62,4 +62,3 @@ namespace emu
     constexpr numeric_name_t<T> numeric_name;
 
 } // namespace emu
-
