@@ -36,8 +36,7 @@ class EmuConan(ConanFile):
         self.requires('half/2.2.0', transitive_headers=True)
 
         if self.options.cuda:
-            # self.requires('cuda-api-wrappers/0.6.3', transitive_headers=True)
-            self.requires('cuda-api-wrappers/0.6.5.graph', transitive_headers=True)
+            self.requires('cuda-api-wrappers/0.6.3', transitive_headers=True)
 
             self.requires('matx/0.6.0', transitive_headers=True)
 
