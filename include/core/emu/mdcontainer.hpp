@@ -118,7 +118,7 @@ namespace cpts
         using base::base;
 
         /* constructor (1)*/
-        mdcontainer() = default;
+        constexpr mdcontainer() = default;
 
         /* constructor (2)*/
         template<typename DataHolder, typename ... OtherIndexTypes>
@@ -127,16 +127,23 @@ namespace cpts
             : base(ptr, exts...)
             , capsule(EMU_FWD(dh))
         {}
-
+        template<std::ranges::contiguous_range DataHolder, typename ... OtherIndexTypes>
+            requires (not cpts::mdcontainer<DataHolder>)
+        mdcontainer(DataHolder&& dh,  OtherIndexTypes... exts)
+            : mdcontainer(std::ranges::data(dh),EMU_FWD(dh),exts...){}
 
         /*constructor (3)*/
         template<typename DataHolder, class OtherIndexType, std::size_t N >
-        constexpr explicit(N != Extents::rank_dynamic())
+            constexpr explicit(N != Extents::rank_dynamic())
         mdcontainer( T* ptr, DataHolder &&dh, const emu::span<OtherIndexType, N>& exts )
             : base(ptr, exts)
             , capsule(EMU_FWD(dh))
         {}
-
+        template<typename DataHolder, class OtherIndexType, std::size_t N >
+            requires (not cpts::mdcontainer<DataHolder>)
+            constexpr explicit(N != Extents::rank_dynamic())
+        mdcontainer(DataHolder &&dh, const emu::span<OtherIndexType, N>& exts )
+            : mdcontainer(std::ranges::data(dh),EMU_FWD(dh), exts){}
 
         /*constructor (4)*/
         template<typename DataHolder, class OtherIndexType, std::size_t N >
@@ -145,15 +152,44 @@ namespace cpts
             : base(ptr,exts),
               capsule(EMU_FWD(dh))
         {}
+        template<typename DataHolder, class OtherIndexType, std::size_t N >
+            requires (not cpts::mdcontainer<DataHolder>)
+            constexpr explicit(N != Extents::rank_dynamic())
+        mdcontainer( DataHolder &&dh, const std::array<OtherIndexType, N>& exts )
+            : mdcontainer(std::ranges::data(dh),EMU_FWD(dh), exts){}
 
         /*constructor (5)  */
-        /*constexpr mdcontainer( data_handle_type p, const extents_type& ext );*/
+        template<typename DataHolder>
+        constexpr mdcontainer( T* ptr, DataHolder &&dh, const extents_type& ext )
+            : base(ptr,ext),
+              capsule(EMU_FWD(dh))
+        {}
+        template<typename DataHolder>
+            requires (not cpts::mdcontainer<DataHolder>)
+        constexpr mdcontainer(DataHolder &&dh, const extents_type& ext )
+            : mdcontainer(std::ranges::data(dh),EMU_FWD(dh), ext){}
 
         /*constructor (6)*/
-        /*constexpr mdcontainer( data_handle_type p, const mapping_type& m );*/
+        template<typename DataHolder >
+        mdcontainer( T* ptr, DataHolder &&dh, const mapping_type &m )
+            : base(ptr,m),
+              capsule(EMU_FWD(dh))
+        {}
+        template<typename DataHolder >
+            requires (not cpts::mdcontainer<DataHolder>)
+        mdcontainer(DataHolder &&dh, const mapping_type &m )
+            : mdcontainer(std::ranges::data(dh),EMU_FWD(dh)){}
 
         /*constructor (7)*/
-        /*constexpr mdcontainer( data_handle_type p, const mapping_type& m, const accessor_type& a )*/
+        template<typename DataHolder>
+        mdcontainer( T* ptr, DataHolder &&dh, const mapping_type &m, const accessor_type &a)
+            : base(ptr,m,a),
+              capsule(EMU_FWD(dh))
+        {}
+        template<typename DataHolder>
+            requires (not cpts::mdcontainer<DataHolder>)
+        mdcontainer(DataHolder &&dh, const mapping_type &m, const accessor_type &a)
+            : mdcontainer(std::ranges::data(dh),EMU_FWD(dh),m,a){}
 
         /*constructor (8) -> remove it */
         /*template< class OtherElementType, class OtherExtents,
@@ -163,42 +199,29 @@ namespace cpts
                              OtherLayoutPolicy, OtherAccessor>& other );*/
 
         /*constructor (9)*/
-        /*constexpr mdspan( const mdspan& rhs ) = default;*/
+        constexpr mdcontainer( const mdcontainer& rhs ) = default;
 
         /*constructor (10)*/
-        /*constexpr mdspan( mdspan&& rhs ) = default;*/
+        constexpr mdcontainer( mdcontainer&& rhs ) = default;
 
+        template<typename DataHolder>
+            requires (not cpts::container<DataHolder>)
+        mdcontainer(base s, DataHolder&& dh)
+            : base(s)
+            , capsule(EMU_FWD(dh))
+        {}
 
-
-//
-//
-//        template<typename DataHolder>
-//            requires (not cpts::container<DataHolder>)
-//        container(base s, DataHolder&& dh)
-//            : base(s)
-//            , capsule(EMU_FWD(dh))
-//        {}
-//
-//        template<typename D>
-//            requires (not cpts::container<D>) and (not std::ranges::borrowed_range<D>) /* and cpts::contigious_sized_range<D> */
-//        container(D&& d)
-//            : base(std::ranges::data(d), std::ranges::size(d))
-//            , capsule(EMU_FWD(d))
-//        {}
-//
-//        // template<typename Deleter>
-//        //     requires std::is_invocable_v<Deleter>
-//        // container(T* ptr, std::size_t size, Deleter&& deleter )
-//        //     : base(ptr, ptr + size)
-//        //     , capsule(std::make_shared<detail::impl<scoped<void, std::decay_t<Deleter>>>>(std::forward<Deleter>(deleter)))
-//        // {}
+        // template<typename Deleter>
+        //     requires std::is_invocable_v<Deleter>
+        // container(T* ptr, std::size_t size, Deleter&& deleter )
+        //     : base(ptr, ptr + size)
+        //     , capsule(std::make_shared<detail::impl<scoped<void, std::decay_t<Deleter>>>>(
+        //              std::forward<Deleter>(deleter)))
+        // {}
 
         mdcontainer(base s, emu::capsule capsule)
             : base(s), capsule(std::move(capsule))
         {}
-
-        mdcontainer(const mdcontainer&) = default;
-        mdcontainer(mdcontainer&&) = default;
 
         mdcontainer& operator=(const mdcontainer&) = default;
         mdcontainer& operator=(mdcontainer&&) = default;
@@ -206,38 +229,6 @@ namespace cpts
         auto use_count() const {
             return capsule.use_count();
         }
-
-//        template< std::size_t Offset, std::size_t Count = std::dynamic_extent >
-//        constexpr auto subspan() const {
-//            return from_span(base::template subspan<Offset, Count>());
-//        }
-
-//        constexpr auto subspan( size_type Offset, size_type Count = std::dynamic_extent ) const {
-//            return from_span(base::subspan(Offset, Count));
-//        }
-//
-//        template< std::size_t Count >
-//        constexpr auto first() const {
-//            return from_span(base::template first<Count>());
-//        }
-//
-//        constexpr auto first( size_type Count ) const {
-//            return from_span(base::first(Count));
-//        }
-//
-//        template< std::size_t Count >
-//        constexpr std::span<element_type, Count> last() const {
-//            return from_span(base::template last<Count>());
-//        }
-//
-//        constexpr std::span<element_type, std::dynamic_extent> last( size_type Count ) const {
-//            return from_span(base::last(Count));
-//        }
-//
-//        template<typename T, std::size_t Extents>
-//        constexpr auto from_span(std::mdspan<T, Extents> s) const {
-//            return container<N, Extents>(s, capsule);
-//        }
 
         /*observers*/
         using base::size;
@@ -259,12 +250,56 @@ namespace cpts
 
     };
 
+
+    /***************************************************/
+    // Deduction guide
+
+    template< class CArray >
+    requires(std::is_array_v<CArray> && std::rank_v<CArray> == 1)
+    mdcontainer( CArray& ) -> mdcontainer<std::remove_all_extents_t<CArray>,
+                  emu::extents<std::size_t, std::extent_v<CArray, 0>>>;
+
+    template< class Pointer >
+    requires(std::is_pointer_v<std::remove_reference_t<Pointer>>)
+    mdcontainer( Pointer&& ) -> mdcontainer<std::remove_pointer_t<std::remove_reference_t<Pointer>>,
+                  emu::extents<size_t>>;
+
+    template< class ElementType, class... Integrals >
+    requires((std::is_convertible_v<Integrals, std::size_t> && ...) && sizeof...(Integrals) > 0)
+    explicit mdcontainer( ElementType*, Integrals... ) -> mdcontainer<ElementType,
+                emu::dextents<std::size_t, sizeof...(Integrals)>>;
+
+    template< class ElementType, class OtherIndexType, std::size_t N >
+    mdcontainer( ElementType*, std::span<OtherIndexType, N> )
+        -> mdcontainer<ElementType, emu::dextents<std::size_t, N>>;
+
+    template< class ElementType, class OtherIndexType, std::size_t N >
+    mdcontainer( ElementType*, const std::array<OtherIndexType, N>& )
+        -> mdcontainer<ElementType, emu::dextents<std::size_t, N>>;
+
+    template< class ElementType, class IndexType, std::size_t... ExtentsPack >
+    mdcontainer( ElementType*, const emu::extents<IndexType, ExtentsPack...>& )
+        -> mdcontainer<ElementType, emu::extents<IndexType, ExtentsPack...>>;
+
+    template< class ElementType, class MappingType >
+    mdcontainer( ElementType*, const MappingType& )
+        -> mdcontainer<ElementType, typename MappingType::extents_type,
+                  typename MappingType::layout_type>;
+
+    template< class MappingType, class AccessorType >
+    mdcontainer( const typename AccessorType::data_handle_type&, const MappingType&, const AccessorType& )
+        -> mdcontainer<typename AccessorType::element_type,
+                  typename MappingType::extents_type,
+                  typename MappingType::layout_type, AccessorType>;
+
+    /***************************************************/
+    /* factories */
     template<typename T,
              typename LayoutPolicy = layout_right,
              typename AccessorPolicy = default_accessor<T>,
              typename ...Extents>
-    mdcontainer<T, emu::_nd< sizeof...(Extents)>,LayoutPolicy,AccessorPolicy> make_container(
-            Extents... exts){
+    mdcontainer<T, emu::_nd< sizeof...(Extents)>,LayoutPolicy,AccessorPolicy>
+    make_mdcontainer(Extents... exts){
         constexpr std::size_t nd = sizeof...(Extents);
         std::size_t size=1;
         for(auto e :{exts...}){size = size*e;}
