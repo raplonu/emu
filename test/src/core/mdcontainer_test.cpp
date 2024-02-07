@@ -12,173 +12,227 @@
 #include <cstdlib>
 #include <type_traits>
 
+template<typename C>
+void check(C &con, size_t s, int c){
+    EXPECT_EQ(con.size(), s);
+    EXPECT_EQ(con.use_count(), c);
+}
+template<typename C, typename T>
+void check(C &con, size_t s, int c, const T *ptr){
+    EXPECT_EQ(con.data_handle(), ptr);
+    check(con, s, c);
+}
+template<typename C, typename A, std::size_t N>
+void check(C &con, size_t s, int c, const std::array<A,N> &dims){
+    check(con, s, c);
+    for(int i=0;i<N;i++){
+        EXPECT_EQ(con.extents().extent(i),dims[i]);
+    }
+}
+template<typename C, typename T, typename A, std::size_t N>
+void check(C &con, size_t s, int c, const T *ptr, const std::array<A,N> &dims){
+    check(con, s, c, ptr);
+    for(std::size_t i=0;i<N;i++){
+        EXPECT_EQ(con.extents().extent(i),dims[i]);
+    }
+}
+
 namespace
 {
-
-
-
-    TEST(MdSpan, Construct)
-    {
-
-
-        {
-            /*auto con1 =*/ emu::make_container<int>(12);
-            /*auto con2 =*/ emu::make_container<int>(2,6);
-            /*auto con3 =*/ emu::make_container<int>(2,3,2);
-            //fmt::print("{}:{}  {}\n",__FILE__,__LINE__,emu::info(con));
-        }
-
-        //// (3) mdspan( data_handle_type p, std::span<OtherIndexType, N> exts );
-        //{
-        //    std::vector<int> v = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
-        //    std::array<size_t,1> d1 ;
-        //    emu::span sd1(d1);
-        //    emu::mdspan_1d<int> spa1(v.data(),d1); // c4
-        //    emu::mdspan_1d<int> spa2(v.data(),sd1); // c4
-        //    //emu::mdspan_1d<int> spa2(v.data(),emu::stdex::extents<int,1>(12));
-        //    fmt::print("{}\n{}\n",emu::info(spa1),emu::info(spa2));
-
-        //}
-    }
 
     template<typename T, int d>
     void test_construct_1(){
         emu::mdcontainer<T, emu::_nd<d>> con;
-        EXPECT_EQ(con.data_handle(), nullptr);
-        EXPECT_EQ(con.size(), 0);
-        EXPECT_EQ(con.use_count(), 0);
+        check(con, 0, 0, (T*)nullptr);
     };
 
-    template<typename T, typename ... OtherIndexTypes>
-    void test_construct_2(int n, OtherIndexTypes... exts){
+    template<typename T, int ... exts>
+    void test_construct_2(){
+        int cpt = 1;
         constexpr std::size_t d = sizeof...(exts);
-        std::vector<T> v(n,1);
+        size_t size = (1 * ... * exts);
+
+        std::vector<T> v(size,1);
         T * ptr = v.data();
-        emu::mdcontainer<T,emu::_nd<d>> con(v.data(),std::move(v),exts...);
-        EXPECT_EQ(con.data_handle(), ptr);
-        EXPECT_EQ(con.size(), n);
-        EXPECT_EQ(con.use_count(), 1);
+        emu::mdcontainer<T,emu::_nd<d>> con(std::move(v),exts...);
+        check(con, size, cpt, ptr);
     };
 
-    template<typename T, typename ... OtherIndexTypes>
-    void test_construct_3(OtherIndexTypes... exts){
-        constexpr std::size_t d = sizeof...(OtherIndexTypes);
+    template<typename T, int ... exts>
+    void test_construct_3(){
+        int cpt = 1;
+        constexpr std::size_t d = sizeof...(exts);
+        size_t size = (1 * ... * exts);
         auto dims = std::array{exts...};
+
         emu::span sdims = dims;
-        int n=1;
-        for(int i=0;i<d;i++){n = n*dims[i];}
-        std::vector<T> v(n,1);
+        std::vector<T> v(size, 1);
         T * ptr = v.data();
-        emu::mdcontainer<T,emu::_nd<d>> con(v.data(),std::move(v),sdims);
-        EXPECT_EQ(con.data_handle(), ptr);
-        EXPECT_EQ(con.size(), n);
-        EXPECT_EQ(con.use_count(), 1);
-        for(int i=0;i<d;i++){EXPECT_EQ(con.extents().extent(i),dims[i]);}
+        emu::mdcontainer<T,emu::_nd<d>> con(std::move(v),sdims);
+        check(con, size, cpt, ptr, dims);
     };
 
-    template<typename T, typename ... OtherIndexTypes>
-    void test_construct_4(OtherIndexTypes... exts){
-        constexpr std::size_t d = sizeof...(OtherIndexTypes);
+    template<typename T, int ... exts>
+    void test_construct_4(){
+        int cpt = 1;
+        constexpr std::size_t d = sizeof...(exts);
+        size_t size = (1 * ... * exts);
         auto dims = std::array{exts...};
-        int n=1;
-        for(int i=0;i<d;i++){n = n*dims[i];}
-        std::vector<T> v(n,1);
+
+        std::vector<T> v(size,cpt);
         T * ptr = v.data();
 
-        emu::mdcontainer<T,emu::_nd<d>> con(ptr,std::move(v),dims);
-        EXPECT_EQ(con.data_handle(), ptr);
-        EXPECT_EQ(con.size(), n);
-        EXPECT_EQ(con.use_count(), 1);
-        fmt::print("{}\n",emu::info(con));
-        for(int i=0;i<d;i++){EXPECT_EQ(con.extents().extent(i),dims[i]);}
+        emu::mdcontainer<T,emu::_nd<d>> con(std::move(v),dims);
+        check(con, size, cpt, ptr, dims);
     };
 
+    template<typename T, int ... exts>
+    void test_construct_5(){
+        int cpt = 1;
+        constexpr std::size_t d = sizeof...(exts);
+        size_t size = (1 * ... * exts);
+        auto dims = std::array{exts...};
 
+        std::vector<T> v(size,1);
+        T * ptr = v.data();
 
-template<emu::cpts::mdspan S>
-void check(S span){}
+        emu::extents ext_t(exts...);
+        emu::mdcontainer<T,emu::_nd<d>> con(std::move(v),ext_t);
+        check(con, size, cpt, ptr, dims);
+    };
+
+    template<typename T, int ... exts>
+    void test_construct_6(){
+        int cpt = 1;
+        constexpr std::size_t d = sizeof...(exts);
+        size_t size = (1 * ... * exts);
+        auto dims = std::array{exts...};
+
+        std::vector<T> v(size,1);
+        T * ptr = v.data();
+
+        using mdc = emu::mdcontainer<T, emu::_nd<d>>;
+        using mapping_t = typename mdc::mapping_type;
+
+        emu::extents ext_t(exts...);
+        mapping_t mapping(ext_t);
+        emu::mdcontainer<T,emu::_nd<d>> con(std::move(v),mapping);
+        check(con, size, cpt, ptr, dims);
+    };
+
 
     TEST(MdContainer, Constructors)
     {
         {
-            emu::mdcontainer_0d<int> con(0);
-            emu::mdspan_0d<int> spa(0);
-            EXPECT_EQ(con.data_handle(), nullptr);
-            EXPECT_EQ(con.size(), 1);
-            EXPECT_EQ(con.use_count(), 0);
-            check(spa);
-        }
-        {
-        // constructor (1) mdspan()
+        // constructor (1)
             test_construct_1<int,1>();
             test_construct_1<int,2>();
             test_construct_1<int,3>();
         }
         {
-            // (2) explicit mdspan( data_handle_type p, OtherIndexTypes... exts );
-            test_construct_2<int>(12,12);
-            test_construct_2<int>(12,2,6);
-            test_construct_2<int>(12,2,3,2);
+            // (2)
+            test_construct_2<int,2>();
+            test_construct_2<int,2,3>();
+            test_construct_2<int,2,3,2>();
         }
         {
-            // (4) explicit mdspan( data_handle_type p, OtherIndexTypes... exts );
-            test_construct_3<int>(12);
-            test_construct_3<int>(2,6);
-            test_construct_3<int>(2,3,2);
+            // (3)
+            test_construct_3<int,2>();
+            test_construct_3<int,2,3>();
+            test_construct_3<int,2,3,2>();
         }
         {
-            // (4) explicit mdspan( data_handle_type p, OtherIndexTypes... exts );
-            test_construct_4<int>(12);
-            test_construct_4<int>(2,6);
-            test_construct_4<int>(2,3,2);
+            // (4)
+            test_construct_4<int,2>();
+            test_construct_4<int,2,3>();
+            test_construct_4<int,2,3,2>();
+        }
+        {
+            // (5)
+            test_construct_5<int,2>();
+            test_construct_5<int,2,3>();
+            test_construct_5<int,2,3,2>();
+        }
+        {
+            // (6)
+            test_construct_6<int,2>();
+            test_construct_6<int,2,3>();
+            test_construct_6<int,2,3,2>();
         }
     }
 
-    template<typename T, typename ... OtherIndexTypes>
-    void test_make(OtherIndexTypes... exts){
-        constexpr std::size_t n = sizeof...(exts);
-        std::size_t size=1;
-        for(auto e :{exts...}){size = size*e;}
-        auto con = emu::make_container<int>(exts...);
-        EXPECT_EQ(con.size(), size);
-        EXPECT_EQ(con.use_count(), 1);
+    template<typename T, int ... exts>
+    void test_make_2(){
+        int cpt = 1;
+        constexpr std::size_t d = sizeof...(exts);
+        size_t size = (1 * ... * exts);
+        auto dims = std::array{exts...};
+
+        auto con = emu::make_mdcontainer<T>(exts...);
+        check(con, size, cpt, dims);
     };
-    template<typename T, typename OtherIndexTypes, std::size_t N>
-    void test_make(const emu::span<OtherIndexTypes, N>& exts){
-        std::size_t size=1;
-        for(auto e :exts){size = size*e;}
-        auto con = emu::make_container<int>(exts);
-        EXPECT_EQ(con.size(), size);
-        EXPECT_EQ(con.use_count(), 1);
+    
+    template<typename T, int ... exts>
+    void test_make_3(){
+        int cpt = 1;
+        constexpr std::size_t d = sizeof...(exts);
+        size_t size = (1 * ... * exts);
+        auto dims = std::array{exts...};
+
+        emu::span sdims = dims;
+        auto con = emu::make_mdcontainer<T>(sdims);
+
+        check(con, size, cpt, dims);
+    };
+
+    template<typename T, int ... exts>
+    void test_make_4(){
+        int cpt = 1;
+        constexpr std::size_t d = sizeof...(exts);
+        size_t size = (1 * ... * exts);
+        auto dims = std::array{exts...};
+
+        auto con = emu::make_mdcontainer<T>(dims);
+
+        check(con, size, cpt, dims);
+    };
+
+    template<typename T, int ... exts>
+    void test_make_5(){
+        int cpt = 1;
+        constexpr std::size_t d = sizeof...(exts);
+        size_t size = (1 * ... * exts);
+        auto dims = std::array{exts...};
+
+        const emu::_nd<d> ext_t(exts...);
+        auto con = emu::make_mdcontainer<T,d>(ext_t);
+
+
+        check(con, size, cpt, dims);
     };
 
     TEST(MdContainer, make_mdcontainer)
     {
         {
-            test_make<int>(12);
-            test_make<int>(2,6);
-            test_make<int>(2,3,2);
+            test_make_2<int,2>();
+            test_make_2<int,2,3>();
+            test_make_2<int,2,3,2>();
         }
         {
-            auto d1 = std::array{12};
-            emu::span ext1 = d1 ;
-            test_make<int>(ext1);
-
-            auto d2 = std::array{2,6};
-            emu::span ext2 = d2 ;
-            test_make<int>(ext2);
-
-            auto d3 = std::array{2,3,2};
-            emu::span ext3 = d3 ;
-            test_make<int>(ext3);
-
+            test_make_3<int,2>();
+            test_make_3<int,2,3>();
+            test_make_3<int,2,3,2>();
         }
-//        {
-//            auto d1 = emu::make_container<std::size_t>(1);
-//            d1[0]=12;
-//            test_make<int>((emu::span<int>)d1);
-//
-//        }
+        {
+            test_make_4<int,2>();
+            test_make_4<int,2,3>();
+            test_make_4<int,2,3,2>();
+        }
+        {
+            test_make_5<int,2>();
+            test_make_5<int,2,3>();
+            test_make_5<int,2,3,2>();
+        }
     }
 
 }

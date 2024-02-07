@@ -178,7 +178,8 @@ namespace cpts
         template<typename DataHolder >
             requires (not cpts::mdcontainer<DataHolder>)
         mdcontainer(DataHolder &&dh, const mapping_type &m )
-            : mdcontainer(std::ranges::data(dh),EMU_FWD(dh)){}
+            : mdcontainer(std::ranges::data(dh),EMU_FWD(dh),m)
+        {}
 
         /*constructor (7)*/
         template<typename DataHolder>
@@ -294,35 +295,67 @@ namespace cpts
 
     /***************************************************/
     /* factories */
+    /*constructor 2 (exts)*/
     template<typename T,
              typename LayoutPolicy = layout_right,
              typename AccessorPolicy = default_accessor<T>,
-             typename ...Extents>
-    mdcontainer<T, emu::_nd< sizeof...(Extents)>,LayoutPolicy,AccessorPolicy>
-    make_mdcontainer(Extents... exts){
-        constexpr std::size_t nd = sizeof...(Extents);
-        std::size_t size=1;
-        for(auto e :{exts...}){size = size*e;}
+             typename ...OtherIndexTypes>
+    mdcontainer<T, emu::_nd< sizeof...(OtherIndexTypes)>,LayoutPolicy,AccessorPolicy>
+    make_mdcontainer(OtherIndexTypes... exts){
+        constexpr std::size_t nd = sizeof...(OtherIndexTypes);
+        size_t size = (1 * ... * exts);
         auto u_ptr = std::make_unique<T[]>(size );
         return mdcontainer<T, emu::_nd<nd>, LayoutPolicy, AccessorPolicy>(u_ptr.get(), std::move(u_ptr),exts...);
     }
 
-//,
+    /*constructor 3 (span<exts>)*/
     template<typename T,
              typename LayoutPolicy = layout_right,
              typename AccessorPolicy = default_accessor<T>,
              typename OtherIndexType,
              std::size_t N>
-    mdcontainer<T, emu::_nd<N>,LayoutPolicy,AccessorPolicy> make_container(
-            const emu::span<OtherIndexType, N>& exts){
-
-        std::size_t size=1;
-        for(auto e :exts){size = size*e;}
+    mdcontainer<T, emu::_nd<N>,LayoutPolicy,AccessorPolicy>
+    make_mdcontainer(const emu::span<OtherIndexType, N>& exts){
+        std::size_t size = 1;
+        for(auto e :exts ){size = size * e;}
         auto u_ptr = std::make_unique<T[]>(size );
         return mdcontainer<T, emu::_nd<N>, LayoutPolicy, AccessorPolicy>(
             u_ptr.get(), std::move(u_ptr),exts);
     }
 
+    /*constructor 4 (array<exts>)*/
+    template<typename T,
+             typename LayoutPolicy = layout_right,
+             typename AccessorPolicy = default_accessor<T>,
+             typename OtherIndexType,
+             std::size_t N>
+    mdcontainer<T, emu::_nd<N>,LayoutPolicy,AccessorPolicy>
+    make_mdcontainer(const std::array<OtherIndexType, N>& exts){
+
+        std::size_t size = 1;
+        for(auto e :exts ){size = size * e;}
+        auto u_ptr = std::make_unique<T[]>(size );
+        return mdcontainer<T, emu::_nd<N>, LayoutPolicy, AccessorPolicy>(
+            u_ptr.get(), std::move(u_ptr),exts);
+    }
+
+    /*constructor 5 (dextents<std::size_t, N>)*/
+    template<typename T,
+             std::size_t N,
+             typename LayoutPolicy = layout_right,
+             typename AccessorPolicy = default_accessor<T>
+             >
+    mdcontainer<T, _nd<N>,LayoutPolicy,AccessorPolicy>
+    make_mdcontainer(const _nd<N> &exts){
+
+        std::size_t size = 1;
+        for(int i=0;i<N;i++){
+            size *= exts.extent(i);
+        }
+        auto u_ptr = std::make_unique<T[]>(size );
+        return mdcontainer<T, _nd<N>, LayoutPolicy, AccessorPolicy>(
+            u_ptr.get(), std::move(u_ptr),exts);
+    }
 
 //    template< class T, std::size_t N >
 //    auto as_bytes( container<T, N> c ) noexcept {
