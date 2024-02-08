@@ -54,7 +54,8 @@ namespace
 
         std::vector<T> v(size,1);
         T * ptr = v.data();
-        emu::mdcontainer<T,emu::_nd<d>> con(std::move(v),exts...);
+        emu::mdcontainer con(std::move(v),exts...);
+
         check(con, size, cpt, ptr);
     };
 
@@ -68,7 +69,8 @@ namespace
         emu::span sdims = dims;
         std::vector<T> v(size, 1);
         T * ptr = v.data();
-        emu::mdcontainer<T,emu::_nd<d>> con(std::move(v),sdims);
+        emu::mdcontainer con(std::move(v),sdims);
+
         check(con, size, cpt, ptr, dims);
     };
 
@@ -81,8 +83,8 @@ namespace
 
         std::vector<T> v(size,cpt);
         T * ptr = v.data();
+        emu::mdcontainer con(std::move(v),dims);
 
-        emu::mdcontainer<T,emu::_nd<d>> con(std::move(v),dims);
         check(con, size, cpt, ptr, dims);
     };
 
@@ -95,9 +97,9 @@ namespace
 
         std::vector<T> v(size,1);
         T * ptr = v.data();
-
         emu::extents ext_t(exts...);
-        emu::mdcontainer<T,emu::_nd<d>> con(std::move(v),ext_t);
+        emu::mdcontainer con(std::move(v),ext_t);
+
         check(con, size, cpt, ptr, dims);
     };
 
@@ -110,13 +112,12 @@ namespace
 
         std::vector<T> v(size,1);
         T * ptr = v.data();
-
         using mdc = emu::mdcontainer<T, emu::_nd<d>>;
         using mapping_t = typename mdc::mapping_type;
-
         emu::extents ext_t(exts...);
         mapping_t mapping(ext_t);
-        emu::mdcontainer<T,emu::_nd<d>> con(std::move(v),mapping);
+        emu::mdcontainer con(std::move(v),mapping);
+
         check(con, size, cpt, ptr, dims);
     };
 
@@ -169,9 +170,10 @@ namespace
         auto dims = std::array{exts...};
 
         auto con = emu::make_mdcontainer<T>(exts...);
+
         check(con, size, cpt, dims);
     };
-    
+
     template<typename T, int ... exts>
     void test_make_3(){
         int cpt = 1;
@@ -207,6 +209,22 @@ namespace
         const emu::_nd<d> ext_t(exts...);
         auto con = emu::make_mdcontainer<T,d>(ext_t);
 
+        check(con, size, cpt, dims);
+    };
+
+    template<typename T, int ... exts>
+    void test_make_6(){
+        int cpt = 1;
+        constexpr std::size_t d = sizeof...(exts);
+        size_t size = (1 * ... * exts);
+        auto dims = std::array{exts...};
+
+        using mdc = emu::mdcontainer<T, emu::_nd<d>>;
+        using mapping_t = typename mdc::mapping_type;
+
+        emu::extents ext_t(exts...);
+        const mapping_t mapping(ext_t);
+        auto con = emu::make_mdcontainer<T>(mapping);
 
         check(con, size, cpt, dims);
     };
@@ -232,6 +250,11 @@ namespace
             test_make_5<int,2>();
             test_make_5<int,2,3>();
             test_make_5<int,2,3,2>();
+        }
+        {
+            test_make_6<int,2>();
+            test_make_6<int,2,3>();
+            test_make_6<int,2,3,2>();
         }
     }
 
