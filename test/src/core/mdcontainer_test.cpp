@@ -1,11 +1,11 @@
 #include <gtest/gtest.h>
+#include <gmock/gmock.h>
 #include <utility_test.hpp>
 #include <vector>
 
 #include <emu/container.hpp>
 #include <emu/mdcontainer.hpp>
 #include <emu/scoped.hpp>
-
 
 #include <emu/info.hpp>
 
@@ -69,7 +69,7 @@ namespace
         emu::span sdims = dims;
         std::vector<T> v(size, 1);
         T * ptr = v.data();
-        emu::mdcontainer con(std::move(v),sdims);
+        emu::mdcontainer con(std::move(v), sdims);
 
         check(con, size, cpt, ptr, dims);
     };
@@ -256,6 +256,30 @@ namespace
             test_make_6<int,2,3>();
             test_make_6<int,2,3,2>();
         }
+    }
+
+    TEST(MdContainer, container_info)
+    {
+        auto con = emu::make_mdcontainer<int>(std::array{2,3,2});
+
+        auto str = fmt::to_string(emu::info(con));
+
+        using testing::StartsWith;
+        EXPECT_THAT(str, StartsWith("mdspan<int, [dyn, dyn, dyn, C/right]>"));
+    }
+
+    TEST(MdContainer, submdcontainer)
+    {
+        auto con = emu::make_mdcontainer<int>(std::array{2,3,2});
+
+        EXPECT_EQ(con.rank(), 3);
+        EXPECT_EQ(con.use_count(), 1);
+
+        auto sub = emu::submdcontainer(con, 0);
+
+        EXPECT_EQ(sub.rank(), 2);
+        EXPECT_EQ(con.use_count(), 2);
+        EXPECT_EQ(sub.use_count(), 2);
     }
 
 }

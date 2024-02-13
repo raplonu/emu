@@ -3,13 +3,12 @@
 #include <emu/fwd.hpp>
 #include <emu/concepts.hpp>
 #include <emu/span.hpp>
+#include <emu/type_name.hpp>
 
 #include <experimental/mdspan>
 
 #include <fmt/core.h>
 #include <fmt/ranges.h>
-
-#include <boost/core/demangle.hpp>
 
 #include <string_view>
 
@@ -64,8 +63,6 @@ namespace emu
     template<typename ElementType> using mdspan_1d_s = mdspan<ElementType, _1d, layout_stride>;
     template<typename ElementType> using mdspan_2d_s = mdspan<ElementType, _2d, layout_stride>;
     template<typename ElementType> using mdspan_3d_s = mdspan<ElementType, _3d, layout_stride>;
-
-    using stdex::submdspan;
 
     template<typename LayoutPolicy> inline const char* layout_name() { return "unknow"; }
     template<> inline const char* layout_name<layout_right>() { return "C/right"; }
@@ -122,7 +119,7 @@ namespace detail
 
     template<typename Map>
     auto extent(const Map& m, std::string_view sep = ", ") {
-        return detail::extent_t{m, sep};
+        return detail::extent_t<Map>{m, sep};
     }
 
     template<cpts::mdspan MdSpan>
@@ -224,6 +221,31 @@ namespace spe
     };
 
 } // namespace spe
+
+    /**
+     * @brief Select a submdspan from a mdspan.
+     *
+     * Contrary to stdex::submdspan this function does not requires to provide the full_extent for the non selected dimensions.
+     *
+     * @tparam ElementType
+     * @tparam Extents
+     * @tparam LayoutPolicy
+     * @tparam AccessorPolicy
+     * @tparam SliceSpecifiers
+     * @param src The source mdspan.
+     * @param slices The slices to select.
+     * @return A new mdspan with the selected slices.
+     */
+    template <class ElementType, class Extents, class LayoutPolicy,
+          class AccessorPolicy, class... SliceSpecifiers>
+    constexpr auto submdspan(
+        const mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy> &src,
+        SliceSpecifiers... slices)
+    {
+        return [&]<std::size_t... Is>(std::index_sequence<Is...>) {
+            return stdex::submdspan(src, slices..., ((void)Is, full_extent)...);
+        } (std::make_index_sequence<Extents::rank() - sizeof...(SliceSpecifiers)>{});
+    }
 
 } // namespace emu
 

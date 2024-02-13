@@ -55,7 +55,7 @@ namespace cpts
 
     template<typename T>
     // the only thing that determine a layout is the inner mapping type.
-    concept layout = mapping< typename T::mapping<std::experimental::extents<std::size_t>> >;
+    concept layout = mapping< typename T::template mapping<std::experimental::extents<std::size_t>> >;
 
     // template<typename T>
     // concept array = std::same_as<T, std::array<typename T::value_type, std::tuple_size_v<T>>>;

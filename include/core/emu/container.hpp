@@ -18,13 +18,7 @@ namespace cpts
 
     // Check if T is a container or derived from one.
     template<typename T>
-    concept container = std::derived_from<
-        std::decay_t<T>,
-        emu::container<
-            typename std::decay_t<T>::element_type,
-            std::decay_t<T>::extent
-        >
-    >;
+    concept container = std::derived_from< T, emu::container< typename T::element_type, T::extent > >;
 
 } // namespace cpts
 

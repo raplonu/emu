@@ -1,52 +1,16 @@
 #pragma once
 
-//#include <container.hpp>
-
 #include <emu/concepts.hpp>
 #include <emu/capsule.hpp>
 #include <emu/mdspan.hpp>
+#include <emu/type_name.hpp>
 
-
-#include <experimental/mdspan>
 #include <memory>
 #include <span>
 #include <ranges>
 
-
 namespace emu
 {
-    // struct capsule defined in container.hpp
-        namespace stdex = std::experimental;
-
-    using stdex::layout_right;
-    using stdex::layout_left;
-    using stdex::layout_stride;
-
-    using layout_c = layout_right;
-    using layout_f = layout_left;
-
-    using layout_row    = layout_right;
-    using layout_column = layout_left;
-
-    using stdex::default_accessor;
-
-    using stdex::dextents;
-
-    using stdex::extents;
-
-    using stdex::full_extent_t;
-    using stdex::full_extent;
-
-
-    template<std::size_t N>
-    using _nd = dextents<std::size_t, N>;
-
-    using _0d = _nd<0>;
-    using _1d = _nd<1>;
-    using _2d = _nd<2>;
-    using _3d = _nd<3>;
-
-    using stdex::mdspan;
 
     template<typename T,
              typename Extents,
@@ -54,7 +18,6 @@ namespace emu
              typename AccessorPolicy = default_accessor<T>
              >
     struct mdcontainer;
-
 
     template<typename T> using mdcontainer_0d   = mdcontainer<T, _0d>;
 
@@ -80,12 +43,12 @@ namespace cpts
     // Check if T is a container or derived from one.
     template<typename T>
     concept mdcontainer = std::derived_from<
-        std::decay_t<T>,
+        T,
         emu::mdcontainer<
-            typename std::decay_t<T>::element_type,
-            typename std::decay_t<T>::extents_type,
-            typename std::decay_t<T>::layout_type,
-            typename std::decay_t<T>::accessor_type
+            typename T::element_type,
+            typename T::extents_type,
+            typename T::layout_type,
+            typename T::accessor_type
         >
     >;
 
@@ -108,120 +71,145 @@ namespace cpts
         using data_handle_type  = typename base::data_handle_type;
         using reference         = typename base::reference;
 
-
-
-
         // constexpr static std::size_t extent = base::extent;
+
+        static constexpr std::size_t rank() noexcept { return extents_type::rank(); }
+        static constexpr std::size_t rank_dynamic() noexcept { return extents_type::rank_dynamic(); }
+        static constexpr std::size_t static_extent(std::size_t r) noexcept { return extents_type::static_extent(r); }
 
         emu::capsule capsule;
 
-        using base::base;
-
-        /* constructor (1)*/
+        /***************************************************/
+        /* default constructor (1)*/
         constexpr mdcontainer() = default;
 
-        /* constructor (2)*/
-        template<typename DataHolder, typename ... OtherIndexTypes>
-            requires(  (not cpts::mdcontainer<DataHolder>)
-                    && (std::is_convertible_v<OtherIndexTypes, std::size_t> && ...)
-                    && sizeof...(OtherIndexTypes) > 0)
-        mdcontainer(T* ptr, DataHolder&& dh,  OtherIndexTypes... exts)
-            : base(ptr, exts...)
+        /***************************************************/
+        /* variadic constructor (2)*/
+        template<
+            typename DataHolder
+          , typename ... OtherIndexTypes
+        >
+        requires(
+            (not cpts::mdcontainer<DataHolder>)
+         && (std::is_convertible_v<OtherIndexTypes, index_type> && ...)
+         && (sizeof...(OtherIndexTypes) == rank()) || (sizeof...(OtherIndexTypes) == rank_dynamic())
+        )
+        mdcontainer(data_handle_type p, DataHolder&& dh,  OtherIndexTypes... exts)
+            : base(p, exts...)
             , capsule(EMU_FWD(dh))
         {}
 
         template<std::ranges::contiguous_range DataHolder, typename ... OtherIndexTypes>
-            requires (not cpts::mdcontainer<DataHolder>)
-        mdcontainer(DataHolder&& dh,  OtherIndexTypes... exts)
-            : mdcontainer(std::ranges::data(dh),EMU_FWD(dh),exts...){}
+        mdcontainer(DataHolder&& dh, OtherIndexTypes... exts)
+            : mdcontainer(std::ranges::data(dh),EMU_FWD(dh), exts...)
+        {}
 
-        /*constructor (3)*/
-        template<typename DataHolder, class OtherIndexType, std::size_t N >
-            constexpr explicit(N != Extents::rank_dynamic())
-        mdcontainer( T* ptr, DataHolder &&dh, const emu::span<OtherIndexType, N>& exts )
-            : base(ptr, exts)
+        /***************************************************/
+        /*span constructor (3)*/
+        template<
+            typename DataHolder,
+            typename OtherIndexType,
+            std::size_t N
+        >
+        requires (
+            (not cpts::mdcontainer<DataHolder>)
+         && (std::is_convertible_v<OtherIndexType, index_type>)
+         && (N == rank()) || (N == rank_dynamic())
+        )
+        explicit(N != Extents::rank_dynamic())
+        constexpr mdcontainer(
+            data_handle_type p,
+            DataHolder &&dh,
+            const std::span<OtherIndexType, N>& exts
+        )
+            : base(p, exts)
             , capsule(EMU_FWD(dh))
         {}
 
-        template<typename DataHolder, class OtherIndexType, std::size_t N >
-            requires (not cpts::mdcontainer<DataHolder>)
-            constexpr explicit(N != Extents::rank_dynamic())
-        mdcontainer(DataHolder &&dh, const emu::span<OtherIndexType, N>& exts )
+        template<std::ranges::contiguous_range DataHolder, class OtherIndexType, std::size_t N >
+        constexpr mdcontainer(DataHolder &&dh, emu::span<OtherIndexType, N> exts )
             : mdcontainer(std::ranges::data(dh),EMU_FWD(dh), exts)
         {}
 
-        /*constructor (4)*/
+        /***************************************************/
+        /* array constructor (4)*/
         template<typename DataHolder, class OtherIndexType, std::size_t N >
-            constexpr explicit(N != Extents::rank_dynamic())
-        mdcontainer( T* ptr, DataHolder &&dh, const std::array<OtherIndexType, N>& exts )
-            : base(ptr,exts),
+        requires (
+            (not cpts::mdcontainer<DataHolder>)
+         && (std::is_convertible_v<OtherIndexType, index_type>)
+         && (N == rank()) || (N == rank_dynamic())
+        )
+        explicit(N != Extents::rank_dynamic())
+        constexpr mdcontainer( data_handle_type p, DataHolder &&dh, const std::array<OtherIndexType, N>& exts )
+            : base(p,exts),
               capsule(EMU_FWD(dh))
         {}
 
-        template<typename DataHolder, class OtherIndexType, std::size_t N >
-            requires (not cpts::mdcontainer<DataHolder>)
-            constexpr explicit(N != Extents::rank_dynamic())
-        mdcontainer( DataHolder &&dh, const std::array<OtherIndexType, N>& exts )
+        template<std::ranges::contiguous_range DataHolder, class OtherIndexType, std::size_t N >
+        explicit(N != Extents::rank_dynamic())
+        constexpr mdcontainer( DataHolder &&dh, const std::array<OtherIndexType, N>& exts )
             : mdcontainer(std::ranges::data(dh),EMU_FWD(dh), exts)
         {}
 
+        /***************************************************/
         /*constructor (5)  */
         template<typename DataHolder>
-        constexpr mdcontainer( T* ptr, DataHolder &&dh, const extents_type& ext )
-            : base(ptr,ext),
-              capsule(EMU_FWD(dh))
+        requires (not cpts::mdcontainer<DataHolder>)
+        constexpr mdcontainer( data_handle_type p, DataHolder &&dh, const extents_type& ext )
+            : base(p,ext)
+            , capsule(EMU_FWD(dh))
         {}
 
-        template<typename DataHolder>
-            requires (not cpts::mdcontainer<DataHolder>)
+        template<std::ranges::contiguous_range DataHolder>
         constexpr mdcontainer(DataHolder &&dh, const extents_type& ext )
             : mdcontainer(std::ranges::data(dh),EMU_FWD(dh), ext)
         {}
 
+        /***************************************************/
         /*constructor (6)*/
         template<typename DataHolder >
-        mdcontainer( T* ptr, DataHolder &&dh, const mapping_type &m )
-            : base(ptr,m),
-              capsule(EMU_FWD(dh))
+        requires (not cpts::mdcontainer<DataHolder>)
+        mdcontainer( data_handle_type p, DataHolder &&dh, const mapping_type &m )
+            : base(p,m)
+            , capsule(EMU_FWD(dh))
         {}
 
-        template<typename DataHolder >
-            requires (not cpts::mdcontainer<DataHolder>)
+        template<std::ranges::contiguous_range DataHolder >
         mdcontainer(DataHolder &&dh, const mapping_type &m )
             : mdcontainer(std::ranges::data(dh),EMU_FWD(dh),m)
         {}
 
+        /***************************************************/
         /*constructor (7)*/
-        // ! untested
         template<typename DataHolder>
-        mdcontainer( T* ptr, DataHolder &&dh, const mapping_type &m, const accessor_type &a)
-            : base(ptr,m,a),
+        requires (not cpts::mdcontainer<DataHolder>)
+        mdcontainer( data_handle_type p, DataHolder &&dh, const mapping_type &m, const accessor_type &a)
+            : base(p, m, a),
               capsule(EMU_FWD(dh))
         {}
 
-        template<typename DataHolder>
-            requires (not cpts::mdcontainer<DataHolder>)
+        template<std::ranges::contiguous_range DataHolder>
         mdcontainer(DataHolder &&dh, const mapping_type &m, const accessor_type &a)
             : mdcontainer(std::ranges::data(dh),EMU_FWD(dh),m,a)
         {}
 
+        /***************************************************/
         /*constructor (8)*/
         // TODO ?
 
-        /*constructor (9)*/
+        /***************************************************/
+        /* copy & move constructor (9)*/
         constexpr mdcontainer( const mdcontainer& rhs ) = default;
-
-        /*constructor (10)*/
         constexpr mdcontainer( mdcontainer&& rhs ) = default;
 
-        template<typename DataHolder>
-            requires (not cpts::container<DataHolder>)
-        mdcontainer(base s, DataHolder&& dh)
-            : base(s)
-            , capsule(EMU_FWD(dh))
-        {}
+        // template<typename DataHolder>
+        //     requires (not cpts::container<DataHolder>)
+        // mdcontainer(base s, DataHolder&& dh)
+        //     : base(s)
+        //     , capsule(EMU_FWD(dh))
+        // {}
 
-        mdcontainer(base s, emu::capsule capsule)
+        mdcontainer(const base& s, emu::capsule capsule)
             : base(s), capsule(std::move(capsule))
         {}
 
@@ -247,8 +235,11 @@ namespace cpts
         using base::is_always_exhaustive;
         using base::is_always_strided;
 
+        constexpr index_type extent(std::size_t r) const noexcept { return extents().extent(r); };
+
         /*accessors*/
         using base::operator();
+
 
     };
 
@@ -256,9 +247,12 @@ namespace cpts
     /***************************************************/
     // Deduction guide
 
-    /* constructor 2*/
+    /* variadic constructor 2*/
     template<std::ranges::contiguous_range  D, class ...Exts >
-    requires((std::is_convertible_v<Exts, std::size_t> && ...) && sizeof...(Exts) > 0)
+    requires(
+        (std::is_convertible_v<Exts, std::size_t> && ...)
+     && (sizeof...(Exts) > 0)
+    )
     mdcontainer(D&&, Exts... exts )
         ->  mdcontainer<std::ranges::range_value_t<D>, emu::dextents<std::size_t, sizeof...(exts)>>;
 
@@ -266,12 +260,14 @@ namespace cpts
     mdcontainer(T*, D&&, Exts... exts )
         ->  mdcontainer<T, emu::dextents<std::size_t, sizeof...(exts)>
                         >;
-    /* constructor 3*/
+    /* array constructor 3*/
     template<std::ranges::contiguous_range  D, class Exts, std::size_t N>
+        requires(N != std::dynamic_extent)
     mdcontainer(D&&, const std::span<Exts, N>& )
         ->  mdcontainer<std::ranges::range_value_t<D>, emu::dextents<std::size_t, N>>;
 
     template<class T, class D, class Exts, std::size_t N>
+        requires(N != std::dynamic_extent)
     mdcontainer(T*, D&&, const std::span<Exts, N>&  )
         ->  mdcontainer<T, emu::dextents<std::size_t, N>>;
 
@@ -302,6 +298,9 @@ namespace cpts
         ->  mdcontainer<std::ranges::range_value_t<D>,typename MappingType::extents_type,
                         typename MappingType::layout_type>;
 
+    template<typename T, typename Extents, typename LayoutPolicy, typename AccessorPolicy>
+    mdcontainer(const mdspan<T, Extents, LayoutPolicy, AccessorPolicy>&, emu::capsule)
+        -> mdcontainer<T, Extents, LayoutPolicy, AccessorPolicy>;
 
     /***************************************************/
     /* factories */
@@ -330,7 +329,7 @@ namespace cpts
     mdcontainer<T, emu::_nd<N>,LayoutPolicy,AccessorPolicy>
     make_mdcontainer(const emu::span<OtherIndexType, N>& exts){
         std::size_t size = 1;
-        for(auto e :exts ){size = size * e;}
+        for(auto e : exts ){size = size * e;}
         auto u_ptr = std::make_unique<T[]>(size );
         return mdcontainer<T, emu::_nd<N>, LayoutPolicy, AccessorPolicy>(u_ptr.get(),
             std::move(u_ptr),exts);
@@ -382,42 +381,23 @@ namespace cpts
     /*constructor 7*/
     //TODO if need be
 
+    template <class ElementType, class Extents, class LayoutPolicy,
+          class AccessorPolicy, class... SliceSpecifiers>
+    constexpr auto submdcontainer(
+        const mdcontainer<ElementType, Extents, LayoutPolicy, AccessorPolicy> &src,
+        SliceSpecifiers... slices)
+    {
+        return mdcontainer(emu::submdspan(src, EMU_FWD(slices)...), src.capsule);
+    }
 
 namespace spe
 {
     template <typename ElementType, typename Extents, typename LayoutPolicy,
               typename AccessorPolicy>
     struct info_t< mdcontainer<ElementType, Extents, LayoutPolicy, AccessorPolicy> >
+        : info_t<mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy>>
     {
-        using type = mdcontainer<ElementType, Extents, LayoutPolicy, AccessorPolicy>;
-
-        constexpr auto format_type(fmt::format_context::iterator it) const {
-            return []<std::size_t...Is>(fmt::format_context::iterator it,
-                                        std::index_sequence<Is...>) {
-                it = fmt::format_to(it, "mdcontainer<{}, [",
-                    boost::core::demangle(typeid(ElementType).name()));
-
-                bool first = true;
-                for (auto e : std::array{type::static_extent(Is)...}) {
-                    if (not first) it = fmt::format_to(it, ", "); else first = false;
-                    it = detail::format_extent(it, e);
-                }
-
-                return fmt::format_to(it, "], {}>", layout_name<LayoutPolicy>());
-
-            }(it, std::make_index_sequence<Extents::rank()>{});
-        }
-
-        constexpr auto format_value(const type &t, fmt::format_context::iterator it) const {
-            return [&]<std::size_t... Is>(std::index_sequence<Is...>) {
-                it = fmt::format_to(it, "@{} {}", fmt::ptr(t.data_handle()),
-                    std::array{t.extent(Is)...});
-                if constexpr (std::same_as<LayoutPolicy, layout_stride>) {
-                    it = fmt::format_to(it, "[{}]", std::array{t.stride(Is)...});
-                }
-                return it;
-            }(std::make_index_sequence<Extents::rank()>{});
-        }
+        //TODO: Adds the capsule info
     };
 
 } // namespace spe
