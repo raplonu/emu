@@ -104,11 +104,11 @@ namespace cpts
         }
 
         template< std::size_t Offset, std::size_t Count = std::dynamic_extent >
-        constexpr auto subspan() const {
+        constexpr auto subcontainer() const {
             return from_span(base::template subspan<Offset, Count>());
         }
 
-        constexpr auto subspan( size_type Offset, size_type Count = std::dynamic_extent ) const {
+        constexpr auto subcontainer( size_type Offset, size_type Count = std::dynamic_extent ) const {
             return from_span(base::subspan(Offset, Count));
         }
 

@@ -7,6 +7,7 @@
 #include <ranges>
 #include <array>
 #include <iterator>
+
 namespace emu
 {
 
@@ -42,6 +43,9 @@ namespace cuda
 
         span(const span&) noexcept = default;
         span(span&&) noexcept = default;
+
+        span(const base&) noexcept = delete;
+        span(base&&) noexcept = delete;
 
         constexpr span& operator=(const span&) noexcept = default;
         constexpr span& operator=(span&&) noexcept = default;
