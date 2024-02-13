@@ -6,9 +6,9 @@
 
 `emu` requires a c++20 compiler and the following tools:
 
-- [cmake](https://cmake.org/) >= 3.18 (or whatever)
+- [cmake](https://cmake.org/) >= 3.24
 - [cuda](https://developer.nvidia.com/cuda-toolkit) >= 12.1 (the one with device cuda graph feature)
-- [conan](https://conan.io/) >= 2.0.0 with cosmis remote using `conan remote add cosmic https://odp2.jfrog.io/artifactory/api/conan/cosmic`
+- [conan](https://conan.io/) >= 2.0.0 with cosmic remote using `conan remote add cosmic https://odp2.jfrog.io/artifactory/api/conan/cosmic`
 - [just](https://just.systems/) optional
 
 `emu` requires `cmake` and by default `conan` to install dependencies and build.
@@ -17,33 +17,42 @@ Also, we recommend to use `just` to simplify the build process.
 ## Build
 
 ```bash
+# install emu
 conan create . -b missing
-# install python
+# install emu-python
 conan create python -b missing
 ```
 
 or use `just install`.
 
-This will create `emu` packages in your local conan cache.
+This will create `emu` and `emu-python` packages in your local conan cache.
 
 ## Dev
 
 ```bash
-conan build . -b missing
 conan editable add .
+conan build . -b "missing"
 # dev python
-conan build python -b missing
 conan editable add python
+conan build python -b "missing;editable"
 ```
 
 or use `just dev`.
 
-This will configure and build the project in `build/Release` folder and adds `emu` as an editable package in your local conan cache.
+| Note: `missing` is used to build dependencies from source if binary is not available. `editable` is used to build local dependencies register using `conan editable add` command.
 
-For next build, just run:
+This will configure and build the project in `build/Release` folder by default and adds `emu` and `emu-python` as editable packages in your local conan cache. Other projects that rely on `emu` will compile and link against the lib and header in the current directory.
+
+For incremental build, just run:
 
 ```bash
 cmake --build --preset conan-release
+# cmake doesn't allow to build a specific directory with a preset
+(cd python; cmake --build --preset conan-release)
 ```
 
 or use `just build`.
+
+## Debug mode
+
+To use project in debug mode add `-s build_type=Debug` to `conan create` or `conan build` commands and `--preset conan-debug` to `cmake --build` commands.
