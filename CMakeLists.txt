@@ -114,4 +114,3 @@ if (BUILD_TESTING)
     add_subdirectory(test)
     message(CHECK_PASS "Done")
 endif()
-

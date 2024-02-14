@@ -19,11 +19,11 @@ dev *args:
 
 cpp-dev *args:
     conan editable add .
-    conan build . -b "missing;editable" {{args}}
+    conan build . -b missing {{args}}
 
 python-dev *args:
     conan editable add python
-    conan build python -b "missing;editable" {{args}}
+    conan build python -b missing {{args}}
 
 build build_type="release":
     just cpp-build {{build_type}}
