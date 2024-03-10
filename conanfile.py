@@ -28,7 +28,7 @@ class EmuConan(ConanFile):
 
     def requirements(self):
         self.requires('fmt/10.0.0', transitive_headers=True)
-        self.requires('boost/1.82.0', transitive_headers=True)
+        self.requires('boost/1.84.0', transitive_headers=True)
         self.requires('ms-gsl/4.0.0', transitive_headers=True)
         self.requires('mdspan/0.6.0', transitive_headers=True)
         self.requires('tl-expected/1.1.0', transitive_headers=True)
@@ -79,7 +79,7 @@ class EmuConan(ConanFile):
         cmake.install()
 
     def package_info(self):
-        self.cpp_info.components['core'].libs = ['emucore']      # Name of the library for the 'LibA' component
+        self.cpp_info.components['core'].libs = ['emucore']
         self.cpp_info.components['core'].requires = [
             'fmt::fmt',
             'boost::boost',
@@ -91,7 +91,7 @@ class EmuConan(ConanFile):
         ]
 
         if self.options.cuda:
-            # Conan does not provide a cuda "package". conan_cuda allows to retrive
+            # Conan does not provide a cuda "package". conan_cuda allows to retrieve
             # cuda lib dir and include dir and append it to emucuda
             cuda_prop = self.python_requires['conan_cuda'].module.properties()
 

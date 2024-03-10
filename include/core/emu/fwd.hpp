@@ -2,6 +2,15 @@
 
 #include <cstddef>
 
+namespace std
+{
+
+    template <typename T>
+    struct optional;
+
+} // namespace std
+
+
 namespace std::experimental
 {
 
@@ -16,6 +25,17 @@ namespace std::experimental
     class mdspan;
 
 } // namespace std::experimental
+
+namespace tl
+{
+
+    template <typename T>
+    struct optional;
+
+    template <typename T, typename E>
+    struct expected;
+
+} // namespace tl
 
 namespace emu
 {

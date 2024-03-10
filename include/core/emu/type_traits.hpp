@@ -58,4 +58,18 @@ namespace detail
     template<typename T>
     constexpr bool is_extents = detail::is_extents<T>::value;
 
+    template<typename... Ts>
+    struct type_pack {};
+
+    template<typename T>
+    using make_type_pack_from_tuple = decltype([]<typename... Ts>(std::tuple<Ts...>) { return type_pack<Ts...>{}; }(std::declval<T>()));
+
+    /**
+     * @brief Utility to delay the evaluation of a static_assert.
+     *
+     * @tparam typename
+     */
+    template<typename>
+    constexpr bool dependent_false = false;
+
 } // namespace emu

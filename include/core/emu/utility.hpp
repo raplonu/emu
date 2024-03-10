@@ -10,6 +10,9 @@
 #include <utility>
 #include <memory>
 
+#include <boost/callable_traits/args.hpp>
+#include <boost/hana/fwd/core/make.hpp>
+
 namespace emu
 {
 
@@ -150,6 +153,23 @@ namespace detail
         static constexpr type value = V;
     };
 
+    /**
+     * @brief Call the fn callable with an instance of emu::type_pack. The types
+     * in type_pack are based on the domain (arguments) of the reference
+     * callable.
+     *
+     * @tparam Fn A polymorphic callable object that takes one type_pack argument.
+     * @tparam ReferenceFn The reference callable object.
+     * @param fn The function to call.
+     * @return The result of the function call with the type_pack.
+     */
+    template<typename Fn, typename ReferenceFn>
+    constexpr decltype(auto) invoke_with_args(Fn&& fn, const ReferenceFn&) {
+        namespace ct = boost::callable_traits;
 
+        return std::invoke(EMU_FWD(fn), make_type_pack_from_tuple<ct::args_t<Fn>>{});
+    }
+
+    using boost::hana::make;
 
 } // namespace emu

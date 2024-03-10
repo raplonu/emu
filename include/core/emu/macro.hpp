@@ -3,6 +3,7 @@
 #include <emu/config.hpp>
 
 #include <boost/preprocessor/cat.hpp>
+#include <boost/preprocessor/stringize.hpp>
 
 #include <type_traits>
 
@@ -74,9 +75,18 @@
 #define EMU_UNIQUE_NAME(base) EMU_CONCAT(base, __COUNTER__)
 
 /**
+ * @brief Create a value from an expression and return the content if it is not empty.
+ *
+ */
+#define EMU_RETURN_IF_VALUE( expr__... ) \
+    if (auto&& value__ = expr__; value__) { return *EMU_FWD(value__); }
+
+
+/**
  * @brief Return false if condition is false, continue otherwise.
  *
  */
 #define EMU_TRUE_OR_RETURN_FALSE( expr__... ) if (!(expr__)) return false
 #define EMU_TRUE_OR_RETURN_NULLOPT( expr__... ) if (!(expr__)) return emu::nullopt
+#define EMU_RETURN_OPT_IF_TRUE( opt ) if (opt) { return *opt; }
 // for EMU_TRUE_OR_RETURN_UNEXPECTED, see emu/expected.hpp

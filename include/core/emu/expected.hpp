@@ -1,10 +1,11 @@
 #pragma once
 
 #include <emu/assert.hpp>
+#include <emu/concepts.hpp>
 
 #include <tl/expected.hpp>
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 namespace emu
 {
@@ -49,19 +50,55 @@ namespace emu
      **/
     using tl::unexpected;
 
+    template<typename Expected>
+        requires cpts::expected<decay<Expected>>
+    decltype(auto) fwd_error(Expected&& exp) {
+        return unexpected(EMU_FWD(exp).error());
+    }
+
+    /**
+     * @brief Return the first error from expected values. They must share the same error type.
+     *
+     * @tparam Ts
+     * @tparam E
+     * @param exp
+     * @return E the first error found if any, otherwise the default value of E.
+     */
+    template<typename... Ts, typename E>
+    E get_first_error(const tl::expected<Ts, E>&... exps) {
+        E error;
+        // If `not exps` test pass (aka has error), then assign error and stop the evaluation
+        // using the `or` short-circuit operator.
+        ((not exps and (error = exps.error(), true)) or ...);
+        return error;
+    }
+
+
+    // template<typename Fn, typename... Ts, typename E>
+    // auto invoke_when_all(Fn&& fn, tl::expected<Ts, E>&&... expecteds) -> decltype(fn(expecteds.value()...)) {
+    //     if ((expecteds && ...))
+    //         return fn(expecteds.value()...);
+    //     else
+    //         return get_first_error(expecteds...);
+    // }
+
 } // namespace emu
 
 /**
  * @brief Macro to check if an expression is true, and return an unexpected value if not.
  *
- * The return value is lazy evaluated, so the expression is only evaluated if the test is false.
+ */
+#define EMU_TRUE_OR_RETURN_UNEXPECTED( expr, err__... ) \
+    if (EMU_UNLIKELY(!(expr)))                          \
+        return ::emu::unexpected(err__)
+
+/**
+ * @brief Macro to check if the expected value is true, and return the error if not.
  *
  */
-#define EMU_TRUE_OR_RETURN_UNEXPECTED( expr__, err ) \
-    if (EMU_UNLIKELY(!(expr__)))                     \
-        [&] () EMU_NOINLINE {                        \
-            return ::emu::unexpected(err);             \
-        }()
+#define EMU_TRUE_OR_RETURN_ERROR( expected ) \
+    if (EMU_UNLIKELY(!(expected)))        \
+        return ::emu::fwd_error(expected)
 
 template<typename T, typename E, typename Char>
 struct fmt::formatter<tl::expected<T, E>, Char> : fmt::formatter<T, Char>
@@ -72,11 +109,11 @@ struct fmt::formatter<tl::expected<T, E>, Char> : fmt::formatter<T, Char>
     auto format(const tl::expected<T, E>& exp, FormatContext& ctx) {
         if (exp) {
             // First print the prefix and update the context to the end of it.
-            ctx.advance_to(format_to(ctx.out(), "expected("));
+            ctx.advance_to(fmt::format_to(ctx.out(), "expected("));
             // Format the hold value using its own formatter.
             base::format(exp.value(), ctx);
             // Finally print the suffix.
-            return format_to(ctx.out(), ")");
+            return fmt::format_to(ctx.out(), ")");
         } else
             //Note: The error has no `parse` method. It cannot be personalized.
             return fmt::format_to(ctx.out(), "unexpected({})", exp.error());

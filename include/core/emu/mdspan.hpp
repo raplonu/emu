@@ -43,6 +43,7 @@ namespace emu
     using _1d = _nd<1>;
     using _2d = _nd<2>;
     using _3d = _nd<3>;
+    using _4d = _nd<4>;
 
     using stdex::mdspan;
 
@@ -172,7 +173,7 @@ namespace spe
     struct info_t< Mapping > {
 
         constexpr auto format_type(fmt::format_context::iterator it) const {
-            return fmt::format_to(it, "[{}, {}]", emu::static_extent<Mapping>(), layout_name<typename Mapping::layout_type>());
+            return fmt::format_to(it, "[{}], {}", emu::static_extent<Mapping>(), layout_name<typename Mapping::layout_type>());
         }
 
         constexpr auto format_value(const Mapping &m, fmt::format_context::iterator it) const {
@@ -183,9 +184,8 @@ namespace spe
     template<cpts::mapping Mapping>
         requires (std::same_as<typename Mapping::layout_type, layout_stride>)
     struct info_t< Mapping > {
-
         constexpr auto format_type(fmt::format_context::iterator it) const {
-            return fmt::format_to(it, "[{}, {}]", emu::static_extent<Mapping>(), layout_name<typename Mapping::layout_type>());
+            return fmt::format_to(it, "[{}], {}", emu::static_extent<Mapping>(), layout_name<typename Mapping::layout_type>());
         }
 
         constexpr auto format_value(const Mapping &m, fmt::format_context::iterator it) const {

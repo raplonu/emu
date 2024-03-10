@@ -25,22 +25,14 @@ namespace emu
     using tl::in_place_t;
     using tl::in_place;
 
-namespace cpts
-{
-
-    template<typename Opt>
-    concept optional = equivalent<Opt, tl::optional<typename std::decay_t<Opt>::value_type>>
-                    or equivalent<Opt, std::optional<typename std::decay_t<Opt>::value_type>>;
-
-} // namespace cpts
-
     /**
      * @brief Returns the opt content if exists or will emplace it from the additional arguments provided.
      *
      * @param opt - An optional value (e.g. std::optional, tl::optional).
      * @param args - variadic list of argument that will be forwarded to the constructor.
      */
-    template<cpts::optional Opt, typename... Args>
+    template<typename Opt, typename... Args>
+        requires( cpts::optional< decay<Opt> > )
     constexpr auto value_or_emplace(Opt && opt, Args &&... args)
         EMU_NOEXCEPT_EXPR( (opt) ? EMU_FWD(opt).value() : EMU_FWD(opt).emplace(EMU_FWD(args)...) )
     {
@@ -56,7 +48,8 @@ namespace cpts
      * @param opt - An optional value (e.g. std::optional, tl::optional).
      * @param args - variadic list of argument that will be forwarded to the constructor.
      */
-    template<cpts::optional Opt, typename... Args>
+    template<typename Opt, typename... Args>
+        requires( cpts::optional< decay<Opt> > )
     constexpr auto value_or_create(Opt && opt, Args &&... args)
         EMU_NOEXCEPT_EXPR( (opt) ? EMU_FWD(opt).value() : ValueType<Opt>(EMU_FWD(args)...) )
     {
@@ -73,7 +66,8 @@ namespace cpts
      * @param fn - A callable value that will return (e.g. function, function object).
      * @param args - variadic list of argument that will be forwarded to the function.
      */
-    template<cpts::optional Opt, typename Fn, typename... Args>
+    template<typename Opt, typename Fn, typename... Args>
+        requires( cpts::optional< decay<Opt> > )
     constexpr auto value_or_invoke(Opt && opt, Fn && fn, Args &&... args)
         EMU_NOEXCEPT_EXPR( (opt) ? EMU_FWD(opt).value() : EMU_FWD(fn)(EMU_FWD(args)...) )
     {
@@ -90,12 +84,23 @@ namespace cpts
      * @param fn - A callable value that will return (e.g. function, function object).
      * @param args - variadic list of argument that will be forwarded to the function.
      */
-    template<cpts::optional Opt, typename Fn, typename... Args>
+    template<typename Opt, typename Fn, typename... Args>
+        requires( cpts::optional< decay<Opt> > )
     constexpr auto value_or_invoke_emplace(Opt && opt, Fn && fn, Args &&... args)
         EMU_NOEXCEPT_EXPR( (opt) ? EMU_FWD(opt).value() : EMU_FWD(fn)(EMU_FWD(args)...) )
     {
         return (opt) ? EMU_FWD(opt).value() : EMU_FWD(opt).emplace(EMU_FWD(fn)(EMU_FWD(args)...));
     }
+
+    template<typename Fn, typename... Opts>
+        requires( (cpts::opt_like< decay<Opts> > && ...) )
+    auto invoke_when_all(Fn&& fn, Opts&&... opts) -> tl::optional<decltype(fn(EMU_FWD(opts).value()...))> {
+        if ((opts && ...))
+            return fn(EMU_FWD(opts).value()...);
+        else
+            return nullopt;
+    }
+
 
     template<typename T>
     struct spe::map< std::optional<T> > {

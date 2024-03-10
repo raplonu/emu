@@ -265,7 +265,7 @@ namespace
         auto str = fmt::to_string(emu::info(con));
 
         using testing::StartsWith;
-        EXPECT_THAT(str, StartsWith("mdspan<int, [dyn, dyn, dyn, C/right]>"));
+        EXPECT_THAT(str, StartsWith("mdspan<int, [dyn, dyn, dyn], C/right>"));
     }
 
     TEST(MdContainer, submdcontainer)

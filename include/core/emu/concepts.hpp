@@ -27,6 +27,16 @@ namespace cpts
     template<typename Derived, typename Base>
     concept not_derived_from = not std::derived_from<Derived, Base>;
 
+    template<typename T>
+    concept expected = specialization_of<T, tl::expected>;
+
+    template<typename T>
+    concept optional = specialization_of<T, tl::optional>
+                    or specialization_of<T, std::optional>;
+
+    template<typename T>
+    concept opt_like = expected<T> or optional<T>;
+
     // cannot use is_specialization here because second span argument is not a type.
     template<typename T>
     concept span = std::same_as<T, std::span<typename T::element_type, T::extent>>;
