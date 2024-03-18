@@ -42,7 +42,13 @@ namespace cpts
     concept span = std::same_as<T, std::span<typename T::element_type, T::extent>>;
 
     template<typename T>
+    concept const_span = span<T> and std::is_const_v<typename T::element_type>;
+
+    template<typename T>
     concept mdspan = specialization_of<T, std::experimental::mdspan>;
+
+    template<typename T>
+    concept const_mdspan = mdspan<T> and std::is_const_v<typename T::element_type>;
 
     template<typename T>
     concept view = span<T> or mdspan<T>;
