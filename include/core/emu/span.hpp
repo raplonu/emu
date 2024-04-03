@@ -46,6 +46,14 @@ namespace detail
         return span<const NewType, extent>{data, size};
     }
 
+    template <typename T>
+    auto as_auto_bytes(span<T> sp) {
+        if constexpr (std::is_const_v<T>)
+            return as_bytes(sp);
+        else
+            return as_writable_bytes(sp);
+    }
+
 namespace detail
 {
 
