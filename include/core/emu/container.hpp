@@ -50,14 +50,14 @@ namespace cpts
         container(std::array<U, N>&) = delete;
 
         template<typename DataHolder>
-            requires (not is_lref<DataHolder>) and (not cpts::container<DataHolder>)
+            requires (not is_lref<DataHolder>) and (not cpts::container<decay<DataHolder>>)
         container(T* ptr, std::size_t size, DataHolder&& dh)
             : base(ptr, ptr + size)
             , capsule(EMU_FWD(dh))
         {}
 
         template<typename DataHolder>
-            requires (not is_lref<DataHolder>) and (not cpts::container<DataHolder>)
+            requires (not is_lref<DataHolder>) and (not cpts::container<decay<DataHolder>>)
         container(base s, DataHolder&& dh)
             : base(s)
             , capsule(EMU_FWD(dh))
@@ -65,7 +65,7 @@ namespace cpts
 
         template<cpts::contiguous_sized_range DataHolder>
             requires (not is_lref<DataHolder>)
-                 and (not cpts::container<DataHolder>)
+                 and (not cpts::container<decay<DataHolder>>)
                  and (not std::ranges::borrowed_range<DataHolder>)
                  and (not cpts::array<DataHolder>)
         container(DataHolder&& d)
@@ -75,7 +75,7 @@ namespace cpts
 
         template<cpts::contiguous_sized_range DataHolder>
             requires is_lref<DataHolder>
-                 and (not cpts::container<DataHolder>)
+                 and (not cpts::container<decay<DataHolder>>)
                 //  and (std::ranges::borrowed_range<DataHolder>)
                  and (not cpts::array<DataHolder>)
         container(DataHolder&& d)

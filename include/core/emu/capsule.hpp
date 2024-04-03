@@ -4,37 +4,178 @@
 
 #include <concepts>
 #include <type_traits>
-#include <memory>
+#include <atomic>
+#include <utility>
+
+#include <fmt/format.h>
 
 namespace emu
 {
-
-    struct capsule {
-
+    /**
+     * @brief A smart pointer-like class that allows manual release of the held object.
+     */
+    struct capsule
+    {
+        /**
+         * @brief The interface for the held object.
+         */
         struct interface {
+            /**
+             * @brief Destructor.
+             */
             virtual ~interface() = default;
+
+            std::atomic<long> use_count = 1; /**< The reference count of the held object. */
+
+            /**
+             * @brief Increases the reference count of the held object.
+             */
+            void hold() noexcept {
+                fmt::print("capsule::interface::hold: {}\n", (long)use_count);
+                ++use_count;
+            }
+
+            /**
+             * @brief Decreases the reference count of the held object and returns true if the count reaches zero.
+             * @return True if the reference count reaches zero, false otherwise.
+             */
+            bool release() noexcept {
+                fmt::print("capsule::interface::release: {}\n", (long)use_count);
+                return (--use_count == 0);
+            }
         };
 
+        /**
+         * @brief The implementation of the held object.
+         * @tparam DataHolder The type of the held object.
+         */
         template<typename DataHolder>
         struct impl : interface {
+            /**
+             * @brief Constructor.
+             * @param d The held object.
+             */
             impl(auto&& d) : data_holder(EMU_FWD(d)) {}
 
-            DataHolder data_holder;
+            DataHolder data_holder; /**< The held object. */
         };
 
+        interface* holder = nullptr; /**< Pointer to the held object. */
+
+        /**
+         * @brief Default constructor.
+         */
         capsule() = default;
 
+        /**
+         * @brief Constructs a capsule object with the given held object.
+         * @tparam DataHolder The type of the held object.
+         * @param d The held object.
+         */
         template<typename DataHolder>
-            requires (not is_lref<DataHolder>) and (not std::same_as<capsule, std::decay_t<DataHolder>>)
-        capsule(DataHolder&& d) : holder(std::make_shared<impl<DataHolder>>(EMU_FWD(d))) {}
+        requires(
+                (not is_lref<DataHolder>)
+            and (not std::same_as<decay<DataHolder>, capsule   >)
+            and (not std::same_as<decay<DataHolder>, interface*>)
+        )
+        capsule(DataHolder&& d)
+            : holder( new impl<DataHolder>( EMU_FWD(d) ) )
+        {}
 
-        std::shared_ptr<interface> holder;
+        capsule(interface* holder)
+            : holder(holder)
+        {
+            if (holder) holder->hold();
+        }
 
-        /// shared_ptr interface
+        /**
+         * @brief Copy constructor.
+         * @param other The capsule object to copy from.
+         */
+        capsule(capsule const& other)
+            : holder(other.holder)
+        {
+            if (holder) holder->hold();
+        }
 
-        long use_count() const { return holder.use_count(); }
-        void reset() { holder.reset(); }
-        operator bool() const { return static_cast<bool>(holder); }
+        /**
+         * @brief Move constructor.
+         * @param other The capsule object to move from.
+         */
+        capsule(capsule&& other)
+            : holder(std::exchange(other.holder, nullptr))
+        {}
+
+        /**
+         * @brief Copy assignment operator.
+         * @param other The capsule object to copy from.
+         * @return Reference to the modified capsule object.
+         */
+        capsule& operator=(capsule const& other) noexcept {
+            reset();
+            holder = other.holder;
+            if (holder) holder->hold();
+            return *this;
+        }
+
+        /**
+         * @brief Move assignment operator.
+         * @param other The capsule object to move from.
+         * @return Reference to the modified capsule object.
+         */
+        capsule& operator=(capsule&& other) noexcept {
+            reset();
+            holder = std::exchange(other.holder, nullptr);
+            return *this;
+        }
+
+        /**
+         * @brief Destructor.
+         */
+        ~capsule() {
+            reset();
+        }
+
+        /**
+         * @brief Resets the capsule object by releasing the held object if necessary.
+         */
+        void reset() noexcept {
+            manual_release(holder);
+            holder = nullptr;
+        }
+
+        /**
+         * @brief Returns the reference count of the held object.
+         * @return The reference count of the held object.
+         */
+        long use_count() const noexcept { return holder ? static_cast<long>(holder->use_count) : 0l; }
+
+        /**
+         * @brief Conversion operator to bool.
+         * @return True if the capsule object holds a valid object, false otherwise.
+         */
+        operator bool() const noexcept { return static_cast<bool>(holder); }
+
+        static void manual_hold(capsule::interface* holder) {
+            if (holder) holder->hold();
+        }
+
+        /**
+         * Releases the given capsule holder.
+         * If the holder is not null and its `release` function returns true, the holder is deleted.
+         *
+         *
+         *
+         * @param holder The capsule holder to release.
+         */
+        static void manual_release(capsule::interface* holder) {
+            if (holder)
+                if (bool can_delete = holder->release(); can_delete) {
+                    delete holder;
+                    fmt::print("capsule::manual_release: deleted\n");
+                }
+        }
     };
+
 
 } // namespace emu
