@@ -19,7 +19,7 @@ from pathlib import Path
 
 DIR = Path(__file__).parent.resolve()
 
-sys.path.insert(0, os.path.abspath('../python'))
+# sys.path.insert(0, os.path.abspath('../python'))
 
 
 # -- Project information -----------------------------------------------------
@@ -45,7 +45,7 @@ extensions = [
 
 breathe_projects = {"emu": os.path.abspath('../build/docs/doxygen/xml')}
 breathe_default_project = "emu"
-breathe_domain_by_extension = {"h": "cpp", "cuh": "cpp"}
+breathe_domain_by_extension = {"cuh": "cpp"}
 
 
 # Add any paths that contain templates here, relative to this directory.

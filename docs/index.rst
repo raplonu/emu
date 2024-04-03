@@ -25,16 +25,7 @@ Docs
 C++
 ----
 
-.. doxygenfunction:: emu::scoped::create(T&& value, F&& f)
-
-Python
-------
-
-.. automodule:: emu.functional
-    :members:
-    :exclude-members: bf
-    :undoc-members:
-    :show-inheritance:
+.. doxygenstruct:: emu::scoped
 
 You can also generate new function with partial application
 of values or callables as following :
