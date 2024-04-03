@@ -4,13 +4,13 @@
 	"name": "C++",
 	"build": {
 		"dockerfile": "Dockerfile"
-	},
-	"features": {
-		"ghcr.io/devcontainers/features/nvidia-cuda:1": {
-			"cudaVersion": "11.8",
-			"cudnnVersion": "8.6.0.163"
-		}
 	}
+
+	// "runArgs": ["--runtime=nvidia", "--gpus", "all"],
+
+	// "mounts": [
+	// 	"source=jbernard_next_cache,target=/root"
+	// ]
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
