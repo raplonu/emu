@@ -8,11 +8,17 @@
 
 - [cmake](https://cmake.org/) >= 3.24
 - [cuda](https://developer.nvidia.com/cuda-toolkit) >= 12.1 (the one with device cuda graph feature)
-- [conan](https://conan.io/) >= 2.0.0 with cosmic remote using `conan remote add cosmic https://odp2.jfrog.io/artifactory/api/conan/cosmic`
+- [conan](https://conan.io/) >= 2.0.0
 - [just](https://just.systems/) optional
 
 `emu` requires `cmake` and by default `conan` to install dependencies and build.
 Also, we recommend to use `just` to simplify the build process.
+
+> Note: `conan` requires some configuration to work properly. See our [guide](https://gitlab.obspm.fr/jbernard/conan-packages) or simply run:
+
+```bash
+curl -sS https://gitlab.obspm.fr/jbernard/conan-packages/-/raw/main/install.sh | bash
+```
 
 ## Build
 
