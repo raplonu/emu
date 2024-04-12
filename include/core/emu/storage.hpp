@@ -253,4 +253,7 @@ namespace emu
         buffer_t buffer_;
     };
 
+    template<std::size_t StorageSize, std::size_t Alignment = alignof(std::max_align_t)>
+    using storage = poly_storage<StorageSize, Alignment>;
+
 } // namespace emu
