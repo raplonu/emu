@@ -112,7 +112,6 @@ struct emu::spe::map<std::pair<T1, T2>> {
     }
 };
 
-
 template<typename... Ts>
 struct emu::spe::map<std::variant<Ts...>> {
 

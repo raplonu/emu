@@ -106,7 +106,9 @@ namespace emu
     struct spe::map< std::optional<T> > {
 
         template<typename Fr, typename Fn>
-        constexpr auto operator()(Fr&& opt, Fn&& fn) -> std::optional<decltype(std::invoke(EMU_FWD(fn), EMU_FWD(opt).value()))> const {
+        constexpr auto operator()(Fr&& opt, Fn&& fn)
+            -> std::optional<decltype(std::invoke(EMU_FWD(fn), EMU_FWD(opt).value()))> const
+        {
             if (opt)
                 return std::invoke(EMU_FWD(fn), EMU_FWD(opt).value());
             else
@@ -122,6 +124,14 @@ namespace emu
             return EMU_FWD(opt).map(EMU_FWD(fn));
         }
     };
+
+    template<typename T>
+    tl::optional<T> as_opt(T* ptr) noexcept {
+        if (ptr)
+            return *ptr;
+        else
+            return tl::nullopt;
+    }
 
 } // namespace emu
 

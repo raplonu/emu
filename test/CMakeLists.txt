@@ -11,6 +11,7 @@ add_executable(emucoretest
     src/core/container_test.cpp
     src/core/mdcontainer_test.cpp
     src/core/math_test.cpp
+    src/core/functor_test.cpp
     src/core/range_test.cpp
     src/core/expected_test.cpp
     src/core/optional_test.cpp

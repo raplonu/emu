@@ -50,6 +50,15 @@ namespace emu
      **/
     using tl::unexpected;
 
+    template<typename T, typename E>
+    struct spe::map< expected<T, E> > {
+
+        template<typename Fr, typename Fn>
+        constexpr auto operator()(Fr&& opt, Fn&& fn) const {
+            return EMU_FWD(opt).map(EMU_FWD(fn));
+        }
+    };
+
     template<typename Expected>
         requires cpts::expected<decay<Expected>>
     decltype(auto) fwd_error(Expected&& exp) {
