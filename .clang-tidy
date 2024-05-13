@@ -1,0 +1,94 @@
+---
+#Checks:          'clang-diagnostic-*,clang-analyzer-*,readability-identifier-naming, readability-braces-around-statements'
+Checks                  : 'readability-identifier-naming, readability-braces-around-statements, ColumnLimit'
+WarningsAsErrors        : ''
+HeaderFilterRegex       : ''
+AnalyzeTemporaryDtors   : false
+FormatStyle             : tmp
+CheckOptions:
+  - { key: ColumnLimit                                                      , value: 100        }
+  - { key: readability-identifier-naming.TemplateParameterCase              , value: CamelCase}
+  - { key: readability-identifier-naming.TemplateParameterSuffix            , value: ''}
+  - { key: readability-identifier-naming.TemplateParameterPrefix            , value: ''}
+  - { key: readability-identifier-naming.TemplateParameterIgnoredRegexp     , value: ''}
+  - { key: readability-identifier-naming.ClassCase                          , value: aNy_CasE}
+  - { key: readability-identifier-naming.ClassPrefix                        , value: ''}
+  - { key: readability-identifier-naming.ClassMemberSuffix                  , value: _}
+  - { key: readability-identifier-naming.ClassMemberCase                    , value: lower_case}
+  - { key: readability-identifier-naming.ClassMemberHungarianPrefix         , value: Off}
+  - { key: readability-identifier-naming.ClassIgnoredRegexp                 , value: ''}
+  - { key: readability-identifier-naming.ClassMemberPrefix                  , value: ''}
+  - { key: readability-identifier-naming.ClassSuffix                        , value: ''}
+  - { key: readability-identifier-naming.ClassMemberIgnoredRegexp           , value: ''}
+  - { key: readability-identifier-naming.ClassHungarianPrefix               , value: Off}
+  - { key: readability-identifier-naming.PrivateMemberHungarianPrefix       , value: Off}
+  - { key: readability-identifier-naming.PrivateMemberPrefix                , value: m_}
+  - { key: readability-identifier-naming.PrivateMemberIgnoredRegexp         , value: ''}
+  - { key: readability-identifier-naming.PrivateMemberSuffix                , value: ''}
+  - { key: readability-identifier-naming.ProtectedMemberPrefix              , value: ''}
+  - { key: readability-identifier-naming.ProtectedMemberIgnoredRegexp       , value: ''}
+  - { key: readability-identifier-naming.ProtectedMemberSuffix              , value: ''}
+  - { key: readability-identifier-naming.ProtectedMemberHungarianPrefix     , value: Off}
+  - { key: readability-identifier-naming.ConstexprVariableHungarianPrefix   , value: Off}
+  - { key: readability-identifier-naming.VariableIgnoredRegexp              , value: ''}
+  - { key: readability-identifier-naming.GetConfigPerFile                   , value: 'true'}
+  - { key: readability-identifier-naming.StaticConstantPrefix               , value: k}
+  - { key: readability-identifier-naming.FunctionSuffix                     , value: ''}
+  - { key: readability-identifier-naming.StaticConstantCase                 , value: CamelCase}
+  - { key: readability-identifier-naming.StructHungarianPrefix              , value: Off}
+  - { key: readability-identifier-naming.EnumConstantSuffix                 , value: ''}
+  - { key: readability-identifier-naming.StructIgnoredRegexp                , value: ''}
+  - { key: readability-identifier-naming.AggressiveDependentMemberLookup    , value: 'false'}
+  - { key: readability-identifier-naming.StructSuffix                       , value: ''}
+  - { key: readability-identifier-naming.NamespacePrefix                    , value: ''}
+  - { key: readability-identifier-naming.ConstexprVariableSuffix            , value: ''}
+  - { key: readability-identifier-naming.StructCase                         , value: CamelCase}
+  - { key: readability-identifier-naming.EnumConstantCase                   , value: CamelCase}
+  - { key: readability-identifier-naming.StaticConstantIgnoredRegexp        , value: ''}
+  - { key: readability-identifier-naming.VariableSuffix                     , value: ''}
+  - { key: readability-identifier-naming.GlobalConstantSuffix               , value: ''}
+  - { key: readability-identifier-naming.VariableHungarianPrefix            , value: Off}
+  - { key: readability-identifier-naming.FunctionPrefix                     , value: ''}
+  - { key: readability-identifier-naming.GlobalConstantCase                 , value: CamelCase}
+  - { key: readability-identifier-naming.ConstexprVariableIgnoredRegexp     , value: ''}
+  - { key: readability-identifier-naming.FunctionCase                       , value: aNy_CasE}
+  - { key: readability-identifier-naming.StaticConstantSuffix               , value: ''}
+  - { key: readability-identifier-naming.EnumConstantHungarianPrefix        , value: Off}
+  - { key: readability-identifier-naming.EnumConstantPrefix                 , value: k}
+  - { key: readability-identifier-naming.EnumConstantIgnoredRegexp          , value: ''}
+  - { key: readability-identifier-naming.StructPrefix                       , value: ''}
+  - { key: readability-identifier-naming.VariablePrefix                     , value: ''}
+  - { key: readability-identifier-naming.IgnoreFailedSplit                  , value: 'false'}
+  - { key: readability-identifier-naming.IgnoreMainLikeFunctions            , value: 'false'}
+  - { key: readability-identifier-naming.FunctionIgnoredRegexp              , value: ''}
+  - { key: readability-identifier-naming.ConstexprVariablePrefix            , value: k}
+  - { key: readability-identifier-naming.StaticConstantHungarianPrefix      , value: Off}
+  - { key: readability-identifier-naming.NamespaceIgnoredRegexp             , value: ''}
+  - { key: readability-identifier-naming.NamespaceSuffix                    , value: ''}
+  - { key: readability-identifier-naming.VariableCase                       , value: lower_case}
+  - { key: readability-identifier-naming.GlobalConstantHungarianPrefix      , value: Off}
+  - { key: readability-identifier-naming.ConstexprVariableCase              , value: CamelCase}
+  - { key: readability-identifier-naming.NamespaceCase                      , value: lower_case}
+  - { key: readability-identifier-naming.GlobalConstantPrefix               , value: k}
+  - { key: readability-identifier-naming.GlobalConstantIgnoredRegexp        , value: ''}
+  - { key: readability-braces-around-statements.ShortStatementLines         , value: '0'}
+
+  - { key: google-readability-braces-around-statements.ShortStatementLines  , value: '1'}
+  - { key: google-readability-namespace-comments.ShortNamespaceLines        , value: '10'}
+  - { key: google-readability-namespace-comments.SpacesBeforeComments       , value: '2'}
+  - { key: google-readability-function-size.StatementThreshold              , value: '800'}
+  - { key: modernize-replace-auto-ptr.IncludeStyle                          , value: llvm}
+  - { key: modernize-loop-convert.MaxCopySize                               , value: '16'}
+  - { key: modernize-loop-convert.MinConfidence                             , value: reasonable}
+  - { key: modernize-loop-convert.NamingStyle                               , value: CamelCase}
+  # - { key: modernize-pas, value.IncludeStyle                                , value: llvm}
+  - { key: modernize-use-nullptr.NullMacros                                 , value: 'NULL'}
+  - { key: llvm-else-after-return.WarnOnConditionVariables                  , value: 'false'}
+  - { key: llvm-else-after-return.WarnOnUnfixable                           , value: 'false'}
+  - { key: llvm-qualified-auto.AddConstToQualified                          , value: 'false'}
+  - { key: cert-oop54-cpp.WarnOnlyIfThisHasSuspiciousField                  , value: 'false'}
+  - { key: cert-dcl16-c.NewSuffixes                                         , value: 'L;LL;LU;LLU'}
+  - { key: cert-str34-c.DiagnoseSignedUnsignedCharComparisons               , value: 'false'}
+  - { key: cert-err33-c.CheckedFunctions                                    , value: '::aligned_alloc;::asctime_s;::at_quick_exit;::atexit;::bsearch;::bsearch_s;::btowc;::c16rtomb;::c32rtomb;::calloc;::clock;::cnd_broadcast;::cnd_init;::cnd_signal;::cnd_timedwait;::cnd_wait;::ctime_s;::fclose;::fflush;::fgetc;::fgetpos;::fgets;::fgetwc;::fopen;::fopen_s;::fprintf;::fprintf_s;::fputc;::fputs;::fputwc;::fputws;::fread;::f}reopen;::freopen_s;::fscanf;::fscanf_s;::fseek;::fsetpos;::ftell;::fwprintf;::fwprintf_s;::fwrite;::fwscanf;::fwscanf_s;::getc;::getchar;::getenv;::getenv_s;::gets_s;::getwc;::getwchar;::gmtime;::gmtime_s;::localtime;::localtime_s;::malloc;::mbrtoc16;::mbrtoc32;::mbsrtowcs;::mbsrtowcs_s;::mbstowcs;::mbstowcs_s;::memchr;::mktime;::mtx_init;::mtx_lock;::mtx_timedlock;::mtx_trylock;::mtx_unlock;::printf_s;::putc;::putwc;::raise;::realloc;::remove;::rename;::scanf;::scanf_s;::setlocale;::setvbuf;::signal;::snprintf;::snprintf_s;::sprintf;::sprintf_s;::sscanf;::sscanf_s;::strchr;::strerror_s;::strftime;::strpbrk;::strrchr;::strstr;::strtod;::strtof;::strtoimax;::strtok;::strtok_s;::strtol;::strtold;::strtoll;::strtoul;::strtoull;::strtoumax;::strxfrm;::swprintf;::swprintf_s;::swscanf;::swscanf_s;::thrd_create;::thrd_detach;::thrd_join;::thrd_sleep;::time;::timespec_get;::tmpfile;::tmpfile_s;::tmpnam;::tmpnam_s;::tss_create;::tss_get;::tss_set;::ungetc;::ungetwc;::vfprintf;::vfprintf_s;::vfscanf;::vfscanf_s;::vfwprintf;::vfwprintf_s;::vfwscanf;::vfwscanf_s;::vprintf_s;::vscanf;::vscanf_s;::vsnprintf;::vsnprintf_s;::vsprintf;::vsprintf_s;::vsscanf;::vsscanf_s;::vswprintf;::vswprintf_s;::vswscanf;::vswscanf_s;::vwprintf_s;::vwscanf;::vwscanf_s;::wcrtomb;::wcschr;::wcsftime;::wcspbrk;::wcsrchr;::wcsrtombs;::wcsrtombs_s;::wcsstr;::wcstod;::wcstof;::wcstoimax;::wcstok;::wcstok_s;::wcstol;::wcstold;::wcstoll;::wcstombs;::wcstombs_s;::wcstoul;::wcstoull;::wcstoumax;::wcsxfrm;::wctob;::wctrans;::wctype;::wmemchr;::wprintf_s;::wscanf;::wscanf_s;'}
+  - { key: cppcoreguidelines-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic, value:           'true'}
+...
