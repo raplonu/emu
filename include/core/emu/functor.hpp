@@ -8,8 +8,6 @@
 #include <vector>
 #include <array>
 #include <variant>
-#include <map>
-#include <unordered_map>
 
 namespace emu
 {

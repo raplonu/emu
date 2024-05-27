@@ -7,11 +7,9 @@
 #include <emu/info.hpp>
 #include <emu/mdspan.hpp>
 
-struct Toto {
+struct Toto { };
 
-};
-
-auto format_as(const Toto& t) {
+auto format_as(const Toto&) {
     return "toto";
 }
 
@@ -19,16 +17,18 @@ namespace
 {
     TEST(Container, Construct)
     {
+
+
         {
-            emu::container<int> con;
+            const emu::container<int> con;
 
             EXPECT_EQ(con.data(), nullptr);
             EXPECT_EQ(con.size(), 0);
             EXPECT_EQ(con.use_count(), 0);
         }
         {
-            int arr[5] = {1, 2, 3, 4, 5};
-            emu::container con = arr;
+            int arr[] = {1, 2, 3, 4, 5}; // NOLINT
+            const emu::container con = arr;
 
             EXPECT_EQ(con.data(), arr);
             EXPECT_EQ(con.size(), 5);
@@ -36,7 +36,7 @@ namespace
         }
         {
             std::array arr = {1, 2, 3, 4, 5};
-            emu::container con = arr;
+            const emu::container con = arr;
 
             EXPECT_EQ(con.data(), arr.data());
             EXPECT_EQ(con.size(), arr.size());
@@ -50,15 +50,15 @@ namespace
             static_assert(not std::constructible_from<emu::container<int>, std::array<int, 5>&&>);
         }
         {
-            std::vector vec = {1, 2, 3, 4, 5};
-            emu::container con = vec;
+            std::vector vec(3, 0);
+            const emu::container con = vec;
 
             EXPECT_EQ(con.data(), vec.data());
             EXPECT_EQ(con.size(), vec.size());
             EXPECT_EQ(con.use_count(), 0);
         }
         {
-            emu::container con = std::vector{1, 2, 3, 4, 5};
+            const emu::container con = std::vector(5, 0);
 
             EXPECT_NE(con.data(), nullptr);
             EXPECT_EQ(con.size(), 5);
@@ -68,9 +68,9 @@ namespace
 
     TEST(Container, Wrap)
     {
-        std::array<int, 5> arr = {1, 2, 3, 4, 5};
+        std::array arr = {1, 2, 3, 4, 5};
 
-        emu::container con = arr;
+        const emu::container con = arr;
 
         EXPECT_EQ(con.data(), arr.data());
         EXPECT_EQ(con.size(), arr.size());
@@ -79,7 +79,7 @@ namespace
 
     TEST(Container, AllocateSimple)
     {
-        auto con = emu::make_container<int>(5);
+        const auto con = emu::make_container<int>(5);
 
         EXPECT_NE(con.data(), nullptr);
         EXPECT_EQ(con.size(), 5);
@@ -87,12 +87,12 @@ namespace
 
     TEST(Container, FreeCapsule)
     {
-        std::array<int, 5> arr = {1, 2, 3, 4, 5};
+        const std::array arr = {1, 2, 3, 4, 5};
 
         bool called = false;
 
         {
-            emu::container con(arr.data(), arr.size(), emu::scoped([&called]() { called = true; }));
+            const emu::container con(arr.data(), arr.size(), emu::scoped([&called]() { called = true; }));
         }
 
         EXPECT_TRUE(called);
@@ -102,16 +102,16 @@ namespace
     {
         emu::spy_flag sf;
 
-        int value = 42;
+        int value = 1;
         emu::SpyContainer spy_con{&sf, &value};
 
         {
             // Take ownership of the container.
-            emu::container con = std::move(spy_con);
+            const emu::container con = std::move(spy_con);
 
             EXPECT_EQ(con.use_count(), 1);
 
-            EXPECT_EQ(con[0], 42);
+            EXPECT_EQ(con[0], 1);
             value = 0;
             EXPECT_EQ(con[0], 0);
 
@@ -128,16 +128,16 @@ namespace
     {
         emu::spy_flag sf;
 
-        int value = 42;
+        int value = 1;
         emu::SpyContainer spy_con{&sf, &value};
 
         {
             // Take spy_con by reference.
-            emu::container con = spy_con;
+            const emu::container con = spy_con;
 
             EXPECT_EQ(con.use_count(), 0);
 
-            EXPECT_EQ(con[0], 42);
+            EXPECT_EQ(con[0], 1);
             value = 0;
             EXPECT_EQ(con[0], 0);
 
@@ -155,16 +155,16 @@ namespace
     {
         emu::spy_flag sf;
 
-        int value = 42;
+        int value = 1;
         const emu::SpyContainer spy_con{&sf, &value};
 
         {
             // Take spy_con by constant reference.
-            emu::container con = spy_con;
+            const emu::container con = spy_con;
 
             EXPECT_EQ(con.use_count(), 0);
 
-            EXPECT_EQ(con[0], 42);
+            EXPECT_EQ(con[0], 1);
             value = 0;
             EXPECT_EQ(con[0], 0);
 

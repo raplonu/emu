@@ -13,10 +13,11 @@ class handle_t;
 
 namespace handle
 {
+
     using id_t = cusolverDnHandle_t;
 
-    namespace detail
-    {
+namespace detail
+{
         id_t create();
 
         void destroy(id_t id);
@@ -25,10 +26,11 @@ namespace handle
             void operator()(id_t id) const { destroy(id); }
         };
 
-        void set_stream(id_t handle, ::cuda::stream::handle_t mode);
+        void set_stream(id_t handle, ::cuda::stream::handle_t stream);
 
         ::cuda::stream::handle_t get_stream(id_t handle);
-    }
+
+} // namespace detail
 
     using ScopedHandle = scoped<const id_t, detail::Destroyer>;
 } // namespace handle
@@ -47,12 +49,12 @@ struct handle_t
     handle_t& operator=(handle_t &&) = default;
     handle_t& operator=(const handle_t &) = delete;
 
-    handle::id_t id() const noexcept { return id_.value; }
+    [[nodiscard]] handle::id_t id() const noexcept { return id_.value; }
 
     ~handle_t() = default;
 
-    void set_stream(const ::cuda::stream_t & stream);
-    ::cuda::stream_t stream() const;
+    void set_stream(const ::cuda::stream_t & stream) const;
+    [[nodiscard]] ::cuda::stream_t stream() const;
 
 private:
     handle::ScopedHandle id_;

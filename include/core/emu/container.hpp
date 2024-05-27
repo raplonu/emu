@@ -47,7 +47,10 @@ namespace cpts
         container() = default;
 
         template<typename U, std::size_t N>
-        container(std::array<U, N>&) = delete;
+        container(std::array<U, N>& arr)
+            : base(arr)
+            , capsule()
+        {}
 
         template<typename DataHolder>
             requires (not is_lref<DataHolder>) and (not cpts::container<decay<DataHolder>>)
@@ -93,6 +96,8 @@ namespace cpts
         container& operator=(const container&) = default;
         container& operator=(container&&) = default;
 
+        ~container() = default;
+
         auto use_count() const {
             return capsule.use_count();
         }
@@ -102,8 +107,8 @@ namespace cpts
             return from_span(base::template subspan<Offset, Count>());
         }
 
-        constexpr auto subcontainer( size_type Offset, size_type Count = std::dynamic_extent ) const {
-            return from_span(base::subspan(Offset, Count));
+        constexpr auto subcontainer( size_type offset, size_type count = std::dynamic_extent ) const {
+            return from_span(base::subspan(offset, count));
         }
 
         template< std::size_t Count >
@@ -111,8 +116,8 @@ namespace cpts
             return from_span(base::template first<Count>());
         }
 
-        constexpr auto first( size_type Count ) const {
-            return from_span(base::first(Count));
+        constexpr auto first( size_type count ) const {
+            return from_span(base::first(count));
         }
 
         template< std::size_t Count >
@@ -120,8 +125,8 @@ namespace cpts
             return from_span(base::template last<Count>());
         }
 
-        constexpr std::span<element_type, std::dynamic_extent> last( size_type Count ) const {
-            return from_span(base::last(Count));
+        constexpr std::span<element_type, std::dynamic_extent> last( size_type count ) const {
+            return from_span(base::last(count));
         }
 
         template<typename NT, std::size_t NExtent>
@@ -148,7 +153,7 @@ namespace cpts
     template< class It, class EndOrSize >
     container( It, EndOrSize ) -> container<std::remove_reference_t<std::iter_reference_t<It>>>;
     template< class T, std::size_t N >
-    container( T (&)[N] ) -> container<T, N>;
+    container( T (&)[N] ) -> container<T, N>; // NOLINT(*-avoid-c-arrays)
     template< class T, std::size_t N >
     container( std::array<T, N>& ) -> container<T, N>;
     template< class T, std::size_t N >
@@ -158,7 +163,7 @@ namespace cpts
 
     template<typename T>
     container<T> make_container(std::size_t size) {
-        auto u_ptr = std::make_unique<T[]>(size);
+        auto u_ptr = std::make_unique<T[]>(size); // NOLINT(*-avoid-c-arrays)
         return container<T>(u_ptr.get(), size, std::move(u_ptr));
     }
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <emu/type_name.hpp>
+#include <emu/concepts.hpp>
 
 #include <fmt/core.h>
 #include <fmt/ranges.h>

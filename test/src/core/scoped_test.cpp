@@ -114,6 +114,4 @@ namespace
         EXPECT_TRUE(b);
         EXPECT_EQ(i, 0);
     }
-}
-
-
+} // namespace

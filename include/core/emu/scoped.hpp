@@ -8,6 +8,21 @@
 
 namespace emu
 {
+
+    struct tOTO {
+
+    };
+
+    struct Tata {
+
+
+
+    };
+
+    inline tOTO fff() {
+        return tOTO{};
+    }
+
     /**
      * @brief A scoped object that calls a destructor when it goes out of scope.
      *
@@ -31,6 +46,13 @@ namespace emu
          */
         constexpr scoped() = default;
 
+        /**
+         * @brief Constructs a scoped object with the given value and destructor function.
+         *
+         * @tparam T1 The type of the value.
+         * @param value The value to be stored.
+         * @param owning Flag indicating ownership of the value.
+         */
         template<cpts::not_derived_from<scoped> T1>
         constexpr scoped(T1 && value, bool owning = true)
             EMU_NOEXCEPT_EXPR(value_type(EMU_FWD(value)), function_type())
@@ -38,6 +60,15 @@ namespace emu
             value(EMU_FWD(value)), function(), owning_(owning)
         {}
 
+        /**
+         * @brief Constructs a scoped object with the given value, destructor function, and ownership flag.
+         *
+         * @tparam T1 The type of the value.
+         * @tparam F1 The type of the destructor function.
+         * @param value The value to be stored.
+         * @param function The destructor function.
+         * @param owning Flag indicating ownership of the value.
+         */
         template<typename T1, cpts::not_equivalent<bool> F1>
         constexpr scoped(T1 && value, F1 && function, bool owning = true)
             EMU_NOEXCEPT_EXPR(value_type(EMU_FWD(value)), function_type(EMU_FWD(function)))
@@ -47,14 +78,25 @@ namespace emu
 
         scoped(const scoped & oc) = delete;
 
+        /**
+         * @brief Move constructor.
+         *
+         * @param oc The scoped object to be moved.
+         */
         constexpr scoped(scoped && oc)
-            EMU_NOEXCEPT_EXPR(value_type(mv(oc.value)), function_type(mv(oc.function))):
-            value(mv(oc.value)), function(mv(oc.function)),
-            owning_(std::exchange(oc.owning_, false))
+            EMU_NOEXCEPT_EXPR(value_type(mv(oc.value)), function_type(mv(oc.function)))
+            : value(mv(oc.value)), function(mv(oc.function))
+            , owning_(std::exchange(oc.owning_, false))
         {}
 
         scoped& operator=(const scoped & oc) = delete;
 
+        /**
+         * @brief Move assignment operator.
+         *
+         * @param oc The scoped object to be moved.
+         * @return scoped& The reference to the moved scoped object.
+         */
         scoped& operator=(scoped && oc)
             noexcept(noexcept_invoke and noexcept(std::declval<value_type&>() = mv(oc.value), std::declval<function_type&>() = mv(oc.function)))
         {
@@ -67,14 +109,28 @@ namespace emu
             return *this;
         };
 
+        /**
+         * @brief Destructor.
+         *
+         */
         ~scoped() noexcept(noexcept_invoke) {
             invoke();
         }
 
+        /**
+         * @brief Dereference operator.
+         *
+         * @return T& The reference to the stored value.
+         */
         constexpr T& operator*() noexcept {
             return value;
         }
 
+        /**
+         * @brief Const dereference operator.
+         *
+         * @return const T& The const reference to the stored value.
+         */
         constexpr const T& operator*() const noexcept {
             return value;
         }
@@ -82,6 +138,11 @@ namespace emu
         // TODO: Adds value methods.
         // TODO: Adds support for rvalue this (&&) methods.
 
+        /**
+         * @brief Releases ownership of the stored value.
+         *
+         * @return T The released value.
+         */
         constexpr T release()
             EMU_NOEXCEPT_EXPR(mv(std::declval<value_type&>()))
         {
@@ -89,6 +150,13 @@ namespace emu
             return mv(value);
         }
 
+        /**
+         * @brief Resets the stored value and ownership flag.
+         *
+         * @tparam T1 The type of the new value.
+         * @param new_value The new value to be stored.
+         * @param owning Flag indicating ownership of the new value.
+         */
         template<typename T1>
         constexpr void reset(T1 && new_value, bool owning = true)
             noexcept(noexcept_invoke and noexcept(std::declval<value_type&>() = EMU_FWD(new_value)))
@@ -98,6 +166,15 @@ namespace emu
             owning_ = owning;
         }
 
+        /**
+         * @brief Resets the stored value, destructor function, and ownership flag.
+         *
+         * @tparam T1 The type of the new value.
+         * @tparam F1 The type of the new destructor function.
+         * @param new_value The new value to be stored.
+         * @param new_function The new destructor function.
+         * @param owning Flag indicating ownership of the new value.
+         */
         template<typename T1, typename F1>
         constexpr void reset(T1 && new_value, F1 && new_function, bool owning = true)
             noexcept(noexcept_invoke
@@ -110,11 +187,20 @@ namespace emu
             owning_ = owning;
         }
 
+        /**
+         * @brief Checks if the scoped object owns the value.
+         *
+         * @return bool True if the scoped object owns the value, false otherwise.
+         */
         constexpr bool owning() const noexcept {
             return owning_;
         }
 
     private:
+        /**
+         * @brief Invokes the destructor function if the scoped object owns the value.
+         *
+         */
         void invoke() noexcept(noexcept_invoke) {
             if (owning_) function(value);
         }
@@ -223,9 +309,24 @@ namespace detail
 
 } // namespace detail
 
+    /**
+     * @brief Alias for a scoped pointer.
+     *
+     * @tparam T The type of the pointer.
+     * @tparam Deleter The type of the deleter function.
+     */
     template<typename T, typename Deleter = detail::deleter>
     using scoped_ptr = scoped<T*, Deleter>;
 
+    /**
+     * @brief Assigns a new value to a variable for the current scope.
+     *
+     * @tparam T The type of the variable.
+     * @tparam V The type of the new value.
+     * @param t The variable to be assigned.
+     * @param v The new value to be assigned.
+     * @return scoped A scoped object that assigns the old value back to the variable when it goes out of scope.
+     */
     template<typename T, typename V>
     constexpr auto assign_for_current_scope(T & t, V && v)
         EMU_NOEXCEPT_EXPR(std::exchange(t, EMU_FWD(v)))

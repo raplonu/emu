@@ -16,6 +16,7 @@ add_executable(emucoretest
     src/core/expected_test.cpp
     src/core/optional_test.cpp
     src/core/scoped_test.cpp
+    src/core/mdalgo_test.cpp
 )
 
 target_link_libraries(emucoretest PRIVATE

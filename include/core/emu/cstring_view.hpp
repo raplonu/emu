@@ -4,7 +4,6 @@
 #include <emu/assert.hpp>
 
 #include <string_view>
-#include <concepts>
 
 namespace emu
 {
@@ -33,7 +32,6 @@ namespace emu
         static constexpr size_type npos = string_view_type::npos;
 
         constexpr basic_cstring_view() noexcept = default;
-        constexpr basic_cstring_view( const basic_cstring_view& other ) noexcept = default;
 
         constexpr basic_cstring_view(null_terminated_t, const CharT* s, size_type count ) noexcept
             : string_view_type(s, count)
@@ -62,18 +60,24 @@ namespace emu
 
         constexpr basic_cstring_view( std::nullptr_t ) = delete;
 
+        constexpr basic_cstring_view( const basic_cstring_view& other ) noexcept = default;
+        constexpr basic_cstring_view( basic_cstring_view&& other ) noexcept = default;
+
+        constexpr basic_cstring_view& operator=( const basic_cstring_view& other ) noexcept = default;
+        constexpr basic_cstring_view& operator=( basic_cstring_view&& other ) noexcept = default;
+
         constexpr ~basic_cstring_view() = default;
 
         void remove_prefix( size_type n ) = delete;
 
-        constexpr basic_cstring_view substr(size_type pos = 0) const {
+        [[nodiscard]] constexpr basic_cstring_view substr(size_type pos = 0) const {
             return {null_terminated, string_view_type::substr(pos)};
         }
-        constexpr string_view_type substr(size_type pos, size_type n) const {
+        [[nodiscard]] constexpr string_view_type substr(size_type pos, size_type n) const {
             return string_view_type::substr(pos, n);
         }
 
-        constexpr const CharT* c_str() const noexcept {
+        [[nodiscard]] constexpr const CharT* c_str() const noexcept {
             return string_view_type::data();
         }
 
@@ -89,27 +93,27 @@ namespace literals
 {
     constexpr basic_cstring_view<char>
     operator ""_csv( const char* str, std::size_t len ) noexcept {
-        return basic_cstring_view<char>(null_terminated, str, len);
+        return {null_terminated, str, len};
     }
 
     constexpr basic_cstring_view<wchar_t>
     operator ""_csv( const wchar_t* str, std::size_t len ) noexcept {
-        return basic_cstring_view<wchar_t>(null_terminated, str, len);
+        return {null_terminated, str, len};
     }
 
     constexpr basic_cstring_view<char8_t>
     operator ""_sv( const char8_t* str, std::size_t len ) noexcept {
-        return basic_cstring_view<char8_t>(null_terminated, str, len);
+        return {null_terminated, str, len};
     }
 
     constexpr basic_cstring_view<char16_t>
     operator ""_sv( const char16_t* str, std::size_t len ) noexcept {
-        return basic_cstring_view<char16_t>(null_terminated, str, len);
+        return {null_terminated, str, len};
     }
 
     constexpr basic_cstring_view<char32_t>
     operator ""_sv( const char32_t* str, std::size_t len ) noexcept {
-        return basic_cstring_view<char32_t>(null_terminated, str, len);
+        return {null_terminated, str, len};
     }
 
 } // namespace literals

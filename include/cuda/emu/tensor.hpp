@@ -115,13 +115,14 @@ namespace spe
         // }
         constexpr auto format_value(const type &t, fmt::format_context::iterator it) const {
             auto [layout, is_stride] = [&] {
-                if        (detail::c_contigous(t)) {
+                if (detail::c_contigous(t))
                     return std::make_pair("C/right", false);
-                } else if (detail::f_contigous(t)) {
+
+                if (detail::f_contigous(t))
                     return std::make_pair("F/left", false);
-                } else {
-                    return std::make_pair("stride", true);
-                }
+
+                //TODO: check if stride is correct.
+                return std::make_pair("stride", true);
             }();
 
             it = fmt::format_to(it, "@{}[{}:{}]", fmt::ptr(t.Data()), t.Shape(), layout);
@@ -168,4 +169,3 @@ namespace fmt
     struct is_range<Tensor, Char>: std::false_type{};
 
 } // namespace fmt
-

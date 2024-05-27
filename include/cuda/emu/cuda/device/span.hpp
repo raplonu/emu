@@ -79,6 +79,10 @@ namespace cuda
 
 } // namespace cuda
 
+// std::span s = ...;
+
+// emu::cuda::span s2 = emu::assume_device(s);
+
 namespace detail
 {
 

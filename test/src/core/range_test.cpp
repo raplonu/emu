@@ -10,10 +10,10 @@ namespace
 {
     TEST(range_test, from_array)
     {
-        int input[3] = {1, 2, 3};
+        int input[] = {1, 2, 3};
         {
             auto v = emu::as_vector(input);
-            static_assert(std::is_same<decltype(v), std::vector<int>>::value, "");
+            static_assert(std::is_same_v<decltype(v), std::vector<int>>);
 
             using std::size;
             EXPECT_EQ(size(v), size(input));
@@ -24,7 +24,7 @@ namespace
 
         {
             auto v = emu::as_vector<unsigned int>(input);
-            static_assert(std::is_same<decltype(v), std::vector<unsigned int>>::value, "");
+            static_assert(std::is_same_v<decltype(v), std::vector<unsigned int>>);
 
             using std::size;
             EXPECT_EQ(size(v), size(input));
@@ -39,7 +39,7 @@ namespace
         const int input[3] = {1, 2, 3};
         {
             auto v = emu::as_vector(input);
-            static_assert(std::is_same<decltype(v), std::vector<int>>::value, "");
+            static_assert(std::is_same_v<decltype(v), std::vector<int>>);
 
             using std::size;
             EXPECT_EQ(size(v), size(input));
@@ -50,7 +50,7 @@ namespace
 
         {
             auto v = emu::as_vector<unsigned int>(input);
-            static_assert(std::is_same<decltype(v), std::vector<unsigned int>>::value, "");
+            static_assert(std::is_same_v<decltype(v), std::vector<unsigned int>>);
 
             using std::size;
             EXPECT_EQ(size(v), size(input));
@@ -65,7 +65,7 @@ namespace
         volatile int input[3] = {1, 2, 3};
         {
             auto v = emu::as_vector(input);
-            static_assert(std::is_same<decltype(v), std::vector<int>>::value, "");
+            static_assert(std::is_same_v<decltype(v), std::vector<int>>);
 
             using std::size;
             EXPECT_EQ(size(v), size(input));
@@ -76,7 +76,7 @@ namespace
 
         {
             auto v = emu::as_vector<unsigned int>(input);
-            static_assert(std::is_same<decltype(v), std::vector<unsigned int>>::value, "");
+            static_assert(std::is_same_v<decltype(v), std::vector<unsigned int>>);
 
             using std::size;
             EXPECT_EQ(size(v), size(input));
@@ -91,7 +91,7 @@ namespace
         std::array<int, 3> input{1, 2, 3};
         {
             auto v = emu::as_vector(input);
-            static_assert(std::is_same<decltype(v), std::vector<int>>::value, "");
+            static_assert(std::is_same_v<decltype(v), std::vector<int>>);
 
             using std::size;
             EXPECT_EQ(size(v), size(input));
@@ -102,7 +102,7 @@ namespace
 
         {
             auto v = emu::as_vector<unsigned int>(input);
-            static_assert(std::is_same<decltype(v), std::vector<unsigned int>>::value, "");
+            static_assert(std::is_same_v<decltype(v), std::vector<unsigned int>>);
 
             using std::size;
             EXPECT_EQ(size(v), size(input));
@@ -117,7 +117,7 @@ namespace
         std::array<const int, 3> input{1, 2, 3};
         {
             auto v = emu::as_vector(input);
-            static_assert(std::is_same<decltype(v), std::vector<int>>::value, "");
+            static_assert(std::is_same_v<decltype(v), std::vector<int>>);
 
             using std::size;
             EXPECT_EQ(size(v), size(input));
@@ -128,7 +128,7 @@ namespace
 
         {
             auto v = emu::as_vector<unsigned int>(input);
-            static_assert(std::is_same<decltype(v), std::vector<unsigned int>>::value, "");
+            static_assert(std::is_same_v<decltype(v), std::vector<unsigned int>>);
 
             using std::size;
             EXPECT_EQ(size(v), size(input));
@@ -143,7 +143,7 @@ namespace
         std::array<volatile int, 3> input{1, 2, 3};
         {
             auto v = emu::as_vector(input);
-            static_assert(std::is_same<decltype(v), std::vector<int>>::value, "");
+            static_assert(std::is_same_v<decltype(v), std::vector<int>>);
 
             using std::size;
             EXPECT_EQ(size(v), size(input));
@@ -154,7 +154,7 @@ namespace
 
         {
             auto v = emu::as_vector<unsigned int>(input);
-            static_assert(std::is_same<decltype(v), std::vector<unsigned int>>::value, "");
+            static_assert(std::is_same_v<decltype(v), std::vector<unsigned int>>);
 
             using std::size;
             EXPECT_EQ(size(v), size(input));
@@ -172,7 +172,7 @@ namespace
             std::array<emu::Spy, 1> input{{&flag}};
 
             auto v = emu::as_vector(emu::mv(input));
-            static_assert(std::is_same<decltype(v), std::vector<emu::Spy>>::value, "");
+            static_assert(std::is_same_v<decltype(v), std::vector<emu::Spy>>);
 
             // If a vector is moved, elements are not copied nor moved.
             EXPECT_TRUE(flag.copied);
@@ -185,7 +185,7 @@ namespace
             std::array<emu::Spy, 1> input{{&flag}};
 
             auto v = emu::as_vector<emu::Spy>(emu::mv(input));
-            static_assert(std::is_same<decltype(v), std::vector<emu::Spy>>::value, "");
+            static_assert(std::is_same_v<decltype(v), std::vector<emu::Spy>>);
 
             // If a vector is moved, elements are not copied nor moved.
             EXPECT_TRUE(flag.copied);
@@ -199,7 +199,7 @@ namespace
 
         {
             auto v = emu::as_vector(input);
-            static_assert(std::is_same<decltype(v), std::vector<int>>::value, "");
+            static_assert(std::is_same_v<decltype(v), std::vector<int>>);
 
             using std::size;
             EXPECT_EQ(size(v), size(input));
@@ -210,7 +210,7 @@ namespace
 
         {
             auto v = emu::as_vector<unsigned int>(input);
-            static_assert(std::is_same<decltype(v), std::vector<unsigned int>>::value, "");
+            static_assert(std::is_same_v<decltype(v), std::vector<unsigned int>>);
 
             using std::size;
             EXPECT_EQ(size(v), size(input));
@@ -228,7 +228,7 @@ namespace
             std::vector<emu::Spy> input; input.emplace_back(&flag);
 
             auto v = emu::as_vector(emu::mv(input));
-            static_assert(std::is_same<decltype(v), std::vector<emu::Spy>>::value, "");
+            static_assert(std::is_same_v<decltype(v), std::vector<emu::Spy>>);
 
             // If a vector is moved, elements are not copied nor moved.
             EXPECT_FALSE(flag.copied);
@@ -241,12 +241,11 @@ namespace
             std::vector<emu::Spy> input; input.emplace_back(&flag);
 
             auto v = emu::as_vector<emu::Spy>(emu::mv(input));
-            static_assert(std::is_same<decltype(v), std::vector<emu::Spy>>::value, "");
+            static_assert(std::is_same_v<decltype(v), std::vector<emu::Spy>>);
 
             // If a vector is moved, elements are not copied nor moved.
             EXPECT_FALSE(flag.copied);
             EXPECT_FALSE(flag.moved);
         }
     }
-}
-
+} // namespace

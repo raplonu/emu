@@ -216,6 +216,8 @@ namespace cpts
         mdcontainer& operator=(const mdcontainer&) = default;
         mdcontainer& operator=(mdcontainer&&) = default;
 
+        constexpr ~mdcontainer() = default;
+
         auto use_count() const {
             return capsule.use_count();
         }

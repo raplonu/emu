@@ -1,18 +1,12 @@
 #include <emu/cusolver/handle.hpp>
 
-namespace emu
+namespace emu::cusolver
 {
 
-namespace cusolver
-{
-
-namespace handle
-{
-
-namespace detail
+namespace handle::detail
 {
     id_t create() {
-        id_t id;
+        id_t id = nullptr;
         throw_if_error(cusolverDnCreate(&id));
         return id;
     }
@@ -26,14 +20,12 @@ namespace detail
     }
 
     ::cuda::stream::handle_t get_stream(id_t handle) {
-            ::cuda::stream::handle_t stream;
+            ::cuda::stream::handle_t stream = nullptr;
             throw_if_error(cusolverDnGetStream(handle, &stream));
             return stream;
     }
 
-} // namespace detail
-
-} // namespace handle
+} // namespace handle::detail
 
 handle_t::handle_t():
     id_(handle::detail::create(), true),
@@ -51,7 +43,7 @@ handle_t::handle_t(::cuda::device::id_t device_id):
 {}
 
 
-void handle_t::set_stream(const ::cuda::stream_t & stream) {
+void handle_t::set_stream(const ::cuda::stream_t & stream) const {
     handle::detail::set_stream(id(), stream.handle());
 }
 
@@ -66,16 +58,14 @@ namespace handle
         return {};
     }
 
-    handle_t create(::cuda::device_t device) {
+    handle_t create(const ::cuda::device_t& device) {
         return { device.id() };
     }
 
-    handle_t wrap(id_t id, ::cuda::device_t device, bool take_ownership) {
+    handle_t wrap(id_t id, const ::cuda::device_t& device, bool take_ownership) {
         return { id, device.id(), take_ownership };
     }
 
 } // namespace handle
 
-} // namespace cusolver
-
-} // namespace emu
+} // namespace emu::cusolver

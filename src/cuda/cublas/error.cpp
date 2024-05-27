@@ -1,10 +1,8 @@
-
 #include <emu/cublas/error.hpp>
 
-namespace emu
-{
+#include <string>
 
-namespace cublas
+namespace emu::cublas
 {
 
     std::string describe(status_t error_code) {
@@ -48,6 +46,4 @@ namespace cublas
 
     }
 
-} // namespace cublas
-
-} // namespace carma
+} // namespace emu::cublas

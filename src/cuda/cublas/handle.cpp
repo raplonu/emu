@@ -2,19 +2,13 @@
 
 #include <emu/cuda/device.hpp>
 
-namespace emu
+namespace emu::cublas
 {
 
-namespace cublas
-{
-
-namespace handle
-{
-
-namespace detail
+namespace handle::detail
 {
     id_t create() {
-        id_t id;
+        id_t id = nullptr;
         throw_if_error(cublasCreate(&id));
         return id;
     }
@@ -24,7 +18,7 @@ namespace detail
     }
 
     ::cuda::stream::handle_t get_stream(id_t handle) {
-        ::cuda::stream::handle_t stream;
+        ::cuda::stream::handle_t stream = nullptr;
         throw_if_error(cublasGetStream(handle, &stream));
         return stream;
     }
@@ -34,7 +28,7 @@ namespace detail
     }
 
     cublasMath_t get_math_mode(id_t handle) {
-        cublasMath_t mode;
+        cublasMath_t mode{};
         throw_if_error(cublasGetMathMode(handle, &mode));
         return mode;
     }
@@ -44,7 +38,7 @@ namespace detail
     }
 
     cublasPointerMode_t get_pointer_mode(id_t handle) {
-        cublasPointerMode_t mode;
+        cublasPointerMode_t mode{};
         throw_if_error(cublasGetPointerMode(handle, &mode));
         return mode;
     }
@@ -53,9 +47,7 @@ namespace detail
         throw_if_error(cublasSetPointerMode(handle, mode));
     }
 
-} // namespace detail
-
-} // namespace handle
+} // namespace handle::detail
 
 handle_t::handle_t():
     id_(handle::detail::create(), true),
@@ -72,7 +64,7 @@ handle_t::handle_t(::cuda::device::id_t device_id):
     device_id_(device_id)
 {}
 
-void handle_t::set_stream(const ::cuda::stream_t & stream) {
+void handle_t::set_stream(const ::cuda::stream_t & stream) const {
     handle::detail::set_stream(id(), stream.handle());
 }
 
@@ -87,7 +79,7 @@ void handle_t::set_stream(const ::cuda::stream_t & stream) {
         false, ::cuda::do_hold_primary_context_refcount_unit);
 }
 
-void handle_t::set_math_mode(cublasMath_t mode) {
+void handle_t::set_math_mode(cublasMath_t mode) const {
     handle::detail::set_math_mode(id(), mode);
 }
 
@@ -95,7 +87,7 @@ cublasMath_t handle_t::math_mode() const {
     return handle::detail::get_math_mode(id());
 }
 
-void handle_t::set_pointer_mode(cublasPointerMode_t mode) {
+void handle_t::set_pointer_mode(cublasPointerMode_t mode) const {
     handle::detail::set_pointer_mode(id(), mode);
 }
 
@@ -121,16 +113,14 @@ namespace handle
         return {};
     }
 
-    handle_t create(::cuda::device_t device) {
+    handle_t create(const ::cuda::device_t& device) {
         return { device.id() };
     }
 
-    handle_t wrap(id_t id, ::cuda::device_t device, bool take_ownership) {
+    handle_t wrap(id_t id, const ::cuda::device_t& device, bool take_ownership) {
         return { id, device.id(), take_ownership };
     }
 
 } // namespace handle
 
-} // namespace cublas
-
-} // namespace emu
+} // namespace emu::cublas

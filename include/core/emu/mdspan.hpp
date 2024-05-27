@@ -36,6 +36,9 @@ namespace emu
     using stdex::full_extent_t;
     using stdex::full_extent;
 
+// _Xd is an exception regarding the naming convention.
+// NOLINTBEGIN(readability-identifier-naming)
+
     template<std::size_t N>
     using _nd = dextents<std::size_t, N>;
 
@@ -44,6 +47,8 @@ namespace emu
     using _2d = _nd<2>;
     using _3d = _nd<3>;
     using _4d = _nd<4>;
+
+// NOLINTEND(readability-identifier-naming)
 
     using stdex::mdspan;
 

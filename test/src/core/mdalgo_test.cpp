@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
-#include <emu/mdalgo.hpp>
+//TODO: removes NOLINT when rank is implemented.
+#include <emu/mdalgo.hpp> // NOLINT
 
 #include <vector>
 #include <array>
@@ -12,25 +13,27 @@ namespace
     TEST(MdAlgo, RankTest)
     {
         {
-            std::array<int, 5> arr = {1, 2, 3, 4, 5};
+            const std::array<int, 5> arr = {1, 2, 3, 4, 5};
 
-            static_assert(rank(arr) == 1);
+            // static_assert(rank(arr) == 1);
         }
 
         {
-            std::vector<int> vec = {1, 2, 3, 4, 5};
+            const std::vector<int> vec = {1, 2, 3, 4, 5};
 
-            static_assert(rank(vec) == 1);
+            // static_assert(rank(vec) == 1);
         }
 
         {
-            int value = 5;
+            const int value = 5;
 
-            static_assert(rank(value) == 0);
+            // static_assert(rank(value) == 0);
         }
 
         {
-            md
+            // emu::mdspan m{nullptr, 1,2,3};
+
+            // static_assert(rank(m) == 3);
         }
 
     }

@@ -16,14 +16,36 @@ namespace emu
     struct type_name_t
     {};
 
+    /**
+     * @brief Generic type to string utility.
+     *
+     * @tparam T the type we want the name to format.
+     */
+    template <typename T>
+    constexpr type_name_t<T> type_name;
+
     template<typename T>
     auto format_as(type_name_t<T>) {
         return boost::core::demangle(typeid(T).name());
     }
 
     template <typename T>
+    auto type_name_of() -> std::string {
+        return fmt::to_string(type_name<T>);
+    }
+
+    template <typename T>
     struct numeric_name_t
     {};
+
+    /**
+     * @brief Special type name formatter for numeric type.
+     *
+     *
+     * @tparam T
+     */
+    template <typename T>
+    constexpr numeric_name_t<T> numeric_name;
 
     template<typename T>
     auto format_as(numeric_name_t<T>);
@@ -43,22 +65,5 @@ namespace emu
     MAP_NUM_NAME(half,     half    )
     MAP_NUM_NAME(float,    float   )
     MAP_NUM_NAME(double,   double  )
-
-    /**
-     * @brief Generic type to string utility.
-     *
-     * @tparam T the type we want the name to format.
-     */
-    template <typename T>
-    constexpr type_name_t<T> type_name;
-
-    /**
-     * @brief Special type name formatter for numeric type.
-     *
-     *
-     * @tparam T
-     */
-    template <typename T>
-    constexpr numeric_name_t<T> numeric_name;
 
 } // namespace emu

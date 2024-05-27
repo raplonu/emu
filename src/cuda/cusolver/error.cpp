@@ -1,9 +1,7 @@
 
 #include <emu/cusolver/error.hpp>
 
-namespace emu
-{
-namespace cusolver
+namespace emu::cusolver
 {
 
 std::string describe(status_t error_code)
@@ -42,6 +40,4 @@ std::string describe(status_t error_code)
 
 }
 
-} // namespace cusolver
-
-} //emu
+} // namespace emu::cusolver

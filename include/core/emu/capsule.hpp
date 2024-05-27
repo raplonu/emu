@@ -2,12 +2,11 @@
 
 #include <emu/utility.hpp>
 
+#include <gsl/pointers>
+
 #include <concepts>
-#include <type_traits>
 #include <atomic>
 #include <utility>
-
-#include <fmt/format.h>
 
 namespace emu
 {
@@ -20,6 +19,8 @@ namespace emu
          * @brief The interface for the held object.
          */
         struct interface {
+
+            interface() = default;
             /**
              * @brief Destructor.
              */
@@ -31,7 +32,6 @@ namespace emu
              * @brief Increases the reference count of the held object.
              */
             void hold() noexcept {
-                fmt::print("capsule::interface::hold: {}\n", (long)use_count);
                 ++use_count;
             }
 
@@ -40,9 +40,13 @@ namespace emu
              * @return True if the reference count reaches zero, false otherwise.
              */
             bool release() noexcept {
-                fmt::print("capsule::interface::release: {}\n", (long)use_count);
                 return (--use_count == 0);
             }
+
+            interface(const interface&) = delete;
+            interface(interface&&) = delete;
+            interface& operator=(const interface&) = delete;
+            interface& operator=(interface&&) = delete;
         };
 
         /**
@@ -60,7 +64,7 @@ namespace emu
             DataHolder data_holder; /**< The held object. */
         };
 
-        interface* holder = nullptr; /**< Pointer to the held object. */
+        gsl::owner<interface*> holder = nullptr; /**< Pointer to the held object. */
 
         /**
          * @brief Default constructor.
@@ -82,7 +86,7 @@ namespace emu
             : holder( new impl<DataHolder>( EMU_FWD(d) ) )
         {}
 
-        capsule(interface* holder)
+        capsule(gsl::owner<interface*> holder)
             : holder(holder)
         {
             if (holder) holder->hold();
@@ -103,6 +107,7 @@ namespace emu
          * @param other The capsule object to move from.
          */
         capsule(capsule&& other)
+        // NOLINTNEXTLINE(cppcoreguidelines-owning-memory) - lint bug with std::exchange.
             : holder(std::exchange(other.holder, nullptr))
         {}
 
@@ -125,6 +130,7 @@ namespace emu
          */
         capsule& operator=(capsule&& other) noexcept {
             reset();
+            // NOLINTNEXTLINE(cppcoreguidelines-owning-memory) - lint bug with std::exchange.
             holder = std::exchange(other.holder, nullptr);
             return *this;
         }
@@ -140,7 +146,8 @@ namespace emu
          * @brief Resets the capsule object by releasing the held object if necessary.
          */
         void reset() noexcept {
-            manual_release(holder);
+            // clang analyzer does not like the delete call here.
+            manual_release(holder); //NOLINT(clang-analyzer-cplusplus.NewDelete)
             holder = nullptr;
         }
 
@@ -148,7 +155,7 @@ namespace emu
          * @brief Returns the reference count of the held object.
          * @return The reference count of the held object.
          */
-        long use_count() const noexcept { return holder ? static_cast<long>(holder->use_count) : 0l; }
+        [[nodiscard]] long use_count() const noexcept { return holder ? static_cast<long>(holder->use_count) : 0l; }
 
         /**
          * @brief Conversion operator to bool.
@@ -168,12 +175,11 @@ namespace emu
          *
          * @param holder The capsule holder to release.
          */
-        static void manual_release(capsule::interface* holder) {
-            if (holder)
-                if (bool can_delete = holder->release(); can_delete) {
+        static void manual_release(gsl::owner<capsule::interface*> holder) {
+            if (holder) // pointer not null
+                if (bool can_delete = holder->release(); can_delete) // decrement use count and check if zero
                     delete holder;
-                    fmt::print("capsule::manual_release: deleted\n");
-                }
+
         }
     };
 

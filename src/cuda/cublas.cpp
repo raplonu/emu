@@ -1,10 +1,9 @@
 #include <emu/cublas.hpp>
 #include <emu/cublas/error.hpp>
 
-namespace emu
-{
+#include <cuda_fp16.h>
 
-namespace cublas
+namespace emu::cublas
 {
 
     // gemm syrk trsm potrf (cusolver)
@@ -108,6 +107,7 @@ namespace cublas
         constexpr static auto dgmm = cublasZdgmm;
     };
 
+// NOLINTBEGIN(readability-identifier-naming)
 
     template<typename T>
     void amax(const handle_t & handle, int n, const T *x, int incx, int *result) {
@@ -165,9 +165,9 @@ namespace cublas
         throw_if_error(CuBLAS<T>::dgmm(handle.enable().id(), convert(side), m,n, A, lda, x, incx, C, ldc));
     }
 
-    template void dgmm<float>          (const handle_t & handle, SideMode side, int m, int n, const float *A, int lda, const float *x, int incx, float *C, int ldc);
-    template void dgmm<double>         (const handle_t & handle, SideMode side, int m, int n, const double *A, int lda, const double *x, int incx, double *C, int ldc);
-    template void dgmm<cuComplex>      (const handle_t & handle, SideMode side, int m, int n, const cuComplex *A, int lda, const cuComplex *x, int incx, cuComplex *C, int ldc);
+    template void dgmm<float>          (const handle_t & handle, SideMode side, int m, int n, const float           *A, int lda, const float           *x, int incx, float           *C, int ldc);
+    template void dgmm<double>         (const handle_t & handle, SideMode side, int m, int n, const double          *A, int lda, const double          *x, int incx, double          *C, int ldc);
+    template void dgmm<cuComplex>      (const handle_t & handle, SideMode side, int m, int n, const cuComplex       *A, int lda, const cuComplex       *x, int incx, cuComplex       *C, int ldc);
     template void dgmm<cuDoubleComplex>(const handle_t & handle, SideMode side, int m, int n, const cuDoubleComplex *A, int lda, const cuDoubleComplex *x, int incx, cuDoubleComplex *C, int ldc);
 
     template<typename T>
@@ -211,25 +211,25 @@ namespace cublas
     template void trsm<cuDoubleComplex>(const handle_t & handle, SideMode side, FillMode uplo, Operation trans, DiagonalType diag, int m, int n, const cuDoubleComplex *alpha, const cuDoubleComplex *A, int lda, cuDoubleComplex *B, int ldb);
 
     template<typename T>
-    void getrf_batched(const handle_t & handle, int n, T *Aarray[], int lda, int *PivotArray, int *infoArray, int batchSize){
-        throw_if_error(CuBLAS<T>::getrf_batched(handle.enable().id(), n, Aarray, lda, PivotArray,infoArray, batchSize));
+    void getrf_batched(const handle_t & handle, int n, T *A_array[], int lda, int *pivot_array, int *info_array, int batch_size) {
+        throw_if_error(CuBLAS<T>::getrf_batched(handle.enable().id(), n, A_array, lda, pivot_array,info_array, batch_size));
     }
 
-    template void getrf_batched<float>          (const handle_t & handle, int n, float           *Aarray[], int lda, int *PivotArray, int *infoArray, int batchSize);
-    template void getrf_batched<double>         (const handle_t & handle, int n, double          *Aarray[], int lda, int *PivotArray, int *infoArray, int batchSize);
-    template void getrf_batched<cuComplex>      (const handle_t & handle, int n, cuComplex       *Aarray[], int lda, int *PivotArray, int *infoArray, int batchSize);
-    template void getrf_batched<cuDoubleComplex>(const handle_t & handle, int n, cuDoubleComplex *Aarray[], int lda, int *PivotArray, int *infoArray, int batchSize);
+    template void getrf_batched<float>          (const handle_t & handle, int n, float           *a_array[], int lda, int *pivot_array, int *info_array, int batch_size);
+    template void getrf_batched<double>         (const handle_t & handle, int n, double          *a_array[], int lda, int *pivot_array, int *info_array, int batch_size);
+    template void getrf_batched<cuComplex>      (const handle_t & handle, int n, cuComplex       *a_array[], int lda, int *pivot_array, int *info_array, int batch_size);
+    template void getrf_batched<cuDoubleComplex>(const handle_t & handle, int n, cuDoubleComplex *a_array[], int lda, int *pivot_array, int *info_array, int batch_size);
 
     template<typename T>
-    void getri_batched(const handle_t & handle, int n, T *Aarray[], int lda, int *PivotArray, T *Carray[], int ldc, int *infoArray, int batchSize){
-         throw_if_error(CuBLAS<T>::getri_batched(handle.enable().id(), n, Aarray, lda, PivotArray, Carray, ldc, infoArray, batchSize));
+    void getri_batched(const handle_t & handle, int n, T *A_array[], int lda, int *pivot_array, T *c_array[], int ldc, int *info_array, int batch_size){
+         throw_if_error(CuBLAS<T>::getri_batched(handle.enable().id(), n, A_array, lda, pivot_array, c_array, ldc, info_array, batch_size));
     }
 
-    template void getri_batched<float>          (const handle_t & handle, int n, float           *Aarray[], int lda, int *PivotArray, float           *Carray[], int ldc, int *infoArray, int batchSize);
-    template void getri_batched<double>         (const handle_t & handle, int n, double          *Aarray[], int lda, int *PivotArray, double          *Carray[], int ldc, int *infoArray, int batchSize);
-    template void getri_batched<cuComplex>      (const handle_t & handle, int n, cuComplex       *Aarray[], int lda, int *PivotArray, cuComplex       *Carray[], int ldc, int *infoArray, int batchSize);
-    template void getri_batched<cuDoubleComplex>(const handle_t & handle, int n, cuDoubleComplex *Aarray[], int lda, int *PivotArray, cuDoubleComplex *Carray[], int ldc, int *infoArray, int batchSize);
+    template void getri_batched<float>          (const handle_t & handle, int n, float           *a_array[], int lda, int *pivot_array, float           *c_array[], int ldc, int *info_array, int batch_size);
+    template void getri_batched<double>         (const handle_t & handle, int n, double          *a_array[], int lda, int *pivot_array, double          *c_array[], int ldc, int *info_array, int batch_size);
+    template void getri_batched<cuComplex>      (const handle_t & handle, int n, cuComplex       *a_array[], int lda, int *pivot_array, cuComplex       *c_array[], int ldc, int *info_array, int batch_size);
+    template void getri_batched<cuDoubleComplex>(const handle_t & handle, int n, cuDoubleComplex *a_array[], int lda, int *pivot_array, cuDoubleComplex *c_array[], int ldc, int *info_array, int batch_size);
 
-} // namespace cublas
+// NOLINTEND(readability-identifier-naming)
 
-} // namespace emu
+} // namespace emu::cublas

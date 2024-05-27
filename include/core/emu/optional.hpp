@@ -133,6 +133,14 @@ namespace emu
             return tl::nullopt;
     }
 
+    template<typename T>
+    tl::optional<std::reference_wrapper<T>> as_opt_ref(T* ptr) noexcept {
+        if (ptr)
+            return std::ref(*ptr);
+        else
+            return tl::nullopt;
+    }
+
 } // namespace emu
 
 template<typename T, typename Char>

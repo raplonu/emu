@@ -10,63 +10,62 @@
 #include <emu/info.hpp>
 
 #include <cstdlib>
-#include <type_traits>
 
 template<typename C>
-void check(C &con, size_t s, int c){
-    EXPECT_EQ(con.size(), s);
-    EXPECT_EQ(con.use_count(), c);
+void check(C &container, size_t expected_size, int expected_ptr_count){
+    EXPECT_EQ(container.size(), expected_size);
+    EXPECT_EQ(container.use_count(), expected_ptr_count);
 }
 template<typename C, typename T>
-void check(C &con, size_t s, int c, const T *ptr){
-    EXPECT_EQ(con.data_handle(), ptr);
-    check(con, s, c);
+void check(C &container, size_t expected_size, int expected_ptr_count, const T *ptr){
+    EXPECT_EQ(container.data_handle(), ptr);
+    check(container, expected_size, expected_ptr_count);
 }
 template<typename C, typename A, std::size_t N>
-void check(C &con, size_t s, int c, const std::array<A,N> &dims){
-    check(con, s, c);
+void check(C &container, size_t expected_size, int expected_ptr_count, const std::array<A,N> &dims){
+    check(container, expected_size, expected_ptr_count);
     for(int i=0;i<N;i++){
-        EXPECT_EQ(con.extents().extent(i),dims[i]);
+        EXPECT_EQ(container.extents().extent(i),dims[i]);
     }
 }
 template<typename C, typename T, typename A, std::size_t N>
-void check(C &con, size_t s, int c, const T *ptr, const std::array<A,N> &dims){
-    check(con, s, c, ptr);
+void check(C &container, size_t expected_size, int expected_ptr_count, const T *ptr, const std::array<A,N> &dims){
+    check(container, expected_size, expected_ptr_count, ptr);
     for(std::size_t i=0;i<N;i++){
-        EXPECT_EQ(con.extents().extent(i),dims[i]);
+        EXPECT_EQ(container.extents().extent(i),dims[i]);
     }
 }
 
 namespace
 {
 
-    template<typename T, int d>
+    template<typename T, int D>
     void test_construct_1(){
-        emu::mdcontainer<T, emu::_nd<d>> con;
+        emu::mdcontainer<T, emu::_nd<D>> con;
         check(con, 0, 0, (T*)nullptr);
     };
 
-    template<typename T, int ... exts>
+    template<typename T, int ... Exts>
     void test_construct_2(){
-        int cpt = 1;
-        constexpr std::size_t d = sizeof...(exts);
-        size_t size = (1 * ... * exts);
+        const int cpt = 1;
+        constexpr std::size_t d = sizeof...(Exts);
+        const size_t size = (1 * ... * Exts);
 
         std::vector<T> v(size,1);
         T * ptr = v.data();
-        emu::mdcontainer con(std::move(v),exts...);
+        emu::mdcontainer con(std::move(v), Exts...);
 
         check(con, size, cpt, ptr);
     };
 
-    template<typename T, int ... exts>
+    template<typename T, int ... Exts>
     void test_construct_3(){
-        int cpt = 1;
-        constexpr std::size_t d = sizeof...(exts);
-        size_t size = (1 * ... * exts);
-        auto dims = std::array{exts...};
+        const int cpt = 1;
+        constexpr std::size_t d = sizeof...(Exts);
+        const size_t size = (1 * ... * Exts);
+        auto dims = std::array{Exts...};
 
-        emu::span sdims = dims;
+        const emu::span sdims = dims;
         std::vector<T> v(size, 1);
         T * ptr = v.data();
         emu::mdcontainer con(std::move(v), sdims);
@@ -74,12 +73,12 @@ namespace
         check(con, size, cpt, ptr, dims);
     };
 
-    template<typename T, int ... exts>
+    template<typename T, int ... Exts>
     void test_construct_4(){
-        int cpt = 1;
-        constexpr std::size_t d = sizeof...(exts);
-        size_t size = (1 * ... * exts);
-        auto dims = std::array{exts...};
+        const int cpt = 1;
+        constexpr std::size_t d = sizeof...(Exts);
+        const size_t size = (1 * ... * Exts);
+        auto dims = std::array{Exts...};
 
         std::vector<T> v(size,cpt);
         T * ptr = v.data();
@@ -88,34 +87,34 @@ namespace
         check(con, size, cpt, ptr, dims);
     };
 
-    template<typename T, int ... exts>
+    template<typename T, int ... Exts>
     void test_construct_5(){
-        int cpt = 1;
-        constexpr std::size_t d = sizeof...(exts);
-        size_t size = (1 * ... * exts);
-        auto dims = std::array{exts...};
+        const int cpt = 1;
+        constexpr std::size_t d = sizeof...(Exts);
+        const size_t size = (1 * ... * Exts);
+        auto dims = std::array{Exts...};
 
         std::vector<T> v(size,1);
         T * ptr = v.data();
-        emu::extents ext_t(exts...);
+        const emu::extents ext_t(Exts...);
         emu::mdcontainer con(std::move(v),ext_t);
 
         check(con, size, cpt, ptr, dims);
     };
 
-    template<typename T, int ... exts>
+    template<typename T, int ... Exts>
     void test_construct_6(){
-        int cpt = 1;
-        constexpr std::size_t d = sizeof...(exts);
-        size_t size = (1 * ... * exts);
-        auto dims = std::array{exts...};
+        const int cpt = 1;
+        constexpr std::size_t d = sizeof...(Exts);
+        const size_t size = (1 * ... * Exts);
+        auto dims = std::array{Exts...};
 
         std::vector<T> v(size,1);
         T * ptr = v.data();
         using mdc = emu::mdcontainer<T, emu::_nd<d>>;
         using mapping_t = typename mdc::mapping_type;
-        emu::extents ext_t(exts...);
-        mapping_t mapping(ext_t);
+        const emu::extents ext_t(Exts...);
+        const mapping_t mapping(ext_t);
         emu::mdcontainer con(std::move(v),mapping);
 
         check(con, size, cpt, ptr, dims);
@@ -162,67 +161,67 @@ namespace
         }
     }
 
-    template<typename T, int ... exts>
+    template<typename T, int... Exts>
     void test_make_2(){
-        int cpt = 1;
-        constexpr std::size_t d = sizeof...(exts);
-        size_t size = (1 * ... * exts);
-        auto dims = std::array{exts...};
+        const int cpt = 1;
+        constexpr std::size_t d = sizeof...(Exts);
+        const size_t size = (1 * ... * Exts);
+        auto dims = std::array{Exts...};
 
-        auto con = emu::make_mdcontainer<T>(exts...);
+        auto con = emu::make_mdcontainer<T>(Exts...);
 
         check(con, size, cpt, dims);
     };
 
-    template<typename T, int ... exts>
+    template<typename T, int ... Exts>
     void test_make_3(){
-        int cpt = 1;
-        constexpr std::size_t d = sizeof...(exts);
-        size_t size = (1 * ... * exts);
-        auto dims = std::array{exts...};
+        const int cpt = 1;
+        constexpr std::size_t d = sizeof...(Exts);
+        const size_t size = (1 * ... * Exts);
+        auto dims = std::array{Exts...};
 
-        emu::span sdims = dims;
+        const emu::span sdims = dims;
         auto con = emu::make_mdcontainer<T>(sdims);
 
         check(con, size, cpt, dims);
     };
 
-    template<typename T, int ... exts>
+    template<typename T, int ... Exts>
     void test_make_4(){
-        int cpt = 1;
-        constexpr std::size_t d = sizeof...(exts);
-        size_t size = (1 * ... * exts);
-        auto dims = std::array{exts...};
+        const int cpt = 1;
+        constexpr std::size_t d = sizeof...(Exts);
+        const size_t size = (1 * ... * Exts);
+        auto dims = std::array{Exts...};
 
         auto con = emu::make_mdcontainer<T>(dims);
 
         check(con, size, cpt, dims);
     };
 
-    template<typename T, int ... exts>
+    template<typename T, int ... Exts>
     void test_make_5(){
-        int cpt = 1;
-        constexpr std::size_t d = sizeof...(exts);
-        size_t size = (1 * ... * exts);
-        auto dims = std::array{exts...};
+        const int cpt = 1;
+        constexpr std::size_t d = sizeof...(Exts);
+        const size_t size = (1 * ... * Exts);
+        auto dims = std::array{Exts...};
 
-        const emu::_nd<d> ext_t(exts...);
+        const emu::_nd<d> ext_t(Exts...);
         auto con = emu::make_mdcontainer<T,d>(ext_t);
 
         check(con, size, cpt, dims);
     };
 
-    template<typename T, int ... exts>
+    template<typename T, int ... Exts>
     void test_make_6(){
-        int cpt = 1;
-        constexpr std::size_t d = sizeof...(exts);
-        size_t size = (1 * ... * exts);
-        auto dims = std::array{exts...};
+        const int cpt = 1;
+        constexpr std::size_t d = sizeof...(Exts);
+        const size_t size = (1 * ... * Exts);
+        auto dims = std::array{Exts...};
 
         using mdc = emu::mdcontainer<T, emu::_nd<d>>;
         using mapping_t = typename mdc::mapping_type;
 
-        emu::extents ext_t(exts...);
+        const emu::extents ext_t(Exts...);
         const mapping_t mapping(ext_t);
         auto con = emu::make_mdcontainer<T>(mapping);
 
@@ -282,4 +281,4 @@ namespace
         EXPECT_EQ(sub.use_count(), 2);
     }
 
-}
+} // namespace

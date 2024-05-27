@@ -5,14 +5,12 @@
 #include <boost/preprocessor/cat.hpp>
 #include <boost/preprocessor/stringize.hpp>
 
-#include <type_traits>
-
 /// Specify noinline attribute regardless of compiler.
 /// gcc allow cold path attribute.
 /// See https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#Common-Function-Attributes
 #if EMU_GCC or EMU_CUDACC
 #define EMU_NOINLINE __attribute__((__noinline__,cold))
-#else // compilator is neither gcc nor nvcc.
+#else // compiler is neither gcc nor nvcc.
 #define EMU_NOINLINE BOOST_NOINLINE
 #endif
 

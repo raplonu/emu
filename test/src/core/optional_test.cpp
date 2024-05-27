@@ -29,5 +29,4 @@ namespace
         EXPECT_EQ(*as<int>(o3), 0);
     }
 
-}
-
+} // namespace

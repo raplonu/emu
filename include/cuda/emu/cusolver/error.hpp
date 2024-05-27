@@ -4,10 +4,7 @@
 
 #include <cusolverDn.h>
 
-namespace emu
-{
-
-namespace cusolver
+namespace emu::cusolver
 {
     using status_t = cusolverStatus_t;
 
@@ -32,6 +29,4 @@ namespace cusolver
 
     EMU_GENERATE_ERROR_HANDLER("Cusolver", runtime_error, std::runtime_error, status_t, status::success, describe)
 
-} // namespace cusolver
-
-} // namespace emu
+} // namespace emu::cusolver

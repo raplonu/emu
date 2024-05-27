@@ -1,15 +1,12 @@
 #pragma once
 
 #include <emu/mdspan.hpp>
-#include <emu/cuda.h>
+#include <emu/cuda.hpp>
 
 #include <span>
 #include <array>
 
-namespace emu
-{
-
-namespace cuda
+namespace emu::cuda
 {
 
     template <typename ElementType, typename Extents, typename LayoutPolicy = layout_right, typename AccessorPolicy = default_accessor<ElementType>>
@@ -95,6 +92,4 @@ namespace cuda
     template<typename ElementType> using mdspan_2d_s = mdspan<ElementType, _2d, layout_stride>;
     template<typename ElementType> using mdspan_3d_s = mdspan<ElementType, _3d, layout_stride>;
 
-} // namespace cuda
-
-} // namespace emu
+} // namespace emu::cuda

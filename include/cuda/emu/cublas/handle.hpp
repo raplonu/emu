@@ -6,10 +6,7 @@
 #include <emu/scoped.hpp>
 #include <emu/cuda/device.hpp>
 
-namespace emu
-{
-
-namespace cublas
+namespace emu::cublas
 {
 
     struct handle_t;
@@ -31,7 +28,7 @@ namespace detail
 
     ::cuda::stream::handle_t get_stream(id_t handle);
 
-    void set_stream(id_t handle, ::cuda::stream::handle_t mode);
+    void set_stream(id_t handle, ::cuda::stream::handle_t stream);
 
     cublasMath_t get_math_mode(id_t handle);
 
@@ -43,7 +40,7 @@ namespace detail
 
 } // namespace detail
 
-    using ScopedHandle = scoped<const id_t, detail::Destroyer>;
+    using scoped_handle = scoped<const id_t, detail::Destroyer>;
 
 } // namespace handle
 
@@ -61,28 +58,29 @@ namespace detail
         handle_t& operator=(handle_t &&) = default;
         handle_t& operator=(const handle_t &) = delete;
 
-        handle::id_t id() const noexcept { return id_.value; }
+        [[nodiscard]] handle::id_t id() const noexcept { return id_.value; }
+        [[nodiscard]] ::cuda::device::id_t device_id() const noexcept { return device_id_; }
 
-        void set_stream(const ::cuda::stream_t & stream);
+        void set_stream(const ::cuda::stream_t & stream) const;
 
-        ::cuda::stream_t stream() const;
+        [[nodiscard]] ::cuda::stream_t stream() const;
 
-        void set_math_mode(cublasMath_t mode);
+        void set_math_mode(cublasMath_t mode) const;
 
-        cublasMath_t math_mode() const;
+        [[nodiscard]] cublasMath_t math_mode() const;
 
-        void set_pointer_mode(cublasPointerMode_t mode);
+        void set_pointer_mode(cublasPointerMode_t mode) const;
 
-        cublasPointerMode_t pointer_mode() const;
+        [[nodiscard]] cublasPointerMode_t pointer_mode() const;
 
         handle_t & enable();
 
-        const handle_t & enable() const;
+        [[nodiscard]] const handle_t & enable() const;
 
         ~handle_t() = default;
 
     private:
-        handle::ScopedHandle id_;
+        handle::scoped_handle id_;
         ::cuda::device::id_t device_id_;
     };
 
@@ -102,6 +100,4 @@ namespace handle
 
 } // namespace handle
 
-} // namespace cublas
-
-} // namespace emu
+} // namespace emu::cublas

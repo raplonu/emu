@@ -40,7 +40,8 @@ namespace
 
             auto res = emu::map(opt, [](int i) { return i * 2; });
 
-            EXPECT_EQ(*res, 84);
+            ASSERT_TRUE(res.has_value());
+            EXPECT_EQ(*res, 84); // NOLINT(bugprone-unchecked-optional-access) It is checked.
         }
 
         {
@@ -79,7 +80,7 @@ namespace
     {
 
         {
-            int i = 42;
+            const int i = 42;
 
             auto res = emu::as<double>(i);
 
@@ -90,4 +91,4 @@ namespace
 
     }
 
-}
+} // namespace

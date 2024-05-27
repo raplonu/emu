@@ -5,11 +5,12 @@
 
 #include <cublas_v2.h>
 
-namespace emu
+namespace emu::cublas
 {
 
-namespace cublas
-{
+// follow blas naming convention for readability. lint naming checks are disabled for this section
+// NOLINTBEGIN(readability-identifier-naming)
+
     // Blas level 1
 
     template<typename T>
@@ -181,12 +182,11 @@ namespace cublas
     void herkx(const handle_t & handle, FillMode uplo, Operation trans, int n, int k, const T *alpha, const T *A, int lda, const T *B, int ldb, const T  *beta, T *C, int ldc);
 
     template<typename T>
-    void getrf_batched(const handle_t & handle, int n, T *Aarray[], int lda, int *PivotArray, int *infoArray, int batchSize);
+    void getrf_batched(const handle_t & handle, int n, T *A_array[], int lda, int *pivot_array, int *info_array, int batch_size);
 
     template<typename T>
-    void getri_batched(const handle_t & handle, int n, T *Aarray[], int lda, int *PivotArray, T *Carray[], int ldc, int *infoArray, int batchSize);
+    void getri_batched(const handle_t & handle, int n, T *A_array[], int lda, int *pivot_array, T *c_array[], int ldc, int *info_array, int batch_size);
 
-} // namespace cublas
+// NOLINTEND(readability-identifier-naming)
 
-} // namespace emu
-
+} // namespace emu::cublas

@@ -6,6 +6,6 @@ namespace emu
 {
     void fun()
     {
-        fmt::print("Hello {}!!!!!!!!\n", "EMU");
+        fmt::print("Hello {}!\n", "EMU");
     }
 } // namespace emu

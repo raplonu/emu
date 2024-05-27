@@ -3,10 +3,9 @@
 #include <emu/capsule.hpp>
 #include <emu/scoped.hpp>
 
-#include <vector>
-#include <array>
-
 using namespace emu;
+
+// NOLINTBEGIN(performance-*)
 
 namespace
 {
@@ -30,79 +29,106 @@ namespace
     TEST(Capsule, EmptyCapsule)
     {
         {
-            capsule c;
+            const capsule cap;
 
-            EXPECT_EQ(c.use_count(), 0);
+            EXPECT_EQ(cap.use_count(), 0);
 
-            capsule c2 = c;
+            const capsule cap2 = cap;
 
-            EXPECT_EQ(c.use_count(), 0);
-            EXPECT_EQ(c2.use_count(), 0);
+            EXPECT_EQ(cap.use_count(), 0);
+            EXPECT_EQ(cap2.use_count(), 0);
         }
 
         {
-            capsule c;
-            auto& c_ref = c;
-            capsule c2 = c_ref;
+            const capsule cap;
+            const auto& c_ref = cap;
+            const capsule cap2 = c_ref;
 
-            EXPECT_EQ(c2.use_count(), 0);
+            EXPECT_EQ(cap2.use_count(), 0);
         }
 
         {
-            auto l = [] { return capsule(); };
-            capsule c(l());
+            auto capsule_factory = [] { return capsule(); };
+            const capsule cap(capsule_factory());
 
-            EXPECT_EQ(c.use_count(), 0);
+            EXPECT_EQ(cap.use_count(), 0);
         }
 
     }
 
-    TEST(Capsule, SimpleCapsule)
+    TEST(Capsule, SimpleValue)
     {
-        {
-            // put a random value into capsule
-            capsule c(5);
+        // put a random value into capsule
+        const capsule cap(0);
 
-            EXPECT_EQ(c.use_count(), 1);
-        }
+        EXPECT_EQ(cap.use_count(), 1);
+    }
 
-        {
-            std::shared_ptr<int> p = std::make_shared<int>(5);
-            EXPECT_EQ(p.use_count(), 1);
+    void f() {
+        auto managed_value = std::make_shared<int>(0);
+        assert(managed_value.use_count() == 1);
 
-            // capsule does not copy lvalue by default.
-            // object copy needs to be explicitly requested.
-            capsule c = std::shared_ptr<int>(p);
-            EXPECT_EQ(c.use_count(), 1);
-            EXPECT_EQ(p.use_count(), 2);
+        // capsule does not copy lvalue by default.
+        // object copy needs to be explicitly requested.
+        capsule cap = std::shared_ptr(managed_value);
+        assert(cap.use_count() == 1);
+        assert(managed_value.use_count() == 2);
 
-            capsule c2 = c;
-            EXPECT_EQ(c.use_count(), 2);
-            EXPECT_EQ(c2.use_count(), 2);
-            // New capsule does not copy the object.
-            EXPECT_EQ(p.use_count(), 2);
+        capsule cap2 = cap;
+        assert(cap.use_count() == 2);
+        assert(cap2.use_count() == 2);
+        // New capsule does not copy the object.
+        assert(managed_value.use_count() == 2);
 
-            c.reset();
-            EXPECT_EQ(c.use_count(), 0);
+        cap.reset();
+        assert(cap.use_count() == 0);
 
-            c2.reset();
-            EXPECT_EQ(c2.use_count(), 0);
+        cap2.reset();
+        assert(cap2.use_count() == 0);
 
-            EXPECT_EQ(p.use_count(), 1);
-        }
+        assert(managed_value.use_count() == 1);
+    }
 
-        {
-            int called_nb = 0;
-            scoped s([&]{ called_nb++; });
+    TEST(Capsule, ManagedValue)
+    {
+        auto managed_value = std::make_shared<int>(0);
+        EXPECT_EQ(managed_value.use_count(), 1);
 
-            capsule c = std::move(s);
+        // capsule does not copy lvalue by default.
+        // object copy needs to be explicitly requested.
+        capsule cap = std::shared_ptr(managed_value);
+        EXPECT_EQ(cap.use_count(), 1);
+        EXPECT_EQ(managed_value.use_count(), 2);
 
-            EXPECT_EQ(called_nb, 0);
+        capsule cap2 = cap;
+        EXPECT_EQ(cap.use_count(), 2);
+        EXPECT_EQ(cap2.use_count(), 2);
+        // New capsule does not copy the object.
+        EXPECT_EQ(managed_value.use_count(), 2);
 
-            c.reset();
+        cap.reset();
+        EXPECT_EQ(cap.use_count(), 0);
 
-            EXPECT_EQ(called_nb, 1);
-        }
+        cap2.reset();
+        EXPECT_EQ(cap2.use_count(), 0);
+
+        EXPECT_EQ(managed_value.use_count(), 1);
+    }
+
+    TEST(Capsule, Scoped)
+    {
+        int called_nb = 0;
+        scoped incr_at_destruction([&]{ called_nb++; });
+
+        capsule cap = std::move(incr_at_destruction);
+
+        EXPECT_EQ(called_nb, 0);
+
+        cap.reset();
+
+        EXPECT_EQ(called_nb, 1);
     }
 
 } // namespace
+
+// NOLINTEND(performance-*)
