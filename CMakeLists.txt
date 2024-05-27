@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 3.18)
 
 project(emu VERSION 1.0.0 LANGUAGES CXX)
 
-option(emu_build_cuda "Build cuda module" ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+option(emu_build_cuda "Build cuda module" OFF)
 
 if (emu_build_cuda)
     enable_language(CUDA)

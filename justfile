@@ -36,6 +36,15 @@ python-build build_type="release":
     @cd python # stupid cmake does not allow to specify the directory...
     cmake --build --preset "conan-{{build_type}}"
 
+enable-tidy build_type="release":
+    #!/usr/bin/env bash
+    set -euxo pipefail
+    ct_path=$(which clang-tidy)
+    cmake --preset "conan-{{build_type}}" -DCMAKE_CXX_CLANG_TIDY="$ct_path;--warnings-as-errors"
+
+disable-tidy build_type="release":
+    cmake --preset "conan-{{build_type}}" -DCMAKE_CXX_CLANG_TIDY=""
+
 # Run tests
 test build_type="release":
     just cpp-test {{build_type}}
