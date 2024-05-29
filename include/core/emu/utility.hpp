@@ -4,19 +4,22 @@
 #include <emu/macro.hpp>
 #include <emu/type_traits.hpp>
 
+#include <boost/callable_traits/args.hpp>
+#include <boost/hana/fwd/core/make.hpp>
+
 #include <type_traits>
 #include <algorithm>
 #include <functional>
 #include <utility>
 #include <memory>
-
-#include <boost/callable_traits/args.hpp>
-#include <boost/hana/fwd/core/make.hpp>
+#include <cstddef>
 
 namespace emu
 {
 
-    using std::size_t, std::move;
+    using std::size_t, std::move, std::byte;
+
+    using boost::hana::make;
 
     //###################### SIZE ########################
 
@@ -156,7 +159,5 @@ namespace detail
 
         return std::invoke(EMU_FWD(fn), make_type_pack_from_tuple<ct::args_t<Fn>>{});
     }
-
-    using boost::hana::make;
 
 } // namespace emu
