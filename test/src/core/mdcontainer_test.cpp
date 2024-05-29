@@ -48,7 +48,6 @@ namespace
     template<typename T, int ... Exts>
     void test_construct_2(){
         const int cpt = 1;
-        // constexpr std::size_t d = sizeof...(Exts);
         const size_t size = (1 * ... * Exts);
 
         std::vector<T> v(size,1);
@@ -61,7 +60,6 @@ namespace
     template<typename T, int ... Exts>
     void test_construct_3(){
         const int cpt = 1;
-        // constexpr std::size_t d = sizeof...(Exts);
         const size_t size = (1 * ... * Exts);
         auto dims = std::array{Exts...};
 
@@ -76,7 +74,6 @@ namespace
     template<typename T, int ... Exts>
     void test_construct_4(){
         const int cpt = 1;
-        // constexpr std::size_t d = sizeof...(Exts);
         const size_t size = (1 * ... * Exts);
         auto dims = std::array{Exts...};
 
@@ -90,7 +87,6 @@ namespace
     template<typename T, int ... Exts>
     void test_construct_5(){
         const int cpt = 1;
-        // constexpr std::size_t d = sizeof...(Exts);
         const size_t size = (1 * ... * Exts);
         auto dims = std::array{Exts...};
 
@@ -164,7 +160,6 @@ namespace
     template<typename T, int... Exts>
     void test_make_2(){
         const int cpt = 1;
-        // constexpr std::size_t d = sizeof...(Exts);
         const size_t size = (1 * ... * Exts);
         auto dims = std::array{Exts...};
 
@@ -176,7 +171,6 @@ namespace
     template<typename T, int ... Exts>
     void test_make_3(){
         const int cpt = 1;
-        // constexpr std::size_t d = sizeof...(Exts);
         const size_t size = (1 * ... * Exts);
         auto dims = std::array{Exts...};
 
@@ -189,7 +183,6 @@ namespace
     template<typename T, int ... Exts>
     void test_make_4(){
         const int cpt = 1;
-        // constexpr std::size_t d = sizeof...(Exts);
         const size_t size = (1 * ... * Exts);
         auto dims = std::array{Exts...};
 

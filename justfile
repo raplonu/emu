@@ -16,8 +16,11 @@ build build_type="release":
 test build_type="release":
     ctest --preset conan-{{build_type}}
 
-enable-pedantic build_type="default":
+enable-wall build_type="default":
     cmake --preset "conan-{{build_type}}" -DCMAKE_CXX_FLAGS="-Wall -Wextra -pedantic -Werror -Wno-unused-parameter -Wno-unused-but-set-variable"
+
+disable-wall build_type="default":
+    cmake --preset "conan-{{build_type}}" -DCMAKE_CXX_FLAGS=""
 
 enable-tidy build_type="default":
     #!/usr/bin/env bash
