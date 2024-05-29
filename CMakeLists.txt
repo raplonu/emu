@@ -20,6 +20,9 @@ add_library(emucore)
 target_sources(emucore
     PRIVATE
         src/core/fun.cpp
+)
+
+target_sources(emucore
     PUBLIC FILE_SET HEADERS BASE_DIRS include/core FILES
         include/core/emu/blas.hpp
         include/core/emu/tuple.hpp
@@ -111,7 +114,9 @@ if (emu_build_cuda)
             src/cuda/cusolver.cpp
 
             src/cuda/thrust/execution_policy.cu
+    )
 
+    target_sources(emucuda
         PUBLIC FILE_SET HEADERS BASE_DIRS include/cuda FILES
             include/cuda/emu/config.cuh
             include/cuda/emu/cublas.hpp

@@ -47,14 +47,15 @@ class EmuConan(ConanFile):
 
     def layout(self):
         cmake_layout(self)
+        libdir = self.cpp.build.libdirs[0] # this is stupid but it works.
         self.cpp.source.components['core'].includedirs = ['include/core']
-        self.cpp.build.components['core'].libdirs = ['.']
+        self.cpp.build.components['core'].libdirs = [libdir]
 
         if self.options.cuda:
             cuda_prop = self.python_requires['conan_cuda'].module.properties()
 
             self.cpp.source.components['cuda'].includedirs = ['include/cuda', cuda_prop.include]
-            self.cpp.build.components['cuda'].libdirs = ['.', cuda_prop.library]
+            self.cpp.build.components['cuda'].libdirs = [libdir, cuda_prop.library]
             self.cpp.build.components['cuda'].system_libs = ['cuda', 'cudart', 'cublas']
 
     generators = 'CMakeDeps'
