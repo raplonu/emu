@@ -46,8 +46,9 @@ class EmuConan(ConanFile):
         # if self.options.python:
         #     self.requires('pybind11/2.10.4', transitive_headers=True)
 
-        if self.options.python:
-            self.requires('pybind11/2.10.4', transitive_headers=True)
+        # We keep the python package as a set of header. No deps.
+        # if self.options.python:
+        #     self.requires('pybind11/2.10.4', transitive_headers=True)
 
         self.test_requires('gtest/1.13.0')
 
@@ -124,4 +125,4 @@ class EmuConan(ConanFile):
         if self.options.python:
             self.cpp_info.components['python'].bindirs = []
             self.cpp_info.components['python'].libdirs = []
-            self.cpp_info.components['python'].requires = ['core', 'pybind11::pybind11']
+            self.cpp_info.components['python'].requires = ['core']
