@@ -5,7 +5,8 @@ project(emu VERSION 1.0.0 LANGUAGES CXX)
 # Always generate compile_commands.json. Used by clangd and other tools.
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-option(emu_build_cuda "Build cuda module" OFF)
+option(emu_build_cuda "Enable cuda module" OFF)
+option(emu_build_python "Enable python module" OFF)
 
 if (emu_build_cuda)
     enable_language(CUDA)
@@ -96,8 +97,6 @@ install(TARGETS emucore
 #
 
 if (emu_build_cuda)
-    message(CHECK_START "Emu - Configuring CUDA support")
-
     add_library(emucuda)
 
     target_sources(emucuda
@@ -150,8 +149,6 @@ if (emu_build_cuda)
             include/cuda/emu/tensor.hpp
     )
 
-    target_include_directories(emucuda PUBLIC include/cuda)
-
     target_compile_options(emucuda PUBLIC
         $<$<COMPILE_LANGUAGE:CUDA>:
             --extended-lambda
@@ -179,8 +176,29 @@ if (emu_build_cuda)
     install(TARGETS emucuda
         FILE_SET HEADERS
     )
+endif()
 
-    message(CHECK_PASS "Done")
+if (emu_build_python)
+    add_library(emupython INTERFACE)
+
+    target_sources(emupython
+        INTERFACE FILE_SET HEADERS BASE_DIRS include/python FILES
+        include/python/emu/cast/common.hpp
+        include/python/emu/cast/container.hpp
+        include/python/emu/cast/cstring_view.hpp
+        include/python/emu/cast/mdspan.hpp
+        include/python/emu/cast/span.hpp
+        include/python/emu/bind/map.hpp
+        include/python/emu/pybind11.h
+        include/python/emu/pybind11/numpy.h
+    )
+
+    add_library(emu::python ALIAS emupython)
+
+    install(TARGETS emupython
+        FILE_SET HEADERS
+    )
+
 endif()
 
 ########################################################################
