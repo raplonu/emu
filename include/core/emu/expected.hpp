@@ -93,21 +93,13 @@ namespace emu
 
 } // namespace emu
 
-/**
- * @brief Macro to check if an expression is true, and return an unexpected value if not.
- *
- */
-#define EMU_TRUE_OR_RETURN_UNEXPECTED( expr, err__... ) \
-    if (EMU_UNLIKELY(!(expr)))                          \
-        return ::emu::unexpected(err__)
+/// Return unexpected if condition is false, continue otherwise.
+#define EMU_TRUE_OR_RETURN_UNEXPECTED( expr, ... ) \
+    if (not (expr) ) return ::emu::unexpected(__VA_ARGS__)
 
-/**
- * @brief Macro to check if the expected value is true, and return the error if not.
- *
- */
+/// Return expected error value if it exists, continue otherwise.
 #define EMU_TRUE_OR_RETURN_ERROR( expected ) \
-    if (EMU_UNLIKELY(!(expected)))        \
-        return ::emu::fwd_error(expected)
+    if ( not (expected) ) return ::emu::fwd_error(expected)
 
 template<typename T, typename E, typename Char>
 struct fmt::formatter<tl::expected<T, E>, Char> : fmt::formatter<T, Char>

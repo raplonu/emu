@@ -36,9 +36,9 @@ class EmuConan(ConanFile):
         self.requires('half/2.2.0', transitive_headers=True)
 
         if self.options.cuda:
-            self.requires('cuda-api-wrappers/0.6.3', transitive_headers=True)
+            self.requires('cuda-api-wrappers/0.6.5.graph', transitive_headers=True)
 
-            self.requires('matx/0.6.0', transitive_headers=True)
+            self.requires('matx/0.8.0', transitive_headers=True)
 
         self.test_requires('gtest/1.13.0')
 
@@ -47,15 +47,14 @@ class EmuConan(ConanFile):
 
     def layout(self):
         cmake_layout(self)
-        libdir = self.cpp.build.libdirs[0] # this is stupid but it works.
         self.cpp.source.components['core'].includedirs = ['include/core']
-        self.cpp.build.components['core'].libdirs = [libdir]
+        self.cpp.build.components['core'].libdirs = self.cpp.build.libdirs
 
         if self.options.cuda:
             cuda_prop = self.python_requires['conan_cuda'].module.properties()
 
             self.cpp.source.components['cuda'].includedirs = ['include/cuda', cuda_prop.include]
-            self.cpp.build.components['cuda'].libdirs = [libdir, cuda_prop.library]
+            self.cpp.build.components['cuda'].libdirs = [*self.cpp.build.libdirs, cuda_prop.library]
             self.cpp.build.components['cuda'].system_libs = ['cuda', 'cudart', 'cublas']
 
     generators = 'CMakeDeps'
@@ -97,14 +96,14 @@ class EmuConan(ConanFile):
             cuda_prop = self.python_requires['conan_cuda'].module.properties()
 
             self.cpp_info.components['cuda'].libs = ['emucuda']
-            self.cpp_info.components['cuda'].system_libs = ['cuda', 'cudart', 'cublas']
-            self.cpp_info.components['cuda'].libdirs += [cuda_prop.library]
-            self.cpp_info.components['cuda'].includedirs += [cuda_prop.include]
             self.cpp_info.components['cuda'].requires = [
                 'core',
                 'cuda-api-wrappers::cuda-api-wrappers',
                 'matx::matx'
             ]
             self.cpp_info.components['cuda'].defines = ['EMU_CUDA', 'FMT_USE_CONSTEXPR=1']
+
+            self.python_requires['conan_cuda'].module.append_cuda(self.cpp_info.components['cuda'], ['cuda', 'cudart', 'cublas'])
+
             # not supported by conan.
             # self.cpp_info.components['cuda'].set_property('cudaflags', ['--extended-lambda', '--expt-relaxed-constexpr'])

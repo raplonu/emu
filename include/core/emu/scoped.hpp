@@ -84,8 +84,8 @@ namespace emu
          * @param oc The scoped object to be moved.
          */
         constexpr scoped(scoped && oc)
-            EMU_NOEXCEPT_EXPR(value_type(mv(oc.value)), function_type(mv(oc.function)))
-            : value(mv(oc.value)), function(mv(oc.function))
+            EMU_NOEXCEPT_EXPR(value_type(move(oc.value)), function_type(move(oc.function)))
+            : value(move(oc.value)), function(move(oc.function))
             , owning_(std::exchange(oc.owning_, false))
         {}
 
@@ -98,12 +98,12 @@ namespace emu
          * @return scoped& The reference to the moved scoped object.
          */
         scoped& operator=(scoped && oc)
-            noexcept(noexcept_invoke and noexcept(std::declval<value_type&>() = mv(oc.value), std::declval<function_type&>() = mv(oc.function)))
+            noexcept(noexcept_invoke and noexcept(std::declval<value_type&>() = move(oc.value), std::declval<function_type&>() = move(oc.function)))
         {
             invoke();
 
-            value    = mv(oc.value);
-            function = mv(oc.function);
+            value    = move(oc.value);
+            function = move(oc.function);
             owning_ = std::exchange(oc.owning_, false);
 
             return *this;
@@ -144,10 +144,10 @@ namespace emu
          * @return T The released value.
          */
         constexpr T release()
-            EMU_NOEXCEPT_EXPR(mv(std::declval<value_type&>()))
+            EMU_NOEXCEPT_EXPR(move(std::declval<value_type&>()))
         {
             owning_ = false;
-            return mv(value);
+            return move(value);
         }
 
         /**
@@ -232,20 +232,20 @@ namespace emu
         scoped(const scoped & oc) = delete;
 
         constexpr scoped(scoped && oc)
-            EMU_NOEXCEPT_EXPR(function_type(mv(oc.function)))
+            EMU_NOEXCEPT_EXPR(function_type(move(oc.function)))
         :
-            function(mv(oc.function)),
+            function(move(oc.function)),
             owning_(std::exchange(oc.owning_, false))
         {}
 
         scoped& operator=(const scoped & oc) = delete;
 
         scoped& operator=(scoped && oc)
-            noexcept(noexcept_invoke and noexcept(std::declval<function_type&>() = mv(oc.function)))
+            noexcept(noexcept_invoke and noexcept(std::declval<function_type&>() = move(oc.function)))
         {
             invoke();
 
-            function = mv(oc.function);
+            function = move(oc.function);
             owning_ = std::exchange(oc.owning_, false);
 
             return *this;
@@ -332,7 +332,7 @@ namespace detail
         EMU_NOEXCEPT_EXPR(std::exchange(t, EMU_FWD(v)))
     {
         auto old = std::exchange(t, EMU_FWD(v));
-        return scoped([&t, old = mv(old)]{ t = mv(old); });
+        return scoped([&t, old = move(old)]{ t = move(old); });
     }
 
 } // namespace emu

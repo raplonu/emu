@@ -16,20 +16,7 @@
 namespace emu
 {
 
-    template<typename T>
-    constexpr T&& fwd(std::remove_reference_t<T>& t) noexcept {
-        return static_cast<T&&>(t);
-    }
-
-    template<typename T>
-    constexpr T&& fwd(std::remove_reference_t<T>&& t) noexcept {
-        return static_cast<T&&>(t);
-    }
-
-    template<typename T>
-    constexpr auto mv(T&& t) noexcept -> std::remove_reference_t<T>&& {
-        return static_cast<std::remove_reference_t<T>&&>(t);
-    }
+    using std::size_t, std::move;
 
     //###################### SIZE ########################
 
@@ -47,14 +34,14 @@ namespace emu
     EMU_HODE constexpr
     T next_mul(T a, T b) { return ( (a - 1) / b + 1) * b; }
 
-    template<std::size_t key_id, typename Tuple>
+    template<size_t key_id, typename Tuple>
     EMU_HODE constexpr
     const Tuple & min(const Tuple & t1, const Tuple & t2) noexcept {
         using std::get;
         return get<key_id>(t1) < get<key_id>(t2) ? t1 : t2;
     }
 
-    template<std::size_t key_id, typename Tuple>
+    template<size_t key_id, typename Tuple>
     EMU_HODE constexpr
     const Tuple & max(const Tuple & t1, const Tuple & t2) noexcept {
         using std::get;
@@ -113,7 +100,7 @@ namespace detail
 
         template<typename... ActualTypes, typename Caller, typename... Args>
         static void product(Caller c, Args... args) {
-            [&] <std::size_t... I> (std::index_sequence<I...>) {
+            [&] <size_t... I> (std::index_sequence<I...>) {
                 (apply_impl<TypeLists...>::template product<ActualTypes..., std::tuple_element_t<I, TypeList>>(c, args...), ...);
             }(std::make_index_sequence<std::tuple_size_v<TypeList>>{});
         }

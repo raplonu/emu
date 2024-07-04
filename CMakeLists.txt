@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.18)
 
 project(emu VERSION 1.0.0 LANGUAGES CXX)
 
+# Always generate compile_commands.json. Used by clangd and other tools.
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 option(emu_build_cuda "Build cuda module" OFF)

@@ -64,31 +64,6 @@ namespace
         EXPECT_EQ(cap.use_count(), 1);
     }
 
-    void f() {
-        auto managed_value = std::make_shared<int>(0);
-        assert(managed_value.use_count() == 1);
-
-        // capsule does not copy lvalue by default.
-        // object copy needs to be explicitly requested.
-        capsule cap = std::shared_ptr(managed_value);
-        assert(cap.use_count() == 1);
-        assert(managed_value.use_count() == 2);
-
-        capsule cap2 = cap;
-        assert(cap.use_count() == 2);
-        assert(cap2.use_count() == 2);
-        // New capsule does not copy the object.
-        assert(managed_value.use_count() == 2);
-
-        cap.reset();
-        assert(cap.use_count() == 0);
-
-        cap2.reset();
-        assert(cap2.use_count() == 0);
-
-        assert(managed_value.use_count() == 1);
-    }
-
     TEST(Capsule, ManagedValue)
     {
         auto managed_value = std::make_shared<int>(0);

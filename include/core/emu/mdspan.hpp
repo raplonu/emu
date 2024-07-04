@@ -264,7 +264,7 @@ struct fmt::formatter<emu::detail::static_extent_t<Extent>>
         auto it = ctx.out();
         if constexpr (Extent::rank() > 0) {
             it = emu::detail::format_extent(it, Extent::static_extent(0));
-            for (auto i = 1; i < Extent::rank(); ++i) {
+            for (std::size_t i = 1; i < Extent::rank(); ++i) {
                 it = fmt::format_to(it, "{}", s.sep);
                 it = emu::detail::format_extent(it, Extent::static_extent(i));
             }
@@ -284,7 +284,7 @@ struct fmt::formatter<emu::detail::extent_t<Mapping>>
         auto it = ctx.out();
         if constexpr (Mapping::extents_type::rank() > 0) {
             it = fmt::format_to(it, "{}", s.m.extents().extent(0));
-            for (auto i = 1; i < Mapping::extents_type::rank(); ++i)
+            for (std::size_t i = 1; i < Mapping::extents_type::rank(); ++i)
                 it = fmt::format_to(it, "{}{}", s.sep, s.m.extents().extent(i));
         }
         return it;
@@ -301,7 +301,7 @@ struct fmt::formatter<emu::detail::stride_t<Mapping>>
         auto it = ctx.out();
         if constexpr (Mapping::extents_type::rank() > 0) {
             it = fmt::format_to(it, "{}", s.m.stride(0));
-            for (auto i = 1; i < Mapping::extents_type::rank(); ++i)
+            for (std::size_t i = 1; i < Mapping::extents_type::rank(); ++i)
                 it = fmt::format_to(it, "{}{}", s.sep, s.m.stride(i));
         }
         return it;

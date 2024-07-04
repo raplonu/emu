@@ -46,6 +46,6 @@ namespace emu
     template<typename T>
     constexpr auto as_vector(std::vector<T> && range) noexcept
     {
-        return mv(range);
+        return move(range);
     }
 }

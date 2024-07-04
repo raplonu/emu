@@ -171,7 +171,7 @@ namespace
             // If it is from a rvalue of requested type, sinply move it.
             std::array<emu::Spy, 1> input{{&flag}};
 
-            auto v = emu::as_vector(emu::mv(input));
+            auto v = emu::as_vector(std::move(input));
             static_assert(std::is_same_v<decltype(v), std::vector<emu::Spy>>);
 
             // If a vector is moved, elements are not copied nor moved.
@@ -184,7 +184,7 @@ namespace
             // If it is from a rvalue of requested type, sinply move it.
             std::array<emu::Spy, 1> input{{&flag}};
 
-            auto v = emu::as_vector<emu::Spy>(emu::mv(input));
+            auto v = emu::as_vector<emu::Spy>(std::move(input));
             static_assert(std::is_same_v<decltype(v), std::vector<emu::Spy>>);
 
             // If a vector is moved, elements are not copied nor moved.
@@ -227,7 +227,7 @@ namespace
             // If it is from a rvalue of requested type, sinply move it.
             std::vector<emu::Spy> input; input.emplace_back(&flag);
 
-            auto v = emu::as_vector(emu::mv(input));
+            auto v = emu::as_vector(std::move(input));
             static_assert(std::is_same_v<decltype(v), std::vector<emu::Spy>>);
 
             // If a vector is moved, elements are not copied nor moved.
@@ -240,7 +240,7 @@ namespace
             // If it is from a rvalue of requested type, sinply move it.
             std::vector<emu::Spy> input; input.emplace_back(&flag);
 
-            auto v = emu::as_vector<emu::Spy>(emu::mv(input));
+            auto v = emu::as_vector<emu::Spy>(std::move(input));
             static_assert(std::is_same_v<decltype(v), std::vector<emu::Spy>>);
 
             // If a vector is moved, elements are not copied nor moved.

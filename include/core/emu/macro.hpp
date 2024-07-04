@@ -72,19 +72,19 @@
 
 #define EMU_UNIQUE_NAME(base) EMU_CONCAT(base, __COUNTER__)
 
-/**
- * @brief Create a value from an expression and return the content if it is not empty.
- *
- */
-#define EMU_RETURN_IF_VALUE( expr__... ) \
-    if (auto&& value__ = expr__; value__) { return *EMU_FWD(value__); }
 
+/// Return false if condition is false, continue otherwise.
+#define EMU_TRUE_OR_RETURN_FALSE( ... ) if ( not (__VA_ARGS__) ) return false
 
-/**
- * @brief Return false if condition is false, continue otherwise.
- *
- */
-#define EMU_TRUE_OR_RETURN_FALSE( expr__... ) if (!(expr__)) return false
-#define EMU_TRUE_OR_RETURN_NULLOPT( expr__... ) if (!(expr__)) return emu::nullopt
-#define EMU_RETURN_OPT_IF_TRUE( opt ) if (opt) { return *opt; }
+/// Return nullopt if condition is false, continue otherwise.
+#define EMU_TRUE_OR_RETURN_NULLOPT( ... ) if ( not (__VA_ARGS__) ) return emu::nullopt
+
+/// For implicit bool convertible types. Return value if it is truthy, continue otherwise.
+#define EMU_RETURN_IF_TRUE( ... ) \
+    if (auto&& value__ = __VA_ARGS__ ; value__) { return ::std::move(value__); }
+
+/// For implicit bool convertible types. Return dereferenced value if it is truthy, continue otherwise.
+#define EMU_DEREF_RETURN_IF_TRUE( ... ) \
+    if (auto&& value__ = __VA_ARGS__ ; value__) { return *::std::move(value__); }
+
 // for EMU_TRUE_OR_RETURN_UNEXPECTED, see emu/expected.hpp

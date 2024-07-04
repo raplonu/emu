@@ -361,7 +361,7 @@ namespace cpts
     mdcontainer<T, _nd<N>,LayoutPolicy,AccessorPolicy>
     make_mdcontainer(const _nd<N> &exts){
         std::size_t size = 1;
-        for(int i=0;i<N;i++){
+        for(std::size_t i = 0; i < N; i++) {
             size *= exts.extent(i);
         }
         auto u_ptr = std::make_unique<T[]>(size );

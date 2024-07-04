@@ -94,9 +94,9 @@ namespace handle
     /**
      * Create cublas handle_t on current device.
      */
-    handle_t create(::cuda::device_t device);
+    handle_t create(const ::cuda::device_t& device);
 
-    handle_t wrap(id_t id, ::cuda::device_t device, bool take_ownership);
+    handle_t wrap(id_t id, const ::cuda::device_t& device, bool take_ownership);
 
 } // namespace handle
 
