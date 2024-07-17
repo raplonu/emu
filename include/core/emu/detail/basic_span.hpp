@@ -1,6 +1,10 @@
 #pragma once
 
+#include <cstddef>
+#include <emu/span.hpp>
+#include <emu/concepts.hpp>
 #include <emu/type_traits.hpp>
+#include <emu/info.hpp>
 #include <emu/utility.hpp>
 
 #include <iterator>
@@ -15,10 +19,10 @@ namespace emu
 namespace detail
 {
 
-    template <typename T, size_t Extent, typename Validator>
-    struct basic_span : protected std::span<T, Extent> {
+    template <typename ElementType, size_t Extent, typename LocationPolicy>
+    struct basic_span : protected std::span<ElementType, Extent> {
 
-        using base = std::span<T, Extent>;
+        using base = std::span<ElementType, Extent>;
 
         using element_type =     typename base::element_type;
         using value_type =       typename base::value_type;
@@ -31,12 +35,12 @@ namespace detail
         using iterator =         typename base::iterator;
         using reverse_iterator = typename base::reverse_iterator;
 
-        static constexpr size_t extent = Extent;
+        using location_type = LocationPolicy;
 
-        using validator_type = Validator;
+        using base::extent;
 
         template <typename Type>
-        inline static constexpr bool validate = Validator::template validate<Type>;
+        inline static constexpr bool validate_source = LocationPolicy::template validate_source<Type>;
 
         constexpr basic_span() noexcept = default;
 
@@ -53,58 +57,84 @@ namespace detail
 
         template <size_t ArrayExtent>
             requires(extent == dynamic_extent or extent == ArrayExtent)
-        constexpr basic_span(tid<T> (&arr)[ArrayExtent]) noexcept : base(arr) {}
+        constexpr basic_span(tid<ElementType> (&arr)[ArrayExtent]) noexcept : base(arr) {}
 
         template <typename U, size_t ArrayExtent>
             requires (extent == dynamic_extent or extent == ArrayExtent)
-                 and (validate<std::array<U, ArrayExtent>>)
+                 and (validate_source<std::array<U, ArrayExtent>>)
         constexpr basic_span(std::array<U, ArrayExtent> &arr) noexcept
             : base(arr) {}
 
         template <typename U, size_t ArrayExtent>
             requires (extent == dynamic_extent or extent == ArrayExtent)
-                 and (validate<const std::array<U, ArrayExtent>>)
+                 and (validate_source<const std::array<U, ArrayExtent>>)
         constexpr basic_span(const std::array<U, ArrayExtent> &arr) noexcept
             : base(arr) {}
 
         template<std::ranges::contiguous_range Range>
-        requires validate<Range>
+        requires validate_source<Range>
         constexpr explicit(extent != dynamic_extent)
         basic_span(Range&& range)
             noexcept(noexcept(std::ranges::data(range))
 		         and noexcept(std::ranges::size(range)))
             : base(EMU_FWD(range)) {}
 
-        basic_span(const basic_span &) noexcept = default;
-
         template<typename OT, size_t OExtent>
         requires (extent == dynamic_extent
               or OExtent == dynamic_extent
                or extent == OExtent)
         constexpr explicit(extent != dynamic_extent && OExtent != dynamic_extent)
-        basic_span(const basic_span<OT, OExtent, Validator> &other) noexcept
+        basic_span(const basic_span<OT, OExtent, LocationPolicy> &other) noexcept
             : base(static_cast<const base&>(other)) {}
 
         template<typename OT, size_t OExtent>
         requires (extent == dynamic_extent
-              or OExtent == dynamic_extent
+               or OExtent == dynamic_extent
                or extent == OExtent)
         constexpr explicit(extent != dynamic_extent && OExtent != dynamic_extent)
         basic_span(const std::span<OT, OExtent> &other) noexcept
             : base(other) {}
 
-        ~basic_span() noexcept = default;
+        basic_span(const basic_span &) noexcept = default;
+        basic_span(basic_span &&) noexcept = default;
 
         constexpr basic_span &operator=(const basic_span &) noexcept = default;
+        constexpr basic_span &operator=(basic_span &&) noexcept = default;
+
+        ~basic_span() noexcept = default;
 
         using base::begin;
         using base::end;
         using base::rbegin;
         using base::rend;
 
-        using base::first;
-        using base::last;
-        using base::subspan;
+        template< size_t Count >
+        constexpr auto first() const -> basic_span<ElementType, Count, LocationPolicy> {
+            return base::template first<Count>();
+        }
+
+        constexpr auto first( size_type count ) const -> basic_span<ElementType, dynamic_extent, LocationPolicy> {
+            return base::first(count);
+        }
+
+        template< size_t Count >
+        constexpr auto last() const -> basic_span<ElementType, Count, LocationPolicy> {
+            return base::template last<Count>();
+        }
+
+        constexpr auto last( size_type count ) const -> basic_span<ElementType, dynamic_extent, LocationPolicy> {
+            return base::last(count);
+        }
+
+        template< size_t Offset, size_t Count = dynamic_extent >
+        constexpr auto subspan() const -> basic_span<ElementType, Count, LocationPolicy> {
+            return base::template subspan<Offset, Count>();
+        }
+
+        constexpr auto subspan( size_type offset, size_type count = dynamic_extent ) const
+            -> basic_span<ElementType, dynamic_extent, LocationPolicy> {
+            return base::subspan(offset, count);
+        }
 
         using base::front;
         using base::back;
@@ -117,46 +147,68 @@ namespace detail
 
     };
 
-    template<typename Type, size_t ArrayExtent, typename Validator>
-    basic_span(Type(&)[ArrayExtent])
-        -> basic_span<Type, ArrayExtent, Validator>;
+    template<typename ElementType, size_t ArrayExtent, typename LocationPolicy>
+    basic_span(ElementType(&)[ArrayExtent])
+        -> basic_span<ElementType, ArrayExtent, LocationPolicy>;
 
-    template<typename Type, size_t ArrayExtent, typename Validator>
-    basic_span(std::array<Type, ArrayExtent>&)
-        -> basic_span<Type, ArrayExtent, Validator>;
+    template<typename ElementType, size_t ArrayExtent, typename LocationPolicy>
+    basic_span(std::array<ElementType, ArrayExtent>&)
+        -> basic_span<ElementType, ArrayExtent, LocationPolicy>;
 
-    template<typename Type, size_t ArrayExtent, typename Validator>
-    basic_span(const std::array<Type, ArrayExtent>&)
-      -> basic_span<const Type, ArrayExtent, Validator>;
+    template<typename ElementType, size_t ArrayExtent, typename LocationPolicy>
+    basic_span(const std::array<ElementType, ArrayExtent>&)
+      -> basic_span<const ElementType, ArrayExtent, LocationPolicy>;
 
-    template<std::contiguous_iterator Iter, typename End, typename Validator>
+    template<std::contiguous_iterator Iter, typename End, typename LocationPolicy>
     basic_span(Iter, End)
-      -> basic_span<std::remove_reference_t<std::iter_reference_t<Iter>>, dynamic_extent, Validator>;
+      -> basic_span<std::remove_reference_t<std::iter_reference_t<Iter>>, dynamic_extent, LocationPolicy>;
 
-    template<std::ranges::contiguous_range Range, typename Validator>
+    template<std::ranges::contiguous_range Range, typename LocationPolicy>
     basic_span(Range &&)
-      -> basic_span<std::remove_reference_t<std::ranges::range_reference_t<Range&>>, dynamic_extent, Validator>;
+      -> basic_span<std::remove_reference_t<std::ranges::range_reference_t<Range&>>, dynamic_extent, LocationPolicy>;
 
-    template <typename T, auto Extent>
+    template <typename ElementType, auto Extent>
     constexpr auto type_extent = Extent == dynamic_extent
                                     ? dynamic_extent
-                                    : Extent / sizeof(T);
+                                    : Extent / sizeof(ElementType);
 
-    template <typename T, auto Extent>
+    template <typename ElementType, auto Extent>
     constexpr auto byte_extent = Extent == dynamic_extent
                                     ? dynamic_extent
-                                    : Extent * sizeof(T);
+                                    : Extent * sizeof(ElementType);
 
+    template<typename SpanType, typename NewElementType, size_t NewExtent>
+    struct rebind_span_type;
+
+    template<typename ElementType, size_t Extent, typename LocationPolicy, typename NewElementType, size_t NewExtent>
+    struct rebind_span_type<basic_span<ElementType, Extent, LocationPolicy>, NewElementType, NewExtent> {
+        using type = basic_span<
+            propagate_const<NewElementType, ElementType>,
+            NewExtent,
+            LocationPolicy
+        >;
+    };
+
+    template<typename ElementType, size_t Extent, typename NewElementType, size_t NewExtent>
+    struct rebind_span_type<std::span<ElementType, Extent>, NewElementType, NewExtent> {
+        using type = std::span<
+            propagate_const<NewElementType, ElementType>,
+            NewExtent
+        >;
+    };
+
+    template<typename SpanType, typename NewElementType, size_t NewExtent>
+    using rebind_span_type_t = typename rebind_span_type<SpanType, NewElementType, NewExtent>::type;
 
 } // namespace detail
 
-// Use of reinterpret_cast is safe here as it is used to cast between byte and T
-// Note that you can convert T1 to byte and then to T2 using as_t. Be careful with this.
-// NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast)
+    // Use of reinterpret_cast is safe here as it is used to cast between byte and ElementType
+    // Note that you can convert T1 to byte and then to T2 using as_t. Be careful with this.
 
-    template <typename NewType, size_t Extent, typename Validator>
-    constexpr auto as_t(detail::basic_span<byte, Extent, Validator> sp) noexcept
-        -> detail::basic_span<NewType, detail::type_extent<NewType, Extent>, Validator>
+    template <typename NewType, cpts::span SpanType>
+        requires std::same_as<typename SpanType::element_type, byte>
+    constexpr auto as_t(SpanType sp) noexcept
+        -> detail::rebind_span_type_t<SpanType, NewType, detail::type_extent<NewType, SpanType::extent>>
     {
         auto data = reinterpret_cast<NewType *>(sp.data());
         auto size = sp.size_bytes() / sizeof(NewType);
@@ -164,20 +216,9 @@ namespace detail
         return {data, size};
     }
 
-    template <typename NewType, size_t Extent, typename Validator>
-    constexpr auto as_t(detail::basic_span<const byte, Extent, Validator> sp) noexcept
-        -> detail::basic_span<NewType, detail::type_extent<const NewType, Extent>, Validator>
-    {
-        auto data = reinterpret_cast<const NewType *>(sp.data());
-        auto size = sp.size_bytes() / sizeof(NewType);
-
-        return {data, size};
-    }
-
-    template<typename Type, size_t Extent, typename Validator>
-    constexpr auto
-    as_bytes(detail::basic_span<Type, Extent, Validator> sp) noexcept
-        -> detail::basic_span<const byte, detail::byte_extent<Type, Extent>, Validator>
+    template<cpts::span SpanType>
+    constexpr auto as_bytes(SpanType sp) noexcept
+        -> detail::rebind_span_type_t<SpanType, const byte, detail::byte_extent<byte, SpanType::extent> >
     {
       auto data = reinterpret_cast<const byte*>(sp.data());
       auto size = sp.size_bytes();
@@ -185,11 +226,9 @@ namespace detail
       return {data, size};
     }
 
-  template<typename Type, size_t Extent, typename Validator>
-    requires (not is_const<Type>)
-    constexpr auto
-    as_writable_bytes(detail::basic_span<Type, Extent, Validator> sp) noexcept
-        -> detail::basic_span<const byte, detail::byte_extent<Type, Extent>, Validator>
+    template<cpts::mutable_span SpanType>
+    constexpr auto as_writable_bytes(SpanType sp) noexcept
+        -> detail::rebind_span_type_t<SpanType, byte, detail::byte_extent<byte, SpanType::extent> >
     {
       auto data = reinterpret_cast<byte*>(sp.data());
       auto size = sp.size_bytes();
@@ -197,25 +236,43 @@ namespace detail
       return {data, size};
     }
 
-// NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast)
-
-    template <typename T, size_t Extent, typename Validator>
-    auto as_auto_bytes(detail::basic_span<T, Extent, Validator> sp) {
-        if constexpr (std::is_const_v<T>)
+    template<cpts::span SpanType>
+    auto as_auto_bytes(SpanType sp) noexcept
+    {
+        if constexpr (std::is_const_v<typename SpanType::element_type>)
             return as_bytes(sp);
         else
             return as_writable_bytes(sp);
     }
 
+namespace spe
+{
+
+    template<cpts::span SpanType>
+    struct info_t< SpanType >
+    {
+        constexpr auto format_type(fmt::format_context::iterator it) const {
+            it = fmt::format_to(it, "span< {}, ", type_name<ElementType>);
+            it = detail::format_extent(it, Extent);
+            return fmt::format_to(it, " >");
+        }
+
+        constexpr auto format_value(const SpanType &sp, fmt::format_context::iterator it) const {
+            return fmt::format_to(it, "{} [ {} ]", fmt::ptr(sp.data()), sp.size());
+        }
+    };
+
+} // namespace spe
+
 } // namespace emu
 
 // Opt-in to borrowed_range concept
-template<typename ElementType, std::size_t Extent, typename Validator>
+template<typename ElementType, std::size_t Extent, typename LocationPolicy>
 inline constexpr bool
-std::ranges::enable_borrowed_range<emu::detail::basic_span<T, Extent, Validator>> = true;
+std::ranges::enable_borrowed_range<emu::detail::basic_span<ElementType, Extent, LocationPolicy>> = true;
 
 // Opt-in to view concept
-template<typename ElementType, std::size_t Extent, typename Validator>
+template<typename ElementType, std::size_t Extent, typename LocationPolicy>
 inline constexpr bool
-std::ranges::enable_view<emu::detail::basic_span<T, Extent, Validator>>
+std::ranges::enable_view<emu::detail::basic_span<ElementType, Extent, LocationPolicy>>
     = Extent == 0 || Extent == std::dynamic_extent;

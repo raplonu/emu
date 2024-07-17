@@ -4,6 +4,7 @@
 #include <emu/cuda/stream.hpp>
 
 #include <cuda/runtime_api.hpp>
+#include <cuda/api/launch_config_builder.hpp>
 
 namespace emu
 {
@@ -90,11 +91,16 @@ namespace detail
         const cu::device_t  device,
         size_t                length)
     {
-        auto threads_per_block = device.properties().max_threads_per_block();
-        cu::grid::dimension_t num_blocks =
-            (length / threads_per_block) +
-            (length % threads_per_block == 0 ? 0 : 1);
-        return cu::make_launch_config(num_blocks, threads_per_block, cu::no_dynamic_shared_memory);
+        // auto threads_per_block = device.properties().max_threads_per_block();
+        // cu::grid::dimension_t num_blocks =
+        //     (length / threads_per_block) +
+        //     (length % threads_per_block == 0 ? 0 : 1);
+
+        return cu::launch_config_builder()
+            .device(device)
+            .overall_size(length)
+            .use_maximum_linear_block()
+            .build();
     }
 
     // template<typename T>

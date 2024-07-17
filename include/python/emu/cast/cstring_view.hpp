@@ -1,7 +1,7 @@
 #pragma once
 
 #include <emu/cstring_view.hpp>
-#include <emu/assert.h>
+#include <emu/assert.hpp>
 
 #include <pybind11/cast.h>
 

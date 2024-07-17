@@ -1,7 +1,7 @@
 #pragma once
 
 #include <emu/span.hpp>
-#include <emu/cuda.h>
+#include <emu/cuda.hpp>
 
 #include <type_traits>
 #include <ranges>

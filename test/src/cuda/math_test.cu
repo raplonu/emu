@@ -2,7 +2,7 @@
 
 // #include <emu/macro.cuh>
 // #include <emu/math.h>
-// #include <emu/cuda.h>
+// #include <emu/cuda.hpp>
 // #include <thrust/device_vector.h>
 
 // using namespace emu;

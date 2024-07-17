@@ -10,20 +10,19 @@ class EmuConan(ConanFile):
     url = 'https://gitlab.obspm.fr/cosmic/tools/emu'
     description = 'Set of utilities for C++, CUDA and python'
 
+    # generates shared and fpic options
+    implements = ["auto_shared_fpic"]
+
     exports_sources = 'CMakeLists.txt', 'include/*', 'src/*', 'test/*'
 
     settings = 'os', 'compiler', 'build_type', 'arch'
 
     options = {
-        'shared'        : [True, False],
-        'fPIC'          : [True, False],
         'cuda'          : [True, False],
         'python'        : [True, False],
     }
 
     default_options = {
-        'shared'     : False,
-        'fPIC'       : True,
         'cuda'       : False,
         'python'     : False,
     }
@@ -38,7 +37,7 @@ class EmuConan(ConanFile):
         self.requires('half/2.2.0', transitive_headers=True)
 
         if self.options.cuda:
-            self.requires('cuda-api-wrappers/0.6.5.graph', transitive_headers=True)
+            self.requires('cuda-api-wrappers/0.7.0', transitive_headers=True)
 
             self.requires('matx/0.8.0', transitive_headers=True)
 

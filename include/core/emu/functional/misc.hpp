@@ -2,7 +2,7 @@
 
 #include <emu/macro.h>
 #include <emu/tuple.h>
-#include <emu/utility.h>
+#include <emu/utility.hpp>
 
 namespace emu
 {

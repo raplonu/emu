@@ -1,6 +1,6 @@
 #pragma once
 
-#include <emu/cuda.h>
+#include <emu/cuda.hpp>
 
 namespace emu::cuda
 {
