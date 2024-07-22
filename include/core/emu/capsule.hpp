@@ -1,15 +1,23 @@
 #pragma once
 
+#include <emu/fwd.hpp>
+#include <emu/concepts.hpp>
 #include <emu/utility.hpp>
 
 #include <gsl/pointers>
 
-#include <concepts>
 #include <atomic>
-#include <utility>
+#include <unistd.h>
 
 namespace emu
 {
+
+    template<typename T>
+    struct copy
+    {
+        T& value;
+    };
+
     /**
      * @brief A smart pointer-like class that allows manual release of the held object.
      */
@@ -18,7 +26,8 @@ namespace emu
         /**
          * @brief The interface for the held object.
          */
-        struct interface {
+        struct interface
+        {
 
             interface() = default;
             /**
@@ -54,7 +63,8 @@ namespace emu
          * @tparam DataHolder The type of the held object.
          */
         template<typename DataHolder>
-        struct impl : interface {
+        struct impl : interface
+        {
             /**
              * @brief Constructor.
              * @param d The held object.
@@ -77,16 +87,27 @@ namespace emu
          * @param d The held object.
          */
         template<typename DataHolder>
-        requires(
-                (not is_lref<DataHolder>)
-            and (not std::same_as<decay<DataHolder>, capsule   >)
-            and (not std::same_as<decay<DataHolder>, interface*>)
-        )
-        capsule(DataHolder&& d)
-            : holder( new impl<DataHolder>( EMU_FWD(d) ) )
+            requires (not cpts::capsule_owner<DataHolder>)
+                 and cpts::not_equivalent<DataHolder, capsule>
+                 and cpts::not_equivalent<DataHolder, interface*>
+                 and (not is_lref<DataHolder>)
+        constexpr explicit capsule(DataHolder&& d)
+            : holder( new impl<rm_ref<DataHolder>>( EMU_FWD(d) ) )
+        {
+            static_assert(not is_lref<DataHolder>, "Do not give a reference to a capsule. If you want to copy the object, use capsule(copy(value)) instead.");
+        }
+
+        template <typename T>
+        constexpr explicit capsule(copy<T> t)
+            : capsule( new impl< rm_const<T> >( t.value ) )
         {}
 
-        capsule(gsl::owner<interface*> holder)
+        template <cpts::capsule_owner T>
+        constexpr explicit capsule(T&& t)
+            : capsule( t.capsule() )
+        {}
+
+        constexpr explicit capsule(gsl::owner<interface*> holder)
             : holder(holder)
         {
             if (holder) holder->hold();
@@ -182,6 +203,5 @@ namespace emu
 
         }
     };
-
 
 } // namespace emu

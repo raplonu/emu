@@ -13,6 +13,7 @@ namespace
     template<typename T>
     concept construct_capsule_from = std::is_constructible_v<capsule, T>;
 
+    // These tests are not relevent anymore since capsule accept type with value semantics like shared_ptr.
     TEST(Capsule, StaticTest)
     {
         static_assert(construct_capsule_from<int>);
@@ -24,6 +25,10 @@ namespace
         // Can build capsule from rvalue (move)
         static_assert(construct_capsule_from<int&&>);
         static_assert(construct_capsule_from<const int&&>);
+
+        // Can build capsule from explicit copy
+        static_assert(construct_capsule_from<copy<int>>);
+        static_assert(construct_capsule_from<copy<const int>>);
     }
 
     TEST(Capsule, EmptyCapsule)
@@ -71,7 +76,7 @@ namespace
 
         // capsule does not copy lvalue by default.
         // object copy needs to be explicitly requested.
-        capsule cap = std::shared_ptr(managed_value);
+        capsule cap{ copy(managed_value) };
         EXPECT_EQ(cap.use_count(), 1);
         EXPECT_EQ(managed_value.use_count(), 2);
 
@@ -95,7 +100,7 @@ namespace
         int called_nb = 0;
         scoped incr_at_destruction([&]{ called_nb++; });
 
-        capsule cap = std::move(incr_at_destruction);
+        capsule cap{ move(incr_at_destruction) };
 
         EXPECT_EQ(called_nb, 0);
 
