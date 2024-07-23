@@ -41,7 +41,7 @@ namespace
 
     template<typename T, int D>
     void test_construct_1(){
-        emu::mdcontainer<T, emu::_nd<D>> con;
+        emu::mdcontainer<T, emu::dims<D>> con;
         check(con, 0, 0, (T*)nullptr);
     };
 
@@ -107,7 +107,7 @@ namespace
 
         std::vector<T> v(size,1);
         T * ptr = v.data();
-        using mdc = emu::mdcontainer<T, emu::_nd<d>>;
+        using mdc = emu::mdcontainer<T, emu::dims<d>>;
         using mapping_t = typename mdc::mapping_type;
         const emu::extents ext_t(Exts...);
         const mapping_t mapping(ext_t);
@@ -198,7 +198,7 @@ namespace
         const size_t size = (1 * ... * Exts);
         auto dims = std::array{Exts...};
 
-        const emu::_nd<d> ext_t(Exts...);
+        const emu::dims<d> ext_t(Exts...);
         auto con = emu::make_mdcontainer<T,d>(ext_t);
 
         check(con, size, cpt, dims);
@@ -211,7 +211,7 @@ namespace
         const size_t size = (1 * ... * Exts);
         auto dims = std::array{Exts...};
 
-        using mdc = emu::mdcontainer<T, emu::_nd<d>>;
+        using mdc = emu::mdcontainer<T, emu::dims<d>>;
         using mapping_t = typename mdc::mapping_type;
 
         const emu::extents ext_t(Exts...);

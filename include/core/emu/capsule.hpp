@@ -1,5 +1,6 @@
 #pragma once
 
+#include <concepts>
 #include <emu/fwd.hpp>
 #include <emu/concepts.hpp>
 #include <emu/utility.hpp>
@@ -71,6 +72,8 @@ namespace emu
              */
             impl(auto&& d) : data_holder(EMU_FWD(d)) {}
 
+            ~impl() = default;
+
             DataHolder data_holder; /**< The held object. */
         };
 
@@ -89,17 +92,15 @@ namespace emu
         template<typename DataHolder>
             requires (not cpts::capsule_owner<DataHolder>)
                  and cpts::not_equivalent<DataHolder, capsule>
-                 and cpts::not_equivalent<DataHolder, interface*>
+                 and (not std::derived_from<rm_ptr<DataHolder>, interface>)
                  and (not is_lref<DataHolder>)
         constexpr explicit capsule(DataHolder&& d)
             : holder( new impl<rm_ref<DataHolder>>( EMU_FWD(d) ) )
-        {
-            static_assert(not is_lref<DataHolder>, "Do not give a reference to a capsule. If you want to copy the object, use capsule(copy(value)) instead.");
-        }
+        {}
 
         template <typename T>
         constexpr explicit capsule(copy<T> t)
-            : capsule( new impl< rm_const<T> >( t.value ) )
+            : holder( new impl< rm_const<T> >( t.value ) )
         {}
 
         template <cpts::capsule_owner T>
@@ -198,7 +199,8 @@ namespace emu
          */
         static void manual_release(gsl::owner<capsule::interface*> holder) {
             if (holder) // pointer not null
-                if (bool can_delete = holder->release(); can_delete) // decrement use count and check if zero
+                // decrement use count and check if zero
+                if (bool can_delete = holder->release(); can_delete)
                     delete holder;
 
         }
