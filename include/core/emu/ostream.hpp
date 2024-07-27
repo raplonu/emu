@@ -5,6 +5,9 @@
 #include <fmt/core.h>
 
 #include <iosfwd>
+#include <iterator>
+
+//TODO: Rework this when gcc 13 and <format> is available. Use `std::formattable` instead of `cpts::formattable`.
 
 namespace emu
 {

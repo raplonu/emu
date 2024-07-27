@@ -1,87 +1,59 @@
 #pragma once
 
-#include <emu/fwd.hpp>
-#include <emu/concepts.hpp>
+#include <emu/type_traits.hpp>
+#include <emu/detail/basic_span.hpp>
+#include <emu/info.hpp>
 #include <emu/type_name.hpp>
 
 #include <span>
-#include <fmt/core.h>
-#include <fmt/format.h>
-
-#include <boost/core/demangle.hpp>
 
 namespace emu
 {
 
-    using std::span;
+    template <typename ElementType, size_t Extent = dynamic_extent>
+    struct span : detail::basic_span<ElementType, Extent, no_source_validator, span<ElementType, Extent> >
+    {
+        using base = detail::basic_span<ElementType, Extent, no_source_validator, span >;
 
-namespace detail
-{
+        using base::base;
 
-    template <typename T, auto Extent>
-    constexpr auto type_extent = Extent == std::dynamic_extent
-                                    ? std::dynamic_extent
-                                    : Extent / sizeof(T);
+        template<typename OT, size_t OExtent>
+        constexpr auto from_span(std::span<OT, OExtent> sp) const noexcept {
+            return span<OT, OExtent>(sp.data(), sp.size());
+        }
+    };
 
-} // namespace detail
+    template< class It, class EndOrSize >
+    span( It, EndOrSize ) -> span<iterator_cv_value<It>, dynamic_extent>;
 
-    using std::as_bytes;
-    using std::as_writable_bytes;
+    template< class T, size_t N >
+    span( T (&)[N] ) -> span<T, N>;
 
-    template <typename NewType, std::size_t Extent>
-    constexpr auto as_t(span<std::byte, Extent> sp) noexcept {
-        auto data = reinterpret_cast<NewType *>(sp.data());
-        auto size = sp.size_bytes() / sizeof(NewType);
-        constexpr auto extent = detail::type_extent<NewType, Extent>;
+    template< typename Range >
+    span( Range&& ) -> span< range_cv_value<Range>, dynamic_extent>;
 
-        return span<NewType, extent>{data, size};
-    }
+    template< class T, size_t N >
+    span( std::array<T, N>& ) -> span<T, N>;
 
-    template <typename NewType, std::size_t Extent>
-    constexpr auto as_t(span<const std::byte, Extent> sp) noexcept {
-        auto data = reinterpret_cast<const NewType *>(sp.data());
-        auto size = sp.size_bytes() / sizeof(NewType);
-        constexpr auto extent = detail::type_extent<NewType, Extent>;
+    template< class T, size_t N >
+    span( const std::array<T, N>& ) -> span< const T, N>;
 
-        return span<const NewType, extent>{data, size};
-    }
+    template< class T, size_t N >
+    span( std::span<T, N>& ) -> span<T, N>;
 
-    template <typename T>
-    auto as_auto_bytes(span<T> sp) {
-        if constexpr (std::is_const_v<T>)
-            return as_bytes(sp);
-        else
-            return as_writable_bytes(sp);
-    }
+    template< class T, size_t N >
+    span( std::span<const T, N>& ) -> span< const T, N>;
 
-namespace detail
-{
-
-    inline auto format_extent(fmt::format_context::iterator it, std::size_t extent) {
-        return (extent == std::dynamic_extent)
-            ? fmt::format_to(it, "dyn")
-            : fmt::format_to(it, "{}", extent);
-    }
-
-    template<cpts::span Span>
-    auto c_contigous(const Span&) {
-        return true;
-    }
-
-    template<cpts::span Span>
-    auto f_contigous(const Span&) {
-        return true;
-    }
-
-} // namespace detail
+    template< typename T >
+    span( std::initializer_list<T> ) -> span< const T, dynamic_extent>;
 
 namespace spe
 {
-    template <typename T, std::size_t Extent>
+    template <typename T, size_t Extent>
     struct info_t< span<T, Extent> >
     {
         constexpr auto format_type(fmt::format_context::iterator it) const {
-            it = fmt::format_to(it, "span<{}, ", type_name<T>);
+            it = fmt::format_to(it, "std::span<{}, ", type_name<T>);
             it = detail::format_extent(it, Extent);
             return fmt::format_to(it, ">");
         }

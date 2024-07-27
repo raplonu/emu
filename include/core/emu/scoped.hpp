@@ -9,20 +9,6 @@
 namespace emu
 {
 
-    struct tOTO {
-
-    };
-
-    struct Tata {
-
-
-
-    };
-
-    inline tOTO fff() {
-        return tOTO{};
-    }
-
     /**
      * @brief A scoped object that calls a destructor when it goes out of scope.
      *

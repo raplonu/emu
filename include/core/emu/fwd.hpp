@@ -40,19 +40,67 @@ namespace tl
 namespace emu
 {
 
+    struct capsule;
+
     template<typename T, typename F>
     struct scoped;
 
-namespace cuda
+namespace detail
 {
 
-    template<typename T, std::size_t Extent>
+    template<typename ElementType, std::size_t Extent, typename LocationPolicy, typename ActualType>
+    struct basic_span;
+
+    template<typename ElementType, std::size_t Extent, typename LocationPolicy, typename ActualType>
+    struct basic_container;
+
+    template<typename T, typename Extents, typename LayoutPolicy, typename AccessorPolicy, typename LocationPolicy, typename ActualType>
+    struct basic_mdspan;
+
+    template<typename T, typename Extents, typename LayoutPolicy, typename AccessorPolicy, typename LocationPolicy, typename ActualType>
+    struct basic_mdcontainer;
+
+} // namespace detail
+
+    template<typename ElementType, std::size_t Extent>
+    struct container;
+
+    template <typename ElementType, typename Extents, typename LayoutPolicy, typename AccessorPolicy>
+    struct mdcontainer;
+
+namespace host
+{
+
+    template<typename ElementType, std::size_t Extent>
     struct span;
+
+    template<typename ElementType, std::size_t Extent>
+    struct container;
 
     template <typename ElementType, typename Extents, typename LayoutPolicy, typename AccessorPolicy>
     struct mdspan;
 
-} // namespace cuda
+    template <typename ElementType, typename Extents, typename LayoutPolicy, typename AccessorPolicy>
+    struct mdcontainer;
+
+} // namespace host
+
+namespace cuda::device
+{
+
+    template<typename ElementType, std::size_t Extent>
+    struct span;
+
+    template<typename ElementType, std::size_t Extent>
+    struct container;
+
+    template <typename ElementType, typename Extents, typename LayoutPolicy, typename AccessorPolicy>
+    struct mdspan;
+
+    template <typename ElementType, typename Extents, typename LayoutPolicy, typename AccessorPolicy>
+    struct mdcontainer;
+
+} // namespace cuda::device
 
 namespace spe
 {

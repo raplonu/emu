@@ -3,13 +3,13 @@
 #include <emu/type_traits.hpp>
 #include <emu/detail/basic_span.hpp>
 
-namespace emu::cuda::device
+namespace emu::host
 {
 
     template <typename ElementType, size_t Extent = dynamic_extent>
-    struct span : detail::basic_span<ElementType, Extent, cuda::device_source_validator, span<ElementType, Extent> >
+    struct span : detail::basic_span<ElementType, Extent, host::source_validator, span<ElementType, Extent> >
     {
-        using base = detail::basic_span<ElementType, Extent, cuda::device_source_validator, span >;
+        using base = detail::basic_span<ElementType, Extent, host::source_validator, span >;
 
         using base::base;
 
@@ -18,9 +18,6 @@ namespace emu::cuda::device
             return span<OT, OExtent>(sp.data(), sp.size());
         }
     };
-
-    //Note: some of these deduction guides represent invalid code.
-    // It is the role of the constructor to filter out invalid cases.
 
     template< class It, class EndOrSize >
     span( It, EndOrSize ) -> span<iterator_cv_value<It>, dynamic_extent>;
@@ -46,4 +43,4 @@ namespace emu::cuda::device
     template< typename T >
     span( std::initializer_list<T> ) -> span< const T, dynamic_extent>;
 
-} // namespace emu::cuda::device
+} // namespace emu::host

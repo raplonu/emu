@@ -3,8 +3,12 @@
 #include <emu/macro.hpp>
 #include <emu/fwd.hpp>
 
+#include <boost/logic/tribool.hpp>
+
 #include <type_traits>
-#include <iterator>
+#include <ranges>
+#include <tuple>
+#include <array>
 
 namespace emu
 {
@@ -46,6 +50,9 @@ namespace emu
     template <template <class...> class T, class... Args>
     constexpr bool is_specialization<T<Args...>, T> = true;
 
+    template<typename T, typename Reference>
+    using propagate_const = std::conditional_t<std::is_const_v<Reference>, std::add_const_t<T>, T>;
+
 namespace detail
 {
 
@@ -73,5 +80,117 @@ namespace detail
      */
     template <typename>
     constexpr bool dependent_false = false;
+
+namespace detail
+{
+    // General declaration
+    template<bool Condition, auto IfTrue, auto IfFalse>
+    struct conditional;
+
+    // Definition if true
+    template<auto IfTrue, auto IfFalse>
+    struct conditional<true, IfTrue, IfFalse> {
+        static constexpr auto value = IfTrue;
+    };
+    // Definition if false
+    template<auto IfTrue, auto IfFalse>
+    struct conditional<false, IfTrue, IfFalse> {
+        static constexpr auto value = IfFalse;
+    };
+} // namespace detail
+
+    template<bool B, auto IfTrue, auto IfFalse>
+    constexpr auto conditional = detail::conditional<B, IfTrue, IfFalse>::value;
+
+    /**
+     * @brief Returns the actual type of the element in a range.
+     *
+     * Could not rely on std::ranges::range_value_t as it discards cv-qualifiers.
+     *
+     * Examples:
+     * static_assert(std::is_same_v<range_cv_value<std::vector<int>>, int>);
+     * static_assert(std::is_same_v<range_cv_value<std::vector<int> const>, const int>);
+     *
+     * static_assert(std::is_same_v<range_cv_value<std::span<int>>, int>);
+     * static_assert(std::is_same_v<range_cv_value<const std::span<int>>, int>);
+     * static_assert(std::is_same_v<range_cv_value<std::span<const int>>, const int>);
+     *
+     *
+     * @tparam Range
+     */
+    template<std::ranges::range Range>
+    using range_cv_value = rm_ref< std::ranges::range_reference_t< Range > >;
+
+    /**
+     * @brief Returns the actual type of the element dereferenceable by an iterator.
+     *
+     * @tparam It
+     */
+    template<std::input_iterator It>
+    using iterator_cv_value = rm_ref< std::iter_reference_t< It > >;
+
+namespace spe
+{
+
+    /**
+     * @brief Host range use a blacklist approach to determine if a type is a valid source for a host range.
+     *
+     * This means that all types are valid sources for host ranges unless explicitly blacklisted.
+     *
+     * A host range is a range that can be accessed from the CPU host.
+     *
+     */
+    template <typename>
+    inline constexpr bool enable_host_range = true;
+
+    /**
+     * @brief Cuda device range use a whitelist approach to determine if a type is a valid source for a cuda device range.
+     *
+     * This means that all types are invalid valid sources for cuda device ranges unless explicitly whitelisted.
+     *
+     * A cuda device range is a range that can be accessed from the GPU device.
+     *
+     */
+    template <typename>
+    inline constexpr bool enable_cuda_device_range = false;
+
+
+    /**
+     * @brief Relocation range use a blacklist for rvalue refenrence and whitelist for lvalue reference
+     * approach to determine if a type is a valid source for a relocatable range.
+     *
+     */
+    template <typename T>
+    inline constexpr boost::logic::tribool enable_relocatable_owning_range = boost::logic::indeterminate;
+
+} // namespace spe
+
+    struct no_source_validator
+    {
+        template <typename>
+        static constexpr bool validate_source = true;
+    };
+
+namespace host
+{
+
+    struct source_validator
+    {
+        template <typename T>
+        static constexpr bool validate_source = spe::enable_host_range<rm_cvref<T>>;
+    };
+
+} // namespace host
+
+namespace cuda
+{
+
+    struct device_source_validator
+    {
+        template <typename T>
+        static constexpr bool validate_source = spe::enable_cuda_device_range<rm_cvref<T>>;
+    };
+
+} // namespace cuda
 
 } // namespace emu

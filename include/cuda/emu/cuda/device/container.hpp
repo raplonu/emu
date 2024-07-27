@@ -1,19 +1,21 @@
 #pragma once
 
+#include <emu/type_traits.hpp>
 #include <emu/detail/basic_container.hpp>
+#include <emu/cuda.hpp>
 
-namespace emu
+namespace emu::cuda::device
 {
 
     template <typename ElementType, size_t Extent = dynamic_extent>
-    struct container : detail::basic_container<ElementType, Extent, no_source_validator, container<ElementType, Extent>>
+    struct container : detail::basic_container<ElementType, Extent, cuda::device_source_validator, container<ElementType, Extent>>
     {
-        using base = detail::basic_container<ElementType, Extent, no_source_validator, container>;
+        using base = detail::basic_container<ElementType, Extent, cuda::device_source_validator, container>;
 
         using base::base;
 
         template<typename OT, size_t OExtent>
-        auto from_span(std::span<OT, OExtent> sp) const {
+        auto from_span(std::span<OT, OExtent> sp) const noexcept {
             return container<OT, OExtent>(sp, static_cast<const capsule&>(*this));
         }
     };
@@ -52,9 +54,20 @@ namespace emu
     container( std::initializer_list<T> ) -> container< const T, dynamic_extent>;
 
     template<typename T>
-    container<T> make_container(std::size_t size) {
-        auto u_ptr = std::make_unique<T[]>(size);
-        return container<T>(u_ptr.get(), size, std::move(u_ptr));
+    container<T> make_container(device_cref device, size_t size) {
+        auto u_span = cu::memory::device::make_unique_span<T>(device, size);
+        return container<T>(u_span.data(), size, std::move(u_span));
     }
 
-} // namespace emu
+    template<typename T>
+    container<T> make_container(stream_cref stream, size_t size) {
+        region_t region = cu::memory::device::async::allocate(stream, size * sizeof(T));
+
+        return container<T>(
+            region.as_span<T>(),
+            size,
+            scoped{[ptr = region.get(), stream_h = stream.handle()]{ cudaFreeAsync(ptr, stream_h); }}
+        );
+    }
+
+} // namespace emu::cuda::device

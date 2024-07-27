@@ -3,8 +3,6 @@
 #include <emu/cuda.hpp>
 #include <emu/macro.cuh>
 
-#error SHOULD NOT BE INCLUDED ANYWHERE !
-
 namespace emu
 {
 

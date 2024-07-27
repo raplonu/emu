@@ -4,9 +4,7 @@
 #include <emu/concepts.hpp>
 #include <emu/span.hpp>
 #include <emu/type_name.hpp>
-
-#include <experimental/mdspan>
-
+#include <emu/detail/basic_mdspan.hpp>
 #include <fmt/core.h>
 #include <fmt/ranges.h>
 
@@ -15,65 +13,31 @@
 namespace emu
 {
 
-    namespace stdex = std::experimental;
-
-    using stdex::layout_right;
-    using stdex::layout_left;
-    using stdex::layout_stride;
-
-    using layout_c = layout_right;
-    using layout_f = layout_left;
-
-    using layout_row    = layout_right;
-    using layout_column = layout_left;
-
-    using stdex::default_accessor;
-
-    using stdex::dextents;
-
-    using stdex::extents;
-
-    using stdex::full_extent_t;
-    using stdex::full_extent;
-
-// _Xd is an exception regarding the naming convention.
-// NOLINTBEGIN(readability-identifier-naming)
-
-    template<std::size_t N>
-    using _nd = dextents<std::size_t, N>;
-
-    using _0d = _nd<0>;
-    using _1d = _nd<1>;
-    using _2d = _nd<2>;
-    using _3d = _nd<3>;
-    using _4d = _nd<4>;
-
-// NOLINTEND(readability-identifier-naming)
-
     using stdex::mdspan;
 
-    template<typename ElementType> using mdspan_0d   = mdspan<ElementType, _0d>;
+    template<typename ElementType> using mdspan_0d   = mdspan<ElementType, d0>;
 
-    template<typename ElementType> using mdspan_1d   = mdspan<ElementType, _1d>;
-    template<typename ElementType> using mdspan_2d   = mdspan<ElementType, _2d>;
-    template<typename ElementType> using mdspan_3d   = mdspan<ElementType, _3d>;
+    template<typename ElementType> using mdspan_1d   = mdspan<ElementType, d1>;
+    template<typename ElementType> using mdspan_2d   = mdspan<ElementType, d2>;
+    template<typename ElementType> using mdspan_3d   = mdspan<ElementType, d3>;
 
-    template<typename ElementType> using mdspan_1d_c = mdspan<ElementType, _1d>;
-    template<typename ElementType> using mdspan_2d_c = mdspan<ElementType, _2d>;
-    template<typename ElementType> using mdspan_3d_c = mdspan<ElementType, _3d>;
+    template<typename ElementType> using mdspan_1d_c = mdspan<ElementType, d1>;
+    template<typename ElementType> using mdspan_2d_c = mdspan<ElementType, d2>;
+    template<typename ElementType> using mdspan_3d_c = mdspan<ElementType, d3>;
 
-    template<typename ElementType> using mdspan_1d_f = mdspan<ElementType, _1d, layout_f>;
-    template<typename ElementType> using mdspan_2d_f = mdspan<ElementType, _2d, layout_f>;
-    template<typename ElementType> using mdspan_3d_f = mdspan<ElementType, _3d, layout_f>;
+    template<typename ElementType> using mdspan_1d_f = mdspan<ElementType, d1, layout_f>;
+    template<typename ElementType> using mdspan_2d_f = mdspan<ElementType, d2, layout_f>;
+    template<typename ElementType> using mdspan_3d_f = mdspan<ElementType, d3, layout_f>;
 
-    template<typename ElementType> using mdspan_1d_s = mdspan<ElementType, _1d, layout_stride>;
-    template<typename ElementType> using mdspan_2d_s = mdspan<ElementType, _2d, layout_stride>;
-    template<typename ElementType> using mdspan_3d_s = mdspan<ElementType, _3d, layout_stride>;
+    template<typename ElementType> using mdspan_1d_s = mdspan<ElementType, d1, layout_stride>;
+    template<typename ElementType> using mdspan_2d_s = mdspan<ElementType, d2, layout_stride>;
+    template<typename ElementType> using mdspan_3d_s = mdspan<ElementType, d3, layout_stride>;
 
     template<typename LayoutPolicy> inline const char* layout_name() { return "unknow"; }
-    template<> inline const char* layout_name<layout_right>() { return "C/right"; }
-    template<> inline const char* layout_name<layout_left>() { return "F/left"; }
-    template<> inline const char* layout_name<layout_stride>() { return "stride"; }
+
+    template<> inline const char* layout_name<layout_right >() { return "C/right"; }
+    template<> inline const char* layout_name<layout_left  >() { return "F/left" ; }
+    template<> inline const char* layout_name<layout_stride>() { return "stride" ; }
 
     // not sure about that...
     template <typename T>
@@ -143,8 +107,6 @@ namespace detail
         return detail::stride_t{m.mapping(), sep};
     }
 
-namespace detail
-{
     template<cpts::mdspan MdSpan>
     auto c_contigous(const MdSpan& mdspan) {
         std::size_t size = 1;
@@ -168,8 +130,6 @@ namespace detail
         }
         return true;
     }
-
-} // namespace detail
 
 namespace spe
 {

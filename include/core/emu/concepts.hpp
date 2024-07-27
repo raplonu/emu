@@ -6,8 +6,10 @@
 #include <fmt/core.h>
 
 #include <concepts>
+#include <ranges>
 #include <type_traits>
 #include <span>
+#include <ranges>
 
 namespace emu
 {
@@ -15,48 +17,177 @@ namespace emu
 namespace cpts
 {
 
-    template<typename T1, typename T2>
-    concept equivalent = std::same_as<decay<T1>, decay<T2>>;
+    // #################
+    // # misc concepts #
+    // #################
 
-    template<typename T1, typename T2>
+    using std::same_as;
+
+    template <typename T1, typename T2>
+    concept not_same_as = not same_as<T1, T2>;
+
+    template <typename T1, typename T2>
+    concept equivalent = same_as<decay<T1>, decay<T2>>;
+
+    template <typename T1, typename T2>
     concept not_equivalent = not equivalent<T1, T2>;
 
-    template<class T, template<class...> class Template>
+    template <class T, template <class...> class Template>
     concept specialization_of = is_specialization<T, Template>;
 
-    template<typename Derived, typename Base>
+    template <typename Derived, typename Base>
     concept not_derived_from = not std::derived_from<Derived, Base>;
 
-    template<typename T>
-    concept expected = specialization_of<T, tl::expected>;
+    template <typename T>
+    concept ref = is_ref<T>;
+
+    template <typename T>
+    concept lref = is_lref<T>;
 
     template<typename T>
+    concept rref = is_rref<T>;
+
+    template <typename T>
+    concept not_ref = not is_ref<T>;
+
+    template <typename T>
+    concept not_lref = not is_lref<T>;
+
+    template<typename T>
+    concept not_rref = not is_rref<T>;
+
+    template<typename T>
+    concept pointer = std::is_pointer_v<T>;
+
+    // #########################
+    // # utility type concepts #
+    // #########################
+
+    template <typename T>
+    concept expected = specialization_of<T, tl::expected>;
+
+    template <typename T>
     concept optional = specialization_of<T, tl::optional>
                     or specialization_of<T, std::optional>;
 
-    template<typename T>
+    template <typename T>
     concept opt_like = expected<T> or optional<T>;
 
-    // cannot use is_specialization here because second span argument is not a type.
-    template<typename T>
-    concept span = std::same_as<T, std::span<typename T::element_type, T::extent>>;
+    // ############
+    // # std view #
+    // ############
 
-    template<typename T>
+    template <typename T>
+    concept std_span = same_as<T, std::span<typename T::element_type, T::extent>>;
+
+    template <typename T>
+    concept std_mdspan = specialization_of<T, std::experimental::mdspan>;
+
+    // ############
+    // # emu view #
+    // ############
+
+    template <typename T>
+    concept emu_span = std::derived_from<T, detail::basic_span<typename T::element_type, T::extent, typename T::location_type, typename T::actual_type>>;
+
+    template <typename T>
+    concept emu_mdspan = std::derived_from<T, detail::basic_mdspan<
+                    typename T::element_type, typename T::extents_type,
+                    typename T::layout_type, typename T::accessor_type,
+                    typename T::location_type, typename T::actual_type>>;
+
+    // #################
+    // # span concepts #
+    // #################
+
+    // cannot use is_specialization here because second span argument is not a type.
+    template <typename T>
+    concept span = std_span<T>
+                or emu_span<T>;
+
+    template <typename T>
     concept const_span = span<T> and std::is_const_v<typename T::element_type>;
 
-    template<typename T>
-    concept mdspan = specialization_of<T, std::experimental::mdspan>;
+    template <typename T>
+    concept mutable_span = span<T> and (not std::is_const_v<typename T::element_type>);
 
-    template<typename T>
+    // ######################
+    // # container concepts #
+    // ######################
+
+    template <typename T>
+    concept container = std::derived_from<T, detail::basic_container<typename T::element_type, T::extent, typename T::location_type, typename T::actual_type>>;
+
+    template <typename T>
+    concept const_container = container<T> and std::is_const_v<typename T::element_type>;
+
+    template <typename T>
+    concept mutable_container = container<T> and (not std::is_const_v<typename T::element_type>);
+
+    // ###################
+    // # mdspan concepts #
+    // ###################
+
+    template <typename T>
+    concept mdspan = std_mdspan<T>
+                  or emu_mdspan<T>;
+
+    template <typename T>
     concept const_mdspan = mdspan<T> and std::is_const_v<typename T::element_type>;
 
-    template<typename T>
+    template <typename T>
+    concept mutable_mdspan = mdspan<T> and (not std::is_const_v<typename T::element_type>);
+
+    // ########################
+    // # mdcontainer concepts #
+    // ########################
+
+    template <typename T>
+    concept mdcontainer = std::derived_from<T, detail::basic_mdcontainer<
+                    typename T::element_type, typename T::extents_type,
+                    typename T::layout_type, typename T::accessor_type,
+                    typename T::location_type, typename T::actual_type>>;
+
+    template <typename T>
+    concept const_mdcontainer = mdspan<T> and std::is_const_v<typename T::element_type>;
+
+    template <typename T>
+    concept mutable_mdcontainer = mdspan<T> and (not std::is_const_v<typename T::element_type>);
+
+    // #################
+    // # view concepts #
+    // #################
+
+    template <typename T>
     concept view = span<T> or mdspan<T>;
 
-    template<typename T>
+    template <typename T>
+    concept const_view = const_span<T> or const_mdspan<T>;
+
+    template <typename T>
+    concept mutable_view = mutable_span<T> or mutable_mdspan<T>;
+
+    // ####################
+    // # capsule concetps #
+    // ####################
+
+    template <typename T>
+    concept capsule_owner = requires (const T& t) {
+        { t.capsule() } -> std::convertible_to<capsule>;
+    };
+
+    // ###################
+    // # layout concepts #
+    // ###################
+
+    template <typename T>
+    concept contiguous_sized_range = std::ranges::contiguous_range<T>
+                                  and std::ranges::sized_range<T>;
+
+    template <typename T>
     concept extents = is_extents<T>;
 
-    template<typename T>
+    template <typename T>
     concept mapping = requires (const T& m) {
         // TODO: complete the list...
         { m.required_span_size() } -> std::convertible_to<std::size_t>;
@@ -69,58 +200,79 @@ namespace cpts
         { m.is_strided()           } -> std::convertible_to<bool>;
     };
 
-    template<typename T>
+    template <typename T>
     // the only thing that determine a layout is the inner mapping type.
     concept layout = mapping< typename T::template mapping<std::experimental::extents<std::size_t>> >;
-
-    // template<typename T>
-    // concept array = std::same_as<T, std::array<typename T::value_type, std::tuple_size_v<T>>>;
 
 namespace detail
 {
 
-    template<typename T>
+    template <typename T>
     struct is_std_array : std::false_type {};
 
-    template<typename T, std::size_t N>
+    template <typename T, std::size_t N>
     struct is_std_array<std::array<T, N>> : std::true_type {};
 
 } // namespace detail
 
-    template<typename T>
-    concept array = detail::is_std_array<decay<T>>::value;
+    template <typename T>
+    concept std_array = detail::is_std_array<decay<T>>::value;
 
-    template<typename T>
+    /**
+     * @brief Concept that model a relocatable range.
+     *
+     * A relocatable owning range is a range that can be moved in a general way (can also be a copied) without
+     * invalidating the iterators or the values' address. It test if the range is relocatable AND not borrowed.
+     *
+     * Example:
+     * Types that are relocatable and owns data: std::vector
+     * Types that are not relocatable or do not own the data: std::array, C arrays, std::span
+     *
+     *
+     * @tparam T
+     */
+    template <typename T>
+    concept relocatable_owning_range = conditional<
+        // If enable_relocatable_owning_range and is not indenteterminate
+        not boost::logic::indeterminate(spe::enable_relocatable_owning_range<rm_cvref<T>>),
+        // Then, the type is relocatable if enable_relocatable_owning_range is true
+        bool(spe::enable_relocatable_owning_range<rm_cvref<T>>),
+        // otherwise, the type is relocatable if it's not a view nor a lvalue reference
+        bool((not std::ranges::view<rm_ref<T>>)
+        and (not is_lref<T>) )>;
+
+
+    // std::ranges::range<T>
+    //                     and
+    //                      ((not boost::logic::indeterminate(spe::enable_relocatable_owning_range<T>))
+    //                    and spe::enable_relocatable_owning_range<T>);
+
+    template <typename T>
     concept formattable = requires (const T& v, fmt::format_context ctx) {
         fmt::formatter<T>().format(v, ctx);
     };
 
-    template<typename P>
+    template <typename P>
     concept const_pointer = std::is_pointer_v<P> and std::is_const_v<std::remove_pointer_t<P>>;
 
-    template<typename R>
+    template <typename R>
     concept c_string = requires(const R r) {
         { r.c_str() } -> const_pointer; // Can't know for sure if it's a char type.
         { r.size() } -> std::convertible_to<std::size_t>;
     };
 
-    template<typename T>
-    concept contiguous_sized_range
-        =   std::ranges::contiguous_range<T>
-        and std::ranges::sized_range<T>;
-
 } // namespace cpts
 
-namespace cuda::cpts
-{
+// namespace cuda::cpts
+// {
 
-    template<typename T>
-    concept span = std::same_as<decay<T>, span<typename decay<T>::element_type, decay<T>::extent>>;
+//     template <typename T>
+//     concept span = emu::cpts::same_as<decay<T>, span<typename decay<T>::element_type, decay<T>::extent>>;
 
-    template<typename T>
-    concept mdspan = emu::cpts::specialization_of<T, mdspan>;
+//     template <typename T>
+//     concept mdspan = emu::cpts::specialization_of<T, mdspan>;
 
-} // namespace cuda::cpts
+// } // namespace cuda::cpts
 
 
 } // namespace emu

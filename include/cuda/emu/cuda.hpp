@@ -16,6 +16,9 @@ namespace cuda
     using stream_ref  =       cu::stream_t &;
     using stream_cref = const cu::stream_t &;
 
+    using device_ref  =       cu::device_t &;
+    using device_cref = const cu::device_t &;
+
 namespace detail
 {
 

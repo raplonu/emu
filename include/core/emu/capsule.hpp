@@ -82,7 +82,7 @@ namespace emu
         /**
          * @brief Default constructor.
          */
-        capsule() = default;
+        constexpr capsule() = default;
 
         /**
          * @brief Constructs a capsule object with the given held object.
@@ -104,11 +104,11 @@ namespace emu
         {}
 
         template <cpts::capsule_owner T>
-        constexpr explicit capsule(T&& t)
+        constexpr explicit capsule(T&& t) noexcept
             : capsule( t.capsule() )
         {}
 
-        constexpr explicit capsule(gsl::owner<interface*> holder)
+        constexpr explicit capsule(gsl::owner<interface*> holder) noexcept
             : holder(holder)
         {
             if (holder) holder->hold();
@@ -118,7 +118,7 @@ namespace emu
          * @brief Copy constructor.
          * @param other The capsule object to copy from.
          */
-        capsule(capsule const& other)
+        constexpr capsule(capsule const& other) noexcept
             : holder(other.holder)
         {
             if (holder) holder->hold();
@@ -128,7 +128,7 @@ namespace emu
          * @brief Move constructor.
          * @param other The capsule object to move from.
          */
-        capsule(capsule&& other)
+        constexpr capsule(capsule&& other) noexcept
         // NOLINTNEXTLINE(cppcoreguidelines-owning-memory) - lint bug with std::exchange.
             : holder(std::exchange(other.holder, nullptr))
         {}
@@ -138,7 +138,7 @@ namespace emu
          * @param other The capsule object to copy from.
          * @return Reference to the modified capsule object.
          */
-        capsule& operator=(capsule const& other) noexcept {
+        constexpr capsule& operator=(capsule const& other) noexcept {
             reset();
             holder = other.holder;
             if (holder) holder->hold();
@@ -150,7 +150,7 @@ namespace emu
          * @param other The capsule object to move from.
          * @return Reference to the modified capsule object.
          */
-        capsule& operator=(capsule&& other) noexcept {
+        constexpr capsule& operator=(capsule&& other) noexcept {
             reset();
             // NOLINTNEXTLINE(cppcoreguidelines-owning-memory) - lint bug with std::exchange.
             holder = std::exchange(other.holder, nullptr);
@@ -160,14 +160,14 @@ namespace emu
         /**
          * @brief Destructor.
          */
-        ~capsule() {
+        constexpr ~capsule() noexcept {
             reset();
         }
 
         /**
          * @brief Resets the capsule object by releasing the held object if necessary.
          */
-        void reset() noexcept {
+        constexpr void reset() noexcept {
             // clang analyzer does not like the delete call here.
             manual_release(holder); //NOLINT(clang-analyzer-cplusplus.NewDelete)
             holder = nullptr;
@@ -177,15 +177,15 @@ namespace emu
          * @brief Returns the reference count of the held object.
          * @return The reference count of the held object.
          */
-        [[nodiscard]] long use_count() const noexcept { return holder ? static_cast<long>(holder->use_count) : 0l; }
+        [[nodiscard]] constexpr long use_count() const noexcept { return holder ? static_cast<long>(holder->use_count) : 0l; }
 
         /**
          * @brief Conversion operator to bool.
          * @return True if the capsule object holds a valid object, false otherwise.
          */
-        operator bool() const noexcept { return static_cast<bool>(holder); }
+        constexpr operator bool() const noexcept { return static_cast<bool>(holder); }
 
-        static void manual_hold(capsule::interface* holder) {
+        constexpr static void manual_hold(capsule::interface* holder) {
             if (holder) holder->hold();
         }
 
@@ -197,7 +197,7 @@ namespace emu
          *
          * @param holder The capsule holder to release.
          */
-        static void manual_release(gsl::owner<capsule::interface*> holder) {
+        constexpr static void manual_release(gsl::owner<capsule::interface*> holder) {
             if (holder) // pointer not null
                 // decrement use count and check if zero
                 if (bool can_delete = holder->release(); can_delete)
@@ -205,5 +205,44 @@ namespace emu
 
         }
     };
+
+    /**
+     * @brief Utility function to create a capsule object from a relocatable range.
+     *
+     * @tparam Range
+     * @param range
+     * @return capsule
+     */
+    template<typename Range>
+    constexpr auto capsule_from_range(Range&& range) noexcept -> capsule
+    {
+        // if constexpr (cpts::relocatable_range<Range>)
+        if constexpr (cpts::relocatable_owning_range<Range>)
+        {
+            if constexpr (is_lref<Range>)
+                return capsule( copy{range} );
+            else
+                return capsule( EMU_FWD(range) );
+        }
+        else
+            return {};
+    }
+
+namespace spe
+{
+
+    /// std::array are not relocatable regardless if it is a reference or not.
+    template <typename T, size_t N>
+    inline constexpr bool enable_relocatable_owning_range< std::array<T, N> > = false;
+
+    /// C arrays are not relocatable regardless if it is a reference or not.
+    ///TODO: check if it is useful to have this.
+    template <typename T>
+    inline constexpr bool enable_relocatable_owning_range<T[]> = false;
+    /// C arrays are not relocatable regardless if it is a reference or not.
+    template <typename T, size_t N>
+    inline constexpr bool enable_relocatable_owning_range<T[N]> = false;
+
+} // namespace spe
 
 } // namespace emu

@@ -167,12 +167,12 @@ namespace
     TEST(range_test, from_movable_std_array)
     {
         {
-            emu::spy_flag flag;
+            emu_test::spy_flag flag;
             // If it is from a rvalue of requested type, sinply move it.
-            std::array<emu::Spy, 1> input{{&flag}};
+            std::array<emu_test::Spy, 1> input{{&flag}};
 
             auto v = emu::as_vector(std::move(input));
-            static_assert(std::is_same_v<decltype(v), std::vector<emu::Spy>>);
+            static_assert(std::is_same_v<decltype(v), std::vector<emu_test::Spy>>);
 
             // If a vector is moved, elements are not copied nor moved.
             EXPECT_TRUE(flag.copied);
@@ -180,12 +180,12 @@ namespace
         }
 
         {
-            emu::spy_flag flag;
+            emu_test::spy_flag flag;
             // If it is from a rvalue of requested type, sinply move it.
-            std::array<emu::Spy, 1> input{{&flag}};
+            std::array<emu_test::Spy, 1> input{{&flag}};
 
-            auto v = emu::as_vector<emu::Spy>(std::move(input));
-            static_assert(std::is_same_v<decltype(v), std::vector<emu::Spy>>);
+            auto v = emu::as_vector<emu_test::Spy>(std::move(input));
+            static_assert(std::is_same_v<decltype(v), std::vector<emu_test::Spy>>);
 
             // If a vector is moved, elements are not copied nor moved.
             EXPECT_TRUE(flag.copied);
@@ -223,12 +223,12 @@ namespace
     TEST(range_test, from_movable_vector)
     {
         {
-            emu::spy_flag flag;
+            emu_test::spy_flag flag;
             // If it is from a rvalue of requested type, sinply move it.
-            std::vector<emu::Spy> input; input.emplace_back(&flag);
+            std::vector<emu_test::Spy> input; input.emplace_back(&flag);
 
             auto v = emu::as_vector(std::move(input));
-            static_assert(std::is_same_v<decltype(v), std::vector<emu::Spy>>);
+            static_assert(std::is_same_v<decltype(v), std::vector<emu_test::Spy>>);
 
             // If a vector is moved, elements are not copied nor moved.
             EXPECT_FALSE(flag.copied);
@@ -236,12 +236,12 @@ namespace
         }
 
         {
-            emu::spy_flag flag;
+            emu_test::spy_flag flag;
             // If it is from a rvalue of requested type, sinply move it.
-            std::vector<emu::Spy> input; input.emplace_back(&flag);
+            std::vector<emu_test::Spy> input; input.emplace_back(&flag);
 
-            auto v = emu::as_vector<emu::Spy>(std::move(input));
-            static_assert(std::is_same_v<decltype(v), std::vector<emu::Spy>>);
+            auto v = emu::as_vector<emu_test::Spy>(std::move(input));
+            static_assert(std::is_same_v<decltype(v), std::vector<emu_test::Spy>>);
 
             // If a vector is moved, elements are not copied nor moved.
             EXPECT_FALSE(flag.copied);

@@ -1,6 +1,9 @@
 #pragma once
 
-namespace emu
+#include <utility>
+#include <ranges>
+
+namespace emu_test
 {
     struct spy_flag
     {
@@ -36,13 +39,13 @@ namespace emu
         }
     };
 
-    struct SpyContainer : emu::Spy
+    struct SpyContainer : Spy
     {
         using value_type = int;
         using element_type = int;
 
-        SpyContainer(emu::spy_flag* sf, int *ptr)
-            : emu::Spy(sf)
+        SpyContainer(spy_flag* sf, int *ptr)
+            : Spy(sf)
             , ptr(ptr)
         {}
 
@@ -61,8 +64,8 @@ namespace emu
     static_assert(std::ranges::sized_range<SpyContainer>);
     static_assert(std::ranges::contiguous_range<SpyContainer>);
 
-} // namespace emu
+} // namespace emu_test
 
 // destroying SpyContainer invalidates all references to its elements.
 template <>
-inline constexpr bool std::ranges::enable_borrowed_range<emu::SpyContainer> = false;
+inline constexpr bool std::ranges::enable_borrowed_range<emu_test::SpyContainer> = true;

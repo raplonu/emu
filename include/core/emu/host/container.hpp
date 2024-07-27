@@ -1,19 +1,20 @@
 #pragma once
 
+#include <emu/type_traits.hpp>
 #include <emu/detail/basic_container.hpp>
 
-namespace emu
+namespace emu::host
 {
 
     template <typename ElementType, size_t Extent = dynamic_extent>
-    struct container : detail::basic_container<ElementType, Extent, no_source_validator, container<ElementType, Extent>>
+    struct container : detail::basic_container<ElementType, Extent, host::source_validator, container<ElementType, Extent>>
     {
-        using base = detail::basic_container<ElementType, Extent, no_source_validator, container>;
+        using base = detail::basic_container<ElementType, Extent, host::source_validator, container>;
 
         using base::base;
 
         template<typename OT, size_t OExtent>
-        auto from_span(std::span<OT, OExtent> sp) const {
+        auto from_span(std::span<OT, OExtent> sp) const noexcept {
             return container<OT, OExtent>(sp, static_cast<const capsule&>(*this));
         }
     };
@@ -52,9 +53,9 @@ namespace emu
     container( std::initializer_list<T> ) -> container< const T, dynamic_extent>;
 
     template<typename T>
-    container<T> make_container(std::size_t size) {
+    container<T> make_container(size_t size) {
         auto u_ptr = std::make_unique<T[]>(size);
         return container<T>(u_ptr.get(), size, std::move(u_ptr));
     }
 
-} // namespace emu
+} // namespace emu::host
