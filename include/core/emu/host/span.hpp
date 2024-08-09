@@ -3,13 +3,16 @@
 #include <emu/type_traits.hpp>
 #include <emu/detail/basic_span.hpp>
 
-namespace emu::host
+namespace emu
+{
+
+namespace host
 {
 
     template <typename ElementType, size_t Extent = dynamic_extent>
-    struct span : detail::basic_span<ElementType, Extent, host::source_validator, span<ElementType, Extent> >
+    struct span : emu::detail::basic_span<ElementType, Extent, host::source_policy, span<ElementType, Extent> >
     {
-        using base = detail::basic_span<ElementType, Extent, host::source_validator, span >;
+        using base = emu::detail::basic_span<ElementType, Extent, host::source_policy, span >;
 
         using base::base;
 
@@ -19,28 +22,13 @@ namespace emu::host
         }
     };
 
-    template< class It, class EndOrSize >
-    span( It, EndOrSize ) -> span<iterator_cv_value<It>, dynamic_extent>;
+    EMU_DEFINE_SPAN_DEDUCTION_GUIDES
 
-    template< class T, size_t N >
-    span( T (&)[N] ) -> span<T, N>;
+} // namespace host
 
-    template< typename Range >
-    span( Range&& ) -> span< range_cv_value<Range>, dynamic_extent>;
+    template<typename T, std::size_t Extent>
+    constexpr auto as_md(host::span<T, Extent> s) noexcept {
+        return host::mdspan<T, extents<size_t, Extent>, layout_right, default_accessor<T> >{s.data(), s.size()};
+    }
 
-    template< class T, size_t N >
-    span( std::array<T, N>& ) -> span<T, N>;
-
-    template< class T, size_t N >
-    span( const std::array<T, N>& ) -> span< const T, N>;
-
-    template< class T, size_t N >
-    span( std::span<T, N>& ) -> span<T, N>;
-
-    template< class T, size_t N >
-    span( std::span<const T, N>& ) -> span< const T, N>;
-
-    template< typename T >
-    span( std::initializer_list<T> ) -> span< const T, dynamic_extent>;
-
-} // namespace emu::host
+} // namespace emu

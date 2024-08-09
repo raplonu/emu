@@ -1,15 +1,16 @@
 #pragma once
 
-#include <emu/concepts.hpp>
 #include <emu/type_traits.hpp>
+#include <emu/concepts.hpp>
+
 #include <emu/info.hpp>
 #include <emu/utility.hpp>
 
 #include <initializer_list>
 #include <iterator>
 #include <cstddef>
-#include <ranges>
 #include <span>
+#include <ranges>
 
 namespace emu
 {
@@ -108,6 +109,14 @@ namespace detail
         constexpr explicit(extent != dynamic_extent && OExtent != dynamic_extent)
         basic_span(const std::span<OT, OExtent> &other) noexcept
             : base(other) {}
+
+        /**
+         * @brief Special constructor that allows implicit conversion from std::span to emu::span.
+         *
+         */
+        constexpr basic_span(std::span<ElementType, Extent> sp) noexcept requires (extent != dynamic_extent)
+            : base(sp)
+        {}
 
         basic_span(const basic_span &) noexcept = default;
         basic_span(basic_span &&) noexcept = default;
@@ -268,3 +277,28 @@ template<emu::cpts::emu_span EmuSpan>
 inline constexpr bool
 std::ranges::enable_view<EmuSpan>
     = EmuSpan::extent == 0 || EmuSpan::extent == std::dynamic_extent;
+
+#define EMU_DEFINE_SPAN_DEDUCTION_GUIDES                                  \
+    template< class It, class EndOrSize >                                 \
+    span( It, EndOrSize ) -> span<iterator_cv_value<It>, dynamic_extent>; \
+                                                                          \
+    template< class T, size_t N >                                         \
+    span( T (&)[N] ) -> span<T, N>;                                       \
+                                                                          \
+    template< typename Range >                                            \
+    span( Range&& ) -> span< range_cv_value<Range>, dynamic_extent>;      \
+                                                                          \
+    template< class T, size_t N >                                         \
+    span( std::array<T, N>& ) -> span<T, N>;                              \
+                                                                          \
+    template< class T, size_t N >                                         \
+    span( const std::array<T, N>& ) -> span< const T, N>;                 \
+                                                                          \
+    template< class T, size_t N >                                         \
+    span( std::span<T, N>& ) -> span<T, N>;                               \
+                                                                          \
+    template< class T, size_t N >                                         \
+    span( std::span<const T, N>& ) -> span< const T, N>;                  \
+                                                                          \
+    template< typename T >                                                \
+    span( std::initializer_list<T> ) -> span< const T, dynamic_extent>;

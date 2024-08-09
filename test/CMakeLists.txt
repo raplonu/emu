@@ -9,6 +9,8 @@ add_executable(emucoretest
     src/core/test.cpp
     src/core/concepts_test.cpp
     src/core/capsule_test.cpp
+    src/core/cstring_view_test.cpp
+    src/core/const_string_test.cpp
     src/core/container_test.cpp
     src/core/host/container_test.cpp
     src/core/mdcontainer_test.cpp
@@ -45,4 +47,24 @@ if (emu_build_cuda)
     target_include_directories(emucudatest PRIVATE include)
 
     gtest_discover_tests(emucudatest)
+endif()
+
+if (emu_build_python)
+
+    add_executable(emupythontest
+        src/python/gil.cpp
+        src/python/span_test.cpp
+        src/python/container_test.cpp
+        src/python/mdspan_test.cpp
+        src/python/mdcontainer_test.cpp
+        src/python/cstring_view_test.cpp
+    )
+
+    target_link_libraries(emupythontest PRIVATE
+        GTest::gtest GTest::gtest_main emupython pybind11::embed
+    )
+
+    target_include_directories(emupythontest PRIVATE include)
+
+    gtest_discover_tests(emupythontest)
 endif()

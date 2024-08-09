@@ -2,7 +2,6 @@
 #include <concepts>
 #include <gtest/gtest.h>
 #include <ranges>
-#include <utility_test.hpp>
 
 #include <emu/container.hpp>
 

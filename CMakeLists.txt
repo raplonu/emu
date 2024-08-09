@@ -204,6 +204,17 @@ if (emu_build_python)
         include/python/emu/pybind11/numpy.h
     )
 
+    find_package(pybind11 REQUIRED)
+
+    target_link_libraries(emupython INTERFACE
+        emucore
+        pybind11_all_do_not_use
+    )
+
+    if(emu_build_cuda)
+        target_link_libraries(emupython INTERFACE emucuda)
+    endif()
+
     add_library(emu::python ALIAS emupython)
 
     install(TARGETS emupython

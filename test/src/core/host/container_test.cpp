@@ -1,5 +1,4 @@
 #include <gtest/gtest.h>
-#include <utility_test.hpp>
 
 #include <emu/host/container.hpp>
 #include <emu/scoped.hpp>

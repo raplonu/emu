@@ -2,14 +2,18 @@
 
 #include <emu/type_traits.hpp>
 #include <emu/detail/basic_container.hpp>
+#include <emu/detail/basic_mdspan.hpp>
+#include <emu/host/location_policy.hpp>
 
-namespace emu::host
+namespace emu
+{
+namespace host
 {
 
     template <typename ElementType, size_t Extent = dynamic_extent>
-    struct container : detail::basic_container<ElementType, Extent, host::source_validator, container<ElementType, Extent>>
+    struct container : emu::detail::basic_container<ElementType, Extent, host::source_policy, container<ElementType, Extent> >
     {
-        using base = detail::basic_container<ElementType, Extent, host::source_validator, container>;
+        using base = emu::detail::basic_container<ElementType, Extent, host::source_policy, container>;
 
         using base::base;
 
@@ -19,38 +23,7 @@ namespace emu::host
         }
     };
 
-    template< class It, class EndOrSize >
-    container( It, EndOrSize )               -> container< iterator_cv_value<It>, dynamic_extent >;
-    template< class It, class EndOrSize, class DataHolder >
-    container( It, EndOrSize, DataHolder&& ) -> container< iterator_cv_value<It>, dynamic_extent >;
-
-    template< class T, size_t N >
-    container( T (&)[N] )               -> container<T, N>;
-    template< class T, size_t N, class DataHolder >
-    container( T (&)[N], DataHolder&& ) -> container<T, N>;
-
-    template< typename Range >
-    container( Range&& )               -> container< range_cv_value<Range>, dynamic_extent>;
-    template< typename Range, class DataHolder >
-    container( Range&&, DataHolder&& ) -> container< range_cv_value<Range>, dynamic_extent>;
-
-    template< class T, size_t N >
-    container( std::array<T, N>& )       -> container<T, N>;
-    template< class T, size_t N >
-    container( const std::array<T, N>& ) -> container< const T, N>;
-
-    template< class T, size_t N >
-    container( std::span<T, N> )       -> container<T, N>;
-    template< class T, size_t N, class DataHolder >
-    container( std::span<T, N>, DataHolder&& )       -> container<T, N>;
-
-    template< class T, size_t N >
-    container( std::span<const T, N> ) -> container< const T, N>;
-    template< class T, size_t N, class DataHolder >
-    container( std::span<const T, N>, DataHolder&& ) -> container< const T, N>;
-
-    template< typename T >
-    container( std::initializer_list<T> ) -> container< const T, dynamic_extent>;
+    EMU_DEFINE_CONTAINER_DEDUCTION_GUIDES
 
     template<typename T>
     container<T> make_container(size_t size) {
@@ -58,4 +31,11 @@ namespace emu::host
         return container<T>(u_ptr.get(), size, std::move(u_ptr));
     }
 
-} // namespace emu::host
+} // namespace host
+
+    template<typename T, std::size_t Extent>
+    constexpr auto as_md(host::container<T, Extent> s) noexcept {
+        return host::mdcontainer<T, extents<size_t, Extent>, layout_right, default_accessor<T> >{s.data(), s.size()};
+    }
+
+} // namespace emu

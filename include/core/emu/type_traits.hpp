@@ -81,6 +81,14 @@ namespace detail
     template <typename>
     constexpr bool dependent_false = false;
 
+    /**
+     * @brief Utility to delay the evaluation of a static_assert.
+     *
+     * @tparam typename
+     */
+    template <auto>
+    constexpr bool dependent_false_v = false;
+
 namespace detail
 {
     // General declaration
@@ -164,33 +172,5 @@ namespace spe
     inline constexpr boost::logic::tribool enable_relocatable_owning_range = boost::logic::indeterminate;
 
 } // namespace spe
-
-    struct no_source_validator
-    {
-        template <typename>
-        static constexpr bool validate_source = true;
-    };
-
-namespace host
-{
-
-    struct source_validator
-    {
-        template <typename T>
-        static constexpr bool validate_source = spe::enable_host_range<rm_cvref<T>>;
-    };
-
-} // namespace host
-
-namespace cuda
-{
-
-    struct device_source_validator
-    {
-        template <typename T>
-        static constexpr bool validate_source = spe::enable_cuda_device_range<rm_cvref<T>>;
-    };
-
-} // namespace cuda
 
 } // namespace emu

@@ -9,6 +9,7 @@ namespace emu
 {
 
     struct null_terminated_t {};
+
     constexpr null_terminated_t null_terminated;
 
     template<typename CharT, typename Traits = std::char_traits<CharT>>
@@ -102,27 +103,27 @@ namespace literals
     }
 
     constexpr basic_cstring_view<char8_t>
-    operator ""_sv( const char8_t* str, std::size_t len ) noexcept {
+    operator ""_csv( const char8_t* str, std::size_t len ) noexcept {
         return {null_terminated, str, len};
     }
 
     constexpr basic_cstring_view<char16_t>
-    operator ""_sv( const char16_t* str, std::size_t len ) noexcept {
+    operator ""_csv( const char16_t* str, std::size_t len ) noexcept {
         return {null_terminated, str, len};
     }
 
     constexpr basic_cstring_view<char32_t>
-    operator ""_sv( const char32_t* str, std::size_t len ) noexcept {
+    operator ""_csv( const char32_t* str, std::size_t len ) noexcept {
         return {null_terminated, str, len};
     }
 
 } // namespace literals
 
     using cstring_view     = basic_cstring_view< char     >;
-    using c_wstring_view   = basic_cstring_view< wchar_t  >;
-    using c_u8string_view  = basic_cstring_view< char8_t  >;
-    using c_u16string_view = basic_cstring_view< char16_t >;
-    using c_u32string_view = basic_cstring_view< char32_t >;
+    using cwstring_view   = basic_cstring_view< wchar_t  >;
+    using cu8string_view  = basic_cstring_view< char8_t  >;
+    using cu16string_view = basic_cstring_view< char16_t >;
+    using cu32string_view = basic_cstring_view< char32_t >;
 
 } // namespace emu
 
@@ -140,8 +141,7 @@ struct fmt::formatter<emu::basic_cstring_view<CharT, Traits>, CharT> : fmt::form
     using cstring_view = emu::basic_cstring_view<CharT, Traits>;
     using string_view = std::basic_string_view<CharT, Traits>;
 
-    template <typename FormatContext>
-    auto format(cstring_view v, FormatContext& ctx) {
+    auto format(cstring_view v, format_context& ctx) const {
         return base::format(static_cast<string_view>(v), ctx);
     }
 };

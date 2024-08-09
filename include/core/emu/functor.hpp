@@ -60,12 +60,19 @@ namespace detail {
 } // namespace emu
 
 // Specializations for std::vector
-template<typename T>
-struct emu::spe::map< std::vector<T>> {
+template<typename T, typename Allocator>
+struct emu::spe::map< std::vector<T, Allocator> > {
+
+    using source_vector = std::vector<T, Allocator>;
+    using allocator_traits = std::allocator_traits<Allocator>;
 
     template<typename Fr, typename Fn>
     constexpr auto operator()(Fr&& vec, Fn&& fn) const {
-        std::vector<decltype(emu::map(vec[0], fn))> res; res.reserve(vec.size());
+        using destination_type = decltype(emu::map(vec[0], fn));
+        using destination_allocator = typename allocator_traits::template rebind_alloc<destination_type>;
+
+        destination_allocator alloc = allocator_traits::select_on_container_copy_construction(vec.get_allocator());
+        std::vector<destination_type, destination_allocator> res(alloc); res.reserve(vec.size());
 
         std::ranges::transform(EMU_FWD(vec), std::back_inserter(res), fn);
 

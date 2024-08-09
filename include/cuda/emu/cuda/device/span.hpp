@@ -2,14 +2,17 @@
 
 #include <emu/type_traits.hpp>
 #include <emu/detail/basic_span.hpp>
+#include <emu/cude/device/mdspan.hpp>
 
-namespace emu::cuda::device
+namespace emu
+{
+namespace cuda::device
 {
 
     template <typename ElementType, size_t Extent = dynamic_extent>
-    struct span : detail::basic_span<ElementType, Extent, cuda::device_source_validator, span<ElementType, Extent> >
+    struct span : emu::detail::basic_span<ElementType, Extent, cuda::device_source_policy, span<ElementType, Extent> >
     {
-        using base = detail::basic_span<ElementType, Extent, cuda::device_source_validator, span >;
+        using base = emu::detail::basic_span<ElementType, Extent, cuda::device_source_policy, span >;
 
         using base::base;
 
@@ -19,31 +22,15 @@ namespace emu::cuda::device
         }
     };
 
-    //Note: some of these deduction guides represent invalid code.
+    //Note: some of these deduction guides point to invalid constructor.
     // It is the role of the constructor to filter out invalid cases.
+    EMU_DEFINE_SPAN_DEDUCTION_GUIDES
 
-    template< class It, class EndOrSize >
-    span( It, EndOrSize ) -> span<iterator_cv_value<It>, dynamic_extent>;
+} // namespace cuda::device
 
-    template< class T, size_t N >
-    span( T (&)[N] ) -> span<T, N>;
+    template<typename T, std::size_t Extent>
+    constexpr auto as_md(cuda::device::span<T, Extent> s) noexcept {
+        return cuda::device::mdspan<T, extents<size_t, Extent>, layout_right, default_accessor<T> >{s.data(), s.size()};
+    }
 
-    template< typename Range >
-    span( Range&& ) -> span< range_cv_value<Range>, dynamic_extent>;
-
-    template< class T, size_t N >
-    span( std::array<T, N>& ) -> span<T, N>;
-
-    template< class T, size_t N >
-    span( const std::array<T, N>& ) -> span< const T, N>;
-
-    template< class T, size_t N >
-    span( std::span<T, N>& ) -> span<T, N>;
-
-    template< class T, size_t N >
-    span( std::span<const T, N>& ) -> span< const T, N>;
-
-    template< typename T >
-    span( std::initializer_list<T> ) -> span< const T, dynamic_extent>;
-
-} // namespace emu::cuda::device
+} // namespace emu

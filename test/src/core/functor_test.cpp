@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <utility_test.hpp>
+#include <test_utility/spy.hpp>
 
 #include <emu/functor.hpp>
 

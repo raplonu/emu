@@ -2,21 +2,22 @@
 
 #include <emu/type_traits.hpp>
 #include <emu/concepts.hpp>
+
 #include <emu/detail/basic_span.hpp>
 #include <emu/capsule.hpp>
 
 #include <ranges>
 
-namespace emu
-{
-
-namespace detail
+namespace emu::detail
 {
 
     template <typename ElementType, size_t Extent, typename LocationPolicy, typename ActualType>
-    struct basic_container : basic_span<ElementType, Extent, LocationPolicy, ActualType>, capsule
+    struct basic_container : basic_span<ElementType, Extent, LocationPolicy, ActualType>, emu::capsule
     {
+
+
         using base = basic_span<ElementType, Extent, LocationPolicy, ActualType>;
+        using capsule_base = emu::capsule;
 
         using element_type     = typename base::element_type;
         using value_type       = typename base::value_type;
@@ -44,7 +45,7 @@ namespace detail
             explicit(extent != dynamic_extent)
         constexpr basic_container(It first, size_t count, DataHolder&& dh)
             : base(first, count)
-            , capsule(EMU_FWD(dh))
+            , capsule_base(EMU_FWD(dh))
         {}
 
         template <std::contiguous_iterator It, std::sized_sentinel_for<It> End, typename DataHolder>
@@ -52,19 +53,18 @@ namespace detail
             explicit(extent != dynamic_extent)
         constexpr basic_container(It first, End last, DataHolder&& dh)
             : base(first, last)
-            , capsule(EMU_FWD(dh))
+            , capsule_base(EMU_FWD(dh))
         {}
 
         template<cpts::contiguous_sized_range Range>
             requires (validate_source<Range>)
-                //  and (std::ranges::borrowed_range<Range> or is_const<element_type>)
                  and (std::ranges::borrowed_range<Range> or is_const<element_type> or cpts::relocatable_owning_range<Range>)
             explicit(extent != dynamic_extent)
         constexpr basic_container(Range&& range)
             noexcept( noexcept(base(range))
                   and noexcept(capsule_from_range(EMU_FWD(range))))
             : base(range)
-            , capsule(capsule_from_range(EMU_FWD(range)))
+            , capsule_base(capsule_from_range(EMU_FWD(range)))
         {}
 
         template<cpts::contiguous_sized_range Range, typename DataHolder>
@@ -72,7 +72,7 @@ namespace detail
             explicit(extent != dynamic_extent)
         constexpr basic_container(Range&& range, DataHolder&& dh)
             : base(EMU_FWD(range))
-            , capsule(EMU_FWD(dh))
+            , capsule_base(EMU_FWD(dh))
         {}
 
         // explicit(extent != std::dynamic_extent)
@@ -89,7 +89,7 @@ namespace detail
         constexpr explicit(extent != dynamic_extent && OExtent != dynamic_extent)
         basic_container(const basic_container<OT, OExtent, LocationPolicy, OActualType>& other) noexcept
             : base(static_cast<const base&>(other))
-            , capsule(static_cast<const capsule&>(other))
+            , capsule_base(other.capsule())
         {}
 
         template<typename OT, size_t OExtent, typename OActualType, typename DataHolder>
@@ -99,14 +99,14 @@ namespace detail
         constexpr explicit(extent != dynamic_extent && OExtent != dynamic_extent)
         basic_container(const basic_span<OT, OExtent, LocationPolicy, OActualType>& other, DataHolder&& dh) noexcept
             : base(static_cast<const base&>(other))
-            , capsule(EMU_FWD(dh))
+            , capsule_base(EMU_FWD(dh))
         {}
 
         template<typename DataHolder>
         constexpr explicit
         basic_container(base s, DataHolder&& dh)
             : base(s)
-            , capsule(EMU_FWD(dh))
+            , capsule_base(EMU_FWD(dh))
         {}
 
         constexpr basic_container(const basic_container&) noexcept = default;
@@ -117,9 +117,9 @@ namespace detail
 
         ~basic_container() noexcept = default;
 
-        // emu::capsule&        capsule() &      noexcept { return capsule_; }
-        // emu::capsule const & capsule() const& noexcept { return capsule_; }
-        // emu::capsule         capsule() &&     noexcept { return move(capsule_); }
+        emu::capsule&        capsule() &      noexcept { return static_cast<emu::capsule&>(*this); }
+        emu::capsule const & capsule() const& noexcept { return static_cast<emu::capsule>(*this); }
+        emu::capsule         capsule() &&     noexcept { return static_cast<emu::capsule>(*this); }
 
         // auto use_count() const noexcept { return capsule_.use_count(); }
 
@@ -173,9 +173,7 @@ namespace detail
 
     };
 
-} // namespace detail
-
-} // namespace emu
+} // namespace emu::detail
 
 // Opt-in to borrowed_range concept
 //
@@ -191,3 +189,37 @@ template<emu::cpts::container Container>
 inline constexpr bool
 std::ranges::enable_view<Container>
     = Container::extent == 0 || Container::extent == std::dynamic_extent;
+
+#define EMU_DEFINE_CONTAINER_DEDUCTION_GUIDES                                                       \
+    template< class It, class EndOrSize >                                                           \
+    container( It, EndOrSize )               -> container< iterator_cv_value<It>, dynamic_extent >; \
+    template< class It, class EndOrSize, class DataHolder >                                         \
+    container( It, EndOrSize, DataHolder&& ) -> container< iterator_cv_value<It>, dynamic_extent >; \
+                                                                                                    \
+    template< class T, size_t N >                                                                   \
+    container( T (&)[N] )               -> container<T, N>;                                         \
+    template< class T, size_t N, class DataHolder >                                                 \
+    container( T (&)[N], DataHolder&& ) -> container<T, N>;                                         \
+                                                                                                    \
+    template< typename Range >                                                                      \
+    container( Range&& )               -> container< range_cv_value<Range>, dynamic_extent>;        \
+    template< typename Range, class DataHolder >                                                    \
+    container( Range&&, DataHolder&& ) -> container< range_cv_value<Range>, dynamic_extent>;        \
+                                                                                                    \
+    template< class T, size_t N >                                                                   \
+    container( std::array<T, N>& )       -> container<T, N>;                                        \
+    template< class T, size_t N >                                                                   \
+    container( const std::array<T, N>& ) -> container< const T, N>;                                 \
+                                                                                                    \
+    template< class T, size_t N >                                                                   \
+    container( std::span<T, N> )       -> container<T, N>;                                          \
+    template< class T, size_t N, class DataHolder >                                                 \
+    container( std::span<T, N>, DataHolder&& )       -> container<T, N>;                            \
+                                                                                                    \
+    template< class T, size_t N >                                                                   \
+    container( std::span<const T, N> ) -> container< const T, N>;                                   \
+    template< class T, size_t N, class DataHolder >                                                 \
+    container( std::span<const T, N>, DataHolder&& ) -> container< const T, N>;                     \
+                                                                                                    \
+    template< typename T >                                                                          \
+    container( std::initializer_list<T> ) -> container< const T, dynamic_extent>;

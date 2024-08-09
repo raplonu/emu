@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <utility_test.hpp>
 #include <vector>
 
 #include <emu/container.hpp>
@@ -9,46 +8,74 @@
 
 #include <emu/info.hpp>
 
-#include <view_utility_test.hpp>
-
 #include <cstdlib>
 
 
 
+#include <test_utility/view/core.hpp>
 
-
-
-
-
-
-
-template<typename C>
-void check(C &container, size_t expected_size, int expected_ptr_count){
-    EXPECT_EQ(container.size(), expected_size);
-    EXPECT_EQ(container.use_count(), expected_ptr_count);
-}
-template<typename C, typename T>
-void check(C &container, size_t expected_size, int expected_ptr_count, const T *ptr){
-    EXPECT_EQ(container.data_handle(), ptr);
-    check(container, expected_size, expected_ptr_count);
-}
-template<typename C, typename A, std::size_t N>
-void check(C &container, size_t expected_size, int expected_ptr_count, const std::array<A,N> &dims){
-    check(container, expected_size, expected_ptr_count);
-    for(std::size_t i = 0; i < N; i++) {
-        EXPECT_EQ(container.extents().extent(i),dims[i]);
-    }
-}
-template<typename C, typename T, typename A, std::size_t N>
-void check(C &container, size_t expected_size, int expected_ptr_count, const T *ptr, const std::array<A,N> &dims){
-    check(container, expected_size, expected_ptr_count, ptr);
-    for(std::size_t i = 0; i < N; i++) {
-        EXPECT_EQ(container.extents().extent(i),dims[i]);
-    }
-}
+#include <test_utility/view/mdview_test.hpp>
+#include <test_utility/view/capsule_test.hpp>
 
 namespace
 {
+
+REGISTER_TYPED_TEST_SUITE_P(
+    ViewTest,  // The first argument is the test case name.
+    // The rest of the arguments are the test names.
+    MDViewConstruct, TakeOwnerShip, Wrap, FreeCapsule/* , TestDevice */);
+
+    struct mdcontainer_1d_of_int /* : DoViewTest, DoContiguousTest, DoCapsuleTest */ {
+
+        using data_type = int;
+
+        using view_type = emu::mdcontainer_1d<int>;
+        using const_view_type = emu::mdcontainer_1d<const int>;
+
+        static constexpr size_t rank = 1;
+
+        template<typename DataHolder>
+        static const_view_type from_ptr_and_size(const data_type *ptr, size_t size, DataHolder &&data_holder)
+        {
+            return const_view_type(ptr, std::forward<DataHolder>(data_holder), emu::exts_flag, size);
+        }
+
+    };
+
+    using ContainerTestsList = testing::Types<mdcontainer_1d_of_int>;
+
+    INSTANTIATE_TYPED_TEST_SUITE_P(MDContainerTests,    // Instance name
+                                ViewTest,             // Test case name
+                                ContainerTestsList);  // Type list
+
+
+
+
+    template<typename C>
+    void check(C &container, size_t expected_size, int expected_ptr_count){
+        EXPECT_EQ(container.size(), expected_size);
+        EXPECT_EQ(container.use_count(), expected_ptr_count);
+    }
+    template<typename C, typename T>
+    void check(C &container, size_t expected_size, int expected_ptr_count, const T *ptr){
+        EXPECT_EQ(container.data_handle(), ptr);
+        check(container, expected_size, expected_ptr_count);
+    }
+    template<typename C, typename A, std::size_t N>
+    void check(C &container, size_t expected_size, int expected_ptr_count, const std::array<A,N> &dims){
+        check(container, expected_size, expected_ptr_count);
+        for(std::size_t i = 0; i < N; i++) {
+            EXPECT_EQ(container.extents().extent(i),dims[i]);
+        }
+    }
+    template<typename C, typename T, typename A, std::size_t N>
+    void check(C &container, size_t expected_size, int expected_ptr_count, const T *ptr, const std::array<A,N> &dims){
+        check(container, expected_size, expected_ptr_count, ptr);
+        for(std::size_t i = 0; i < N; i++) {
+            EXPECT_EQ(container.extents().extent(i),dims[i]);
+        }
+    }
+
 
     template<typename T, std::size_t D>
     void test_construct_1(){
@@ -168,7 +195,7 @@ namespace
         // }
     }
 
-    template<typename T, int... Exts>
+    template<typename T, size_t... Exts>
     void test_make_2(){
         const int cpt = 1;
         const size_t size = (1 * ... * Exts);
@@ -179,7 +206,7 @@ namespace
         check(con, size, cpt, dims);
     };
 
-    template<typename T, int ... Exts>
+    template<typename T, size_t... Exts>
     void test_make_3(){
         const int cpt = 1;
         const size_t size = (1 * ... * Exts);
@@ -191,7 +218,7 @@ namespace
         check(con, size, cpt, dims);
     };
 
-    template<typename T, int ... Exts>
+    template<typename T, size_t... Exts>
     void test_make_4(){
         const int cpt = 1;
         const size_t size = (1 * ... * Exts);
@@ -202,7 +229,7 @@ namespace
         check(con, size, cpt, dims);
     };
 
-    template<typename T, int ... Exts>
+    template<typename T, size_t... Exts>
     void test_make_5(){
         const int cpt = 1;
         constexpr std::size_t d = sizeof...(Exts);
@@ -215,7 +242,7 @@ namespace
         check(con, size, cpt, dims);
     };
 
-    template<typename T, int ... Exts>
+    template<typename T, size_t... Exts>
     void test_make_6(){
         const int cpt = 1;
         constexpr std::size_t d = sizeof...(Exts);

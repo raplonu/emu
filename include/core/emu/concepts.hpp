@@ -87,8 +87,13 @@ namespace cpts
     // # emu view #
     // ############
 
+    //TODO: using derived_from allow container to be considered to be a span.
+    // Which is true, but may not be what we want.
+
     template <typename T>
-    concept emu_span = std::derived_from<T, detail::basic_span<typename T::element_type, T::extent, typename T::location_type, typename T::actual_type>>;
+    concept emu_span = std::derived_from<T, detail::basic_span<
+                    typename T::element_type, T::extent,
+                    typename T::location_type, typename T::actual_type>>;
 
     template <typename T>
     concept emu_mdspan = std::derived_from<T, detail::basic_mdspan<
@@ -241,12 +246,6 @@ namespace detail
         bool((not std::ranges::view<rm_ref<T>>)
         and (not is_lref<T>) )>;
 
-
-    // std::ranges::range<T>
-    //                     and
-    //                      ((not boost::logic::indeterminate(spe::enable_relocatable_owning_range<T>))
-    //                    and spe::enable_relocatable_owning_range<T>);
-
     template <typename T>
     concept formattable = requires (const T& v, fmt::format_context ctx) {
         fmt::formatter<T>().format(v, ctx);
@@ -263,16 +262,44 @@ namespace detail
 
 } // namespace cpts
 
-// namespace cuda::cpts
-// {
 
-//     template <typename T>
-//     concept span = emu::cpts::same_as<decay<T>, span<typename decay<T>::element_type, decay<T>::extent>>;
+namespace host::cpts
+{
 
-//     template <typename T>
-//     concept mdspan = emu::cpts::specialization_of<T, mdspan>;
+    template <typename T>
+    concept span = std::derived_from<T, host::span<
+                    typename T::element_type, T::extent>>;
 
-// } // namespace cuda::cpts
+    template <typename T>
+    concept container = std::derived_from<T, host::container<
+                    typename T::element_type, T::extent>>;
+
+    template <typename T>
+    concept mdspan = emu::cpts::specialization_of<T, host::mdspan>;
+
+    template <typename T>
+    concept mdcontainer = emu::cpts::specialization_of<T, host::mdcontainer>;
+
+} // namespace host::cpts
+
+namespace cuda::device::cpts
+{
+
+    template <typename T>
+    concept span = std::derived_from<T, cuda::device::span<
+                    typename T::element_type, T::extent>>;
+
+    template <typename T>
+    concept container = std::derived_from<T, cuda::device::container<
+                    typename T::element_type, T::extent>>;
+
+    template <typename T>
+    concept mdspan = emu::cpts::specialization_of<T, cuda::device::mdspan>;
+
+    template <typename T>
+    concept mdcontainer = emu::cpts::specialization_of<T, cuda::device::mdcontainer>;
+
+} // namespace cuda::device::cpts
 
 
 } // namespace emu

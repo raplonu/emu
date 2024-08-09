@@ -1,7 +1,7 @@
 #pragma once
 
-#include <concepts>
 #include <emu/fwd.hpp>
+#include <emu/config.hpp>
 #include <emu/concepts.hpp>
 #include <emu/utility.hpp>
 
@@ -64,7 +64,7 @@ namespace emu
          * @tparam DataHolder The type of the held object.
          */
         template<typename DataHolder>
-        struct impl : interface
+        struct DLL_LOCAL impl : interface
         {
             /**
              * @brief Constructor.
