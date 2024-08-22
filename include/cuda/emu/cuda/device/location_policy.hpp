@@ -11,7 +11,7 @@ namespace emu
 namespace cuda
 {
 
-    struct device_source_policy
+    struct device_location_policy
     {
         template <typename T>
         static constexpr bool validate_source = spe::enable_cuda_device_range<rm_cvref<T>>;

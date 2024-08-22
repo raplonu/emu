@@ -4,7 +4,7 @@
 #include <emu/concepts.hpp>
 #include <emu/type_name.hpp>
 #include <emu/detail/basic_mdspan.hpp>
-
+#include <emu/mdalgo.hpp>
 namespace emu
 {
 
@@ -12,17 +12,16 @@ namespace emu
 
     EMU_DEFINE_MDSPAN_ALIAS
 
-    template <typename T>
-    constexpr auto as_md(T& t) noexcept {
-        return mdspan_0d<T>{&t};
-    }
+namespace spe
+{
 
     template <typename ElementType, typename Extents, typename LayoutPolicy, typename AccessorPolicy>
-    constexpr auto as_md(mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy> md) noexcept {
-        return md;
-    }
+    struct md_converter<mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy>> {
+        static constexpr auto as_md(const mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy>& md) noexcept {
+            return md;
+        }
+    };
 
-    template <typename T>
-    using md_equivalent = decltype(as_md(std::declval<T>()));
+} // namespace spe
 
 } // namespace emu

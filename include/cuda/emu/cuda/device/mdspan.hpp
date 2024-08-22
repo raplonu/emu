@@ -2,17 +2,18 @@
 
 #include <emu/type_traits.hpp>
 #include <emu/detail/basic_mdspan.hpp>
+#include <emu/cuda/device/location_policy.hpp>
 
 namespace emu::cuda::device
 {
 
     template<typename T, typename Extents, typename LayoutPolicy = layout_right, typename AccessorPolicy = default_accessor<T>>
-    struct mdspan : emu::detail::basic_mdpan<
-        T, Extents, LayoutPolicy, AccessorPolicy, cuda::device_source_policy,
+    struct mdspan : emu::detail::basic_mdspan<
+        T, Extents, LayoutPolicy, AccessorPolicy, cuda::device_location_policy,
         mdspan<T, Extents, LayoutPolicy, AccessorPolicy>
     >
     {
-        using base = emu::detail::basic_mdpan< T, Extents, LayoutPolicy, AccessorPolicy, cuda::device_source_policy, mdspan >;
+        using base = emu::detail::basic_mdspan< T, Extents, LayoutPolicy, AccessorPolicy, cuda::device_location_policy, mdspan >;
 
         using base::base;
 

@@ -2,8 +2,9 @@
 
 #include <emu/type_traits.hpp>
 #include <emu/detail/basic_container.hpp>
-#include <emu/detail/basic_mdspan.hpp>
+#include <emu/host/mdcontainer.hpp>
 #include <emu/host/location_policy.hpp>
+#include <emu/mdalgo.hpp>
 
 namespace emu
 {
@@ -11,9 +12,9 @@ namespace host
 {
 
     template <typename ElementType, size_t Extent = dynamic_extent>
-    struct container : emu::detail::basic_container<ElementType, Extent, host::source_policy, container<ElementType, Extent> >
+    struct container : emu::detail::basic_container<ElementType, Extent, host::location_policy, container<ElementType, Extent> >
     {
-        using base = emu::detail::basic_container<ElementType, Extent, host::source_policy, container>;
+        using base = emu::detail::basic_container<ElementType, Extent, host::location_policy, container>;
 
         using base::base;
 
@@ -34,8 +35,11 @@ namespace host
 } // namespace host
 
     template<typename T, std::size_t Extent>
-    constexpr auto as_md(host::container<T, Extent> s) noexcept {
-        return host::mdcontainer<T, extents<size_t, Extent>, layout_right, default_accessor<T> >{s.data(), s.size()};
-    }
+    struct spe::md_converter<host::container<T, Extent>>
+    {
+        static constexpr auto convert(const host::container<T, Extent> &s) noexcept {
+            return host::mdcontainer<T, extents<size_t, Extent>, layout_right, default_accessor<T> >(s.data(), s.capsule(), exts_flag, s.size());
+        }
+    };
 
 } // namespace emu

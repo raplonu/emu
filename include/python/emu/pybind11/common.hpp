@@ -28,7 +28,7 @@ namespace cast
     namespace py = ::pybind11;
 
     template<typename LocationPolicy>
-        requires std::same_as<LocationPolicy, no_location_policy> or std::same_as<LocationPolicy, host::source_policy>
+        requires std::same_as<LocationPolicy, no_location_policy> or std::same_as<LocationPolicy, host::location_policy>
     struct location_adaptor
     {
 
@@ -87,7 +87,7 @@ namespace cast
 #ifdef EMU_CUDA
 
     template<>
-    struct location_adaptor<cuda::device_source_policy>
+    struct location_adaptor<cuda::device_location_policy>
     {
 
         template<typename Mapping>

@@ -75,7 +75,7 @@ namespace detail
                 and (std::convertible_to<OtherIndexTypes, size_type> and ...)
                 and (std::is_nothrow_convertible_v<OtherIndexTypes, size_type> and ...)
                 and (sizeof...(OtherIndexTypes) == base::rank_dynamic() or sizeof...(OtherIndexTypes) == base::rank())
-                and (not std::convertible_to<DataHolder, size_type>)
+                // and (not std::convertible_to<DataHolder, size_type>)
         constexpr explicit basic_mdcontainer( Range&& r, DataHolder&& dh, exts_flag_t, OtherIndexTypes... exts )
             : base( std::ranges::data(r), exts... )
             , capsule_base(EMU_FWD(dh))
@@ -86,7 +86,7 @@ namespace detail
             requires (std::convertible_to<OtherIndexTypes, size_type> and ...)
                 and (std::is_nothrow_convertible_v<OtherIndexTypes, size_type> and ...)
                 and (sizeof...(OtherIndexTypes) == base::rank_dynamic() or sizeof...(OtherIndexTypes) == base::rank())
-                and (not std::convertible_to<DataHolder, size_type>)
+                // and (not std::convertible_to<DataHolder, size_type>)
         constexpr explicit basic_mdcontainer( data_handle_type p, DataHolder&& dh, exts_flag_t, OtherIndexTypes... exts )
             : base( p, exts... )
             , capsule_base(EMU_FWD(dh))
@@ -358,11 +358,11 @@ template<typename ElementType> using mdcontainer_3d_s = mdcontainer<ElementType,
 /* # Sized range deduction guide (non standard) # */                                           \
 /* ############################################## */                                           \
                                                                                                \
-template< cpts::contiguous_sized_range Range >                                                 \
+template< emu::cpts::contiguous_sized_range Range >                                            \
     requires (not std::is_array_v<Range>)                                                      \
 mdcontainer( Range&& )                                                                         \
     -> mdcontainer< rm_ref< std::ranges::range_reference_t< rm_ref<Range> > >,                 \
-                extents<std::size_t, 1>>;                                                 \
+                extents<std::size_t, 1>>;                                                      \
                                                                                                \
 /* #################################### */                                                     \
 /* # Static array deduction guide (1) # */                                                     \
@@ -372,7 +372,7 @@ template< class CArray >                                                        
     requires(std::is_array_v<CArray> && std::rank_v<CArray> == 1)                              \
 mdcontainer( CArray& )                                                                         \
     -> mdcontainer< std::remove_all_extents_t<CArray>,                                         \
-                extents<std::size_t, std::extent_v<CArray, 0>>>;                          \
+                extents<std::size_t, std::extent_v<CArray, 0>>>;                               \
                                                                                                \
 /* ############################### */                                                          \
 /* # pointer deduction guide (2) # */                                                          \
@@ -382,7 +382,7 @@ template< class Pointer >                                                       
     requires(std::is_pointer_v<std::remove_reference_t<Pointer>>)                              \
 mdcontainer( Pointer&& )                                                                       \
     -> mdcontainer< std::remove_pointer_t<std::remove_reference_t<Pointer>>,                   \
-                extents<size_t>>;                                                         \
+                extents<size_t>>;                                                              \
                                                                                                \
 /* ###################################### */                                                   \
 /* # variadic shape deduction guide (3) # */                                                   \
@@ -392,13 +392,13 @@ template< class ElementType, class... Integrals >                               
     requires((std::is_convertible_v<Integrals, std::size_t> && ...) and                        \
                 sizeof...(Integrals) > 0)                                                      \
 explicit mdcontainer( ElementType*, Integrals... )                                             \
-    -> mdcontainer<ElementType, dextents<std::size_t, sizeof...(Integrals)>>;             \
+    -> mdcontainer<ElementType, dextents<std::size_t, sizeof...(Integrals)>>;                  \
                                                                                                \
-template< std::ranges::contiguous_range Range, class... Integrals >                                   \
+template< std::ranges::contiguous_range Range, class... Integrals >                            \
     requires((std::is_convertible_v<Integrals, std::size_t> && ...) and                        \
                 sizeof...(Integrals) > 0)                                                      \
 explicit mdcontainer( Range&&, Integrals... )                                                  \
-    -> mdcontainer<range_cv_value<Range>, dextents<std::size_t, sizeof...(Integrals)>>;             \
+    -> mdcontainer<range_cv_value<Range>, dextents<std::size_t, sizeof...(Integrals)>>;        \
                                                                                                \
 /* ############################ */                                                             \
 /* # span deduction guide (4) # */                                                             \
@@ -406,11 +406,11 @@ explicit mdcontainer( Range&&, Integrals... )                                   
                                                                                                \
 template< class ElementType, class OtherIndexType, std::size_t N >                             \
 mdcontainer( ElementType*, std::span<OtherIndexType, N> )                                      \
-    -> mdcontainer<ElementType, dextents<std::size_t, N>>;                                \
+    -> mdcontainer<ElementType, dextents<std::size_t, N>>;                                     \
                                                                                                \
-template< std::ranges::contiguous_range Range, class OtherIndexType, std::size_t N >                  \
+template< std::ranges::contiguous_range Range, class OtherIndexType, std::size_t N >           \
 mdcontainer( Range&&, std::span<OtherIndexType, N> )                                           \
-    -> mdcontainer<range_cv_value<Range>, dextents<std::size_t, N>>;                      \
+    -> mdcontainer<range_cv_value<Range>, dextents<std::size_t, N>>;                           \
                                                                                                \
 /* ############################# */                                                            \
 /* # array deduction guide (5) # */                                                            \
@@ -418,23 +418,23 @@ mdcontainer( Range&&, std::span<OtherIndexType, N> )                            
                                                                                                \
 template< class ElementType, class OtherIndexType, std::size_t N >                             \
 mdcontainer( ElementType*, const std::array<OtherIndexType, N>& )                              \
-    -> mdcontainer<ElementType, dextents<std::size_t, N>>;                                \
+    -> mdcontainer<ElementType, dextents<std::size_t, N>>;                                     \
                                                                                                \
-template< std::ranges::contiguous_range Range, class OtherIndexType, std::size_t N >                  \
+template< std::ranges::contiguous_range Range, class OtherIndexType, std::size_t N >           \
 mdcontainer( Range&&, const std::array<OtherIndexType, N>& )                                   \
-    -> mdcontainer<range_cv_value<Range>, dextents<std::size_t, N>>;                      \
+    -> mdcontainer<range_cv_value<Range>, dextents<std::size_t, N>>;                           \
                                                                                                \
 /* ############################## */                                                           \
 /* # extent deduction guide (6) # */                                                           \
 /* ############################## */                                                           \
                                                                                                \
 template< class ElementType, class IndexType, std::size_t... ExtentsPack >                     \
-mdcontainer( ElementType*, const extents<IndexType, ExtentsPack...>& )                    \
-    -> mdcontainer<ElementType, extents<IndexType, ExtentsPack...>>;                      \
+mdcontainer( ElementType*, const extents<IndexType, ExtentsPack...>& )                         \
+    -> mdcontainer<ElementType, extents<IndexType, ExtentsPack...>>;                           \
                                                                                                \
-template< std::ranges::contiguous_range Range, class IndexType, std::size_t... ExtentsPack >          \
-mdcontainer( Range&&, const extents<IndexType, ExtentsPack...>& )                         \
-    -> mdcontainer<range_cv_value<Range>, extents<IndexType, ExtentsPack...>>;            \
+template< std::ranges::contiguous_range Range, class IndexType, std::size_t... ExtentsPack >   \
+mdcontainer( Range&&, const extents<IndexType, ExtentsPack...>& )                              \
+    -> mdcontainer<range_cv_value<Range>, extents<IndexType, ExtentsPack...>>;                 \
                                                                                                \
 /* ############################### */                                                          \
 /* # mapping deduction guide (7) # */                                                          \
@@ -445,7 +445,7 @@ mdcontainer( ElementType*, const MappingType& )                                 
     -> mdcontainer<ElementType, typename MappingType::extents_type,                            \
                 typename MappingType::layout_type>;                                            \
                                                                                                \
-template< std::ranges::contiguous_range Range, class MappingType >                                    \
+template< std::ranges::contiguous_range Range, class MappingType >                             \
 mdcontainer( Range&&, const MappingType& )                                                     \
     -> mdcontainer<range_cv_value<Range>, typename MappingType::extents_type,                  \
                 typename MappingType::layout_type>;                                            \
@@ -461,7 +461,7 @@ mdcontainer( const typename AccessorType::data_handle_type&, const MappingType&,
                 typename MappingType::extents_type,                                            \
                 typename MappingType::layout_type, AccessorType>;                              \
                                                                                                \
-template< std::ranges::contiguous_range Range, class MappingType, class AccessorType >                \
+template< std::ranges::contiguous_range Range, class MappingType, class AccessorType >         \
 mdcontainer( Range&&, const MappingType&,                                                      \
         const AccessorType& )                                                                  \
     -> mdcontainer<range_cv_value<Range>,                                                      \

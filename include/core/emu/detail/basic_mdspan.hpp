@@ -4,7 +4,8 @@
 #include <emu/concepts.hpp>
 
 #include <emu/assert.hpp>
-#include <emu/detail/basic_span.hpp>
+#include <emu/type_name.hpp>
+// #include <emu/detail/basic_span.hpp>
 
 #include <experimental/mdspan>
 
@@ -16,6 +17,8 @@
 
 namespace emu
 {
+
+    using std::dynamic_extent;
 
     namespace stdex = std::experimental;
 
@@ -290,6 +293,12 @@ namespace detail
         std::string_view sep;
     };
 
+    inline auto format_extent(fmt::format_context::iterator it, size_t extent) {
+        return (extent == dynamic_extent)
+            ? fmt::format_to(it, "dyn")
+            : fmt::format_to(it, "{}", extent);
+    }
+
 } // namespace detail
 
     template<typename Map>
@@ -484,11 +493,11 @@ template<typename ElementType> using mdspan_3d_s = mdspan<ElementType, d3, layou
 /* # Sized range deduction guide (non standard) # */                                  \
 /* ############################################## */                                  \
                                                                                       \
-template< cpts::contiguous_sized_range Range >                                        \
+template< emu::cpts::contiguous_sized_range Range >                                        \
     requires (not std::is_array_v<Range>)                                             \
 mdspan( Range&& )                                                                     \
     -> mdspan< rm_ref< std::ranges::range_reference_t< rm_ref<Range> > >,             \
-                std::extents<std::size_t, 1>>;                                        \
+                extents<std::size_t, 1>>;                                        \
                                                                                       \
 /* #################################### */                                            \
 /* # Static array deduction guide (1) # */                                            \
@@ -498,7 +507,7 @@ template< class CArray >                                                        
     requires(std::is_array_v<CArray> && std::rank_v<CArray> == 1)                     \
 mdspan( CArray& )                                                                     \
     -> mdspan< std::remove_all_extents_t<CArray>,                                     \
-                std::extents<std::size_t, std::extent_v<CArray, 0>>>;                 \
+                extents<std::size_t, std::extent_v<CArray, 0>>>;                 \
                                                                                       \
 /* ############################### */                                                 \
 /* # pointer deduction guide (2) # */                                                 \
@@ -508,7 +517,7 @@ template< class Pointer >                                                       
     requires(std::is_pointer_v<std::remove_reference_t<Pointer>>)                     \
 mdspan( Pointer&& )                                                                   \
     -> mdspan< std::remove_pointer_t<std::remove_reference_t<Pointer>>,               \
-                std::extents<size_t>>;                                                \
+                extents<size_t>>;                                                \
                                                                                       \
 /* ###################################### */                                          \
 /* # variadic shape deduction guide (3) # */                                          \
@@ -518,13 +527,13 @@ template< class ElementType, class... Integrals >                               
     requires((std::is_convertible_v<Integrals, std::size_t> && ...) and               \
                 sizeof...(Integrals) > 0)                                             \
 explicit mdspan( ElementType*, Integrals... )                                         \
-    -> mdspan<ElementType, std::dextents<std::size_t, sizeof...(Integrals)>>;         \
+    -> mdspan<ElementType, dextents<std::size_t, sizeof...(Integrals)>>;         \
                                                                                       \
-template< cpts::contiguous_range Range, class... Integrals >                          \
+template< std::ranges::contiguous_range Range, class... Integrals >                          \
     requires((std::is_convertible_v<Integrals, std::size_t> && ...) and               \
                 sizeof...(Integrals) > 0)                                             \
 explicit mdspan( Range&&, Integrals... )                                              \
-    -> mdspan<range_cv_value<Range>, std::dextents<std::size_t, sizeof...(Integrals)>>;         \
+    -> mdspan<range_cv_value<Range>, dextents<std::size_t, sizeof...(Integrals)>>;         \
                                                                                       \
 /* ############################ */                                                    \
 /* # span deduction guide (4) # */                                                    \
@@ -532,11 +541,11 @@ explicit mdspan( Range&&, Integrals... )                                        
                                                                                       \
 template< class ElementType, class OtherIndexType, std::size_t N >                    \
 mdspan( ElementType*, std::span<OtherIndexType, N> )                                  \
-    -> mdspan<ElementType, std::dextents<std::size_t, N>>;                            \
+    -> mdspan<ElementType, dextents<std::size_t, N>>;                            \
                                                                                       \
-template< cpts::contiguous_range Range, class OtherIndexType, std::size_t N >         \
+template< std::ranges::contiguous_range Range, class OtherIndexType, std::size_t N >         \
 mdspan( Range&&, std::span<OtherIndexType, N> )                                       \
-    -> mdspan<range_cv_value<Range>, std::dextents<std::size_t, N>>;                  \
+    -> mdspan<range_cv_value<Range>, dextents<std::size_t, N>>;                  \
                                                                                       \
 /* ############################# */                                                   \
 /* # array deduction guide (5) # */                                                   \
@@ -544,23 +553,23 @@ mdspan( Range&&, std::span<OtherIndexType, N> )                                 
                                                                                       \
 template< class ElementType, class OtherIndexType, std::size_t N >                    \
 mdspan( ElementType*, const std::array<OtherIndexType, N>& )                          \
-    -> mdspan<ElementType, std::dextents<std::size_t, N>>;                            \
+    -> mdspan<ElementType, dextents<std::size_t, N>>;                            \
                                                                                       \
-template< cpts::contiguous_range Range, class OtherIndexType, std::size_t N >         \
+template< std::ranges::contiguous_range Range, class OtherIndexType, std::size_t N >         \
 mdspan( Range&&, const std::array<OtherIndexType, N>& )                               \
-    -> mdspan<range_cv_value<Range>, std::dextents<std::size_t, N>>;                  \
+    -> mdspan<range_cv_value<Range>, dextents<std::size_t, N>>;                  \
                                                                                       \
 /* ############################## */                                                  \
 /* # extent deduction guide (6) # */                                                  \
 /* ############################## */                                                  \
                                                                                       \
 template< class ElementType, class IndexType, std::size_t... ExtentsPack >            \
-mdspan( ElementType*, const std::extents<IndexType, ExtentsPack...>& )                \
-    -> mdspan<ElementType, std::extents<IndexType, ExtentsPack...>>;                  \
+mdspan( ElementType*, const extents<IndexType, ExtentsPack...>& )                \
+    -> mdspan<ElementType, extents<IndexType, ExtentsPack...>>;                  \
                                                                                       \
-template< cpts::contiguous_range Range, class IndexType, std::size_t... ExtentsPack > \
-mdspan( Range&&, const std::extents<IndexType, ExtentsPack...>& )                     \
-    -> mdspan<range_cv_value<Range>, std::extents<IndexType, ExtentsPack...>>;        \
+template< std::ranges::contiguous_range Range, class IndexType, std::size_t... ExtentsPack > \
+mdspan( Range&&, const extents<IndexType, ExtentsPack...>& )                     \
+    -> mdspan<range_cv_value<Range>, extents<IndexType, ExtentsPack...>>;        \
                                                                                       \
 /* ############################### */                                                 \
 /* # mapping deduction guide (7) # */                                                 \
@@ -571,7 +580,7 @@ mdspan( ElementType*, const MappingType& )                                      
     -> mdspan<ElementType, typename MappingType::extents_type,                        \
                 typename MappingType::layout_type>;                                   \
                                                                                       \
-template< cpts::contiguous_range Range, class MappingType >                           \
+template< std::ranges::contiguous_range Range, class MappingType >                           \
 mdspan( Range&&, const MappingType& )                                                 \
     -> mdspan<range_cv_value<Range>, typename MappingType::extents_type,              \
                 typename MappingType::layout_type>;                                   \
@@ -587,7 +596,7 @@ mdspan( const typename AccessorType::data_handle_type&, const MappingType&,     
                 typename MappingType::extents_type,                                   \
                 typename MappingType::layout_type, AccessorType>;                     \
                                                                                       \
-template< cpts::contiguous_range Range, class MappingType, class AccessorType >       \
+template< std::ranges::contiguous_range Range, class MappingType, class AccessorType >       \
 mdspan( Range&&, const MappingType&,                                                  \
         const AccessorType& )                                                         \
     -> mdspan<range_cv_value<Range>,                                                  \

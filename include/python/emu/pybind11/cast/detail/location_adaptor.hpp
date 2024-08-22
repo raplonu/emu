@@ -13,7 +13,7 @@ namespace emu::detail
     namespace py = ::pybind11;
 
     template<typename LocationPolicy>
-        requires std::same_as<LocationPolicy, no_location_policy> or std::same_as<LocationPolicy, host::source_policy>
+        requires std::same_as<LocationPolicy, no_location_policy> or std::same_as<LocationPolicy, host::location_policy>
     struct location_adaptor
     {
         static bool check(py::handle handle) noexcept
@@ -76,7 +76,7 @@ namespace emu::detail
 #ifdef EMU_CUDA
 
     template<>
-    struct location_adaptor<cuda::device_source_policy>
+    struct location_adaptor<cuda::device_location_policy>
     {
         static bool check(py::handle handle) noexcept
         {

@@ -301,5 +301,21 @@ namespace cuda::device::cpts
 
 } // namespace cuda::device::cpts
 
+namespace cpts
+{
+
+    template<typename T>
+    concept any_span = span<T> or host::cpts::span<T> or cuda::device::cpts::span<T>;
+
+    template<typename T>
+    concept any_container = container<T> or host::cpts::container<T> or cuda::device::cpts::container<T>;
+
+    template<typename T>
+    concept any_mdspan = mdspan<T> or host::cpts::mdspan<T> or cuda::device::cpts::mdspan<T>;
+
+    template<typename T>
+    concept any_mdcontainer = mdcontainer<T> or host::cpts::mdcontainer<T> or cuda::device::cpts::mdcontainer<T>;
+
+} // namespace host::cpts
 
 } // namespace emu

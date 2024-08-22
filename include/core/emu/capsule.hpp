@@ -181,9 +181,12 @@ namespace emu
 
         /**
          * @brief Conversion operator to bool.
+         *
+         * bool operator should always be explicit. Otherwise, it is easy to convert it to an integer.
+         *
          * @return True if the capsule object holds a valid object, false otherwise.
          */
-        constexpr operator bool() const noexcept { return static_cast<bool>(holder); }
+        constexpr explicit operator bool() const noexcept { return static_cast<bool>(holder); }
 
         constexpr static void manual_hold(capsule::interface* holder) {
             if (holder) holder->hold();
@@ -204,6 +207,8 @@ namespace emu
                     delete holder;
 
         }
+
+        auto operator<=>(const capsule&) const = default;
     };
 
     /**
@@ -246,3 +251,12 @@ namespace spe
 } // namespace spe
 
 } // namespace emu
+
+template<>
+struct std::hash<emu::capsule>
+{
+    std::size_t operator()(const emu::capsule& c) const noexcept
+    {
+        return std::hash<std::uintptr_t>{}(reinterpret_cast<std::uintptr_t>(c.holder));
+    }
+};

@@ -3,8 +3,7 @@
 #include <emu/cuda/device.hpp>
 #include <emu/cuda/stream.hpp>
 
-#include <cuda/runtime_api.hpp>
-#include <cuda/api/launch_config_builder.hpp>
+#include <cuda/api.hpp>
 
 namespace emu
 {
@@ -13,11 +12,14 @@ namespace cuda
 {
     namespace cu = ::cuda;
 
-    using stream_ref  =       cu::stream_t &;
-    using stream_cref = const cu::stream_t &;
+    using cu::device_t;
+    using cu::stream_t;
 
     using device_ref  =       cu::device_t &;
     using device_cref = const cu::device_t &;
+
+    using stream_ref  =       cu::stream_t &;
+    using stream_cref = const cu::stream_t &;
 
 namespace detail
 {

@@ -3,6 +3,7 @@
 #include <emu/detail/basic_container.hpp>
 #include <emu/mdcontainer.hpp>
 #include <emu/location_policy.hpp>
+#include <emu/mdalgo.hpp>
 
 namespace emu
 {
@@ -29,8 +30,11 @@ namespace emu
     }
 
     template<typename T, std::size_t Extent>
-    constexpr auto as_md(container<T, Extent> s) noexcept {
-        return mdcontainer<T, extents<size_t, Extent>, layout_right, default_accessor<T> >{s.data(), s.size()};
-    }
+    struct spe::md_converter<container<T, Extent>>
+    {
+        static constexpr auto convert(const container<T, Extent>& s) noexcept {
+            return mdcontainer<T, extents<size_t, Extent>, layout_right, default_accessor<T> >(s.data(), s.capsule(), exts_flag, s.size());
+        }
+    };
 
 } // namespace emu

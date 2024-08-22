@@ -4,7 +4,9 @@
 
 #include <pybind11/cast.h>
 
-namespace pybind11::detail
+PYBIND11_NAMESPACE_BEGIN(PYBIND11_NAMESPACE)
+
+namespace detail
 {
 
     /**
@@ -143,5 +145,6 @@ namespace pybind11::detail
         }
     };
 
+} // namespace detail
 
-} // namespace pybind11::detail
+PYBIND11_NAMESPACE_END(PYBIND11_NAMESPACE)

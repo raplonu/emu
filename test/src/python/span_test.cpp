@@ -4,6 +4,8 @@
 #include <test_utility/python/core.hpp>
 #include <test_utility/python/view_test.hpp>
 
+#include <emu/span.hpp>
+
 #include <emu/pybind11/cast/span.hpp>
 
 

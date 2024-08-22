@@ -2,7 +2,9 @@
 
 #include <emu/type_traits.hpp>
 #include <emu/detail/basic_container.hpp>
+#include <emu/device/mdcontainer.hpp>
 #include <emu/cuda.hpp>
+#include <emu/mdalgo.hpp>
 
 namespace emu
 {
@@ -10,9 +12,9 @@ namespace cuda::device
 {
 
     template <typename ElementType, size_t Extent = dynamic_extent>
-    struct container : emu::detail::basic_container<ElementType, Extent, cuda::device_source_policy, container<ElementType, Extent>>
+    struct container : emu::detail::basic_container<ElementType, Extent, cuda::device_location_policy, container<ElementType, Extent>>
     {
-        using base = emu::detail::basic_container<ElementType, Extent, cuda::device_source_policy, container>;
+        using base = emu::detail::basic_container<ElementType, Extent, cuda::device_location_policy, container>;
 
         using base::base;
 
@@ -44,8 +46,12 @@ namespace cuda::device
 } // namespace cuda::device
 
     template<typename T, std::size_t Extent>
-    constexpr auto as_md(cuda::device::span<T, Extent> s) noexcept {
-        return cuda::device::mdspan<T, extents<size_t, Extent>, layout_right, default_accessor<T> >{s.data(), s.size()};
-    }
+    struct spe::md_converter<cuda::device::container<T, Extent>>
+    {
+        static constexpr auto convert(const cuda::device::container<T, Extent> &s) noexcept {
+            return cuda::device::mdcontainer<T, extents<size_t, Extent>, layout_right, default_accessor<T> >(s.data(), s.capsule(), exts_flag, s.size());
+        }
+    };
+
 
 } // namespace emu

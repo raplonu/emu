@@ -8,11 +8,11 @@ namespace emu::cuda::device
 
     template<typename T, typename Extents, typename LayoutPolicy = layout_right, typename AccessorPolicy = default_accessor<T>>
     struct mdcontainer : emu::detail::basic_mdcontainer<
-        T, Extents, LayoutPolicy, AccessorPolicy, cuda::device_source_policy,
+        T, Extents, LayoutPolicy, AccessorPolicy, cuda::device_location_policy,
         mdcontainer<T, Extents, LayoutPolicy, AccessorPolicy>
     >
     {
-        using base = emu::detail::basic_mdcontainer< T, Extents, LayoutPolicy, AccessorPolicy, cuda::device_source_policy, mdcontainer >;
+        using base = emu::detail::basic_mdcontainer< T, Extents, LayoutPolicy, AccessorPolicy, cuda::device_location_policy, mdcontainer >;
 
         using base::base;
 

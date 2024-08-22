@@ -2,8 +2,9 @@ default: install
 
 # Install emu
 install *args:
-    # unregister or else it will just compile the project
+    # unregister just in case or else consumer will continue to use the editable version
     just unregister
+
     conan create . -b missing {{args}}
 
 dev *args:

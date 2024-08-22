@@ -17,7 +17,7 @@ namespace detail
 } // namespace detail
 
 
-    struct source_policy
+    struct location_policy
     {
         template <typename T>
         static constexpr bool validate_source = spe::enable_host_range<rm_cvref<T>>;

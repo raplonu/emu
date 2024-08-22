@@ -114,7 +114,7 @@ namespace spe
 
 } // namespace spe
 
-    template<typename T>
-    constexpr auto rank(const T&);
+    // template<typename T>
+    // constexpr auto rank(const T&);
 
 } // namespace emu

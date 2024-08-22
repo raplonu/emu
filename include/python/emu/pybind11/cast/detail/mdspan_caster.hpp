@@ -14,7 +14,7 @@ namespace emu::cast::detail
     namespace py = ::pybind11;
 
     template<cpts::mdspan Mdspan>
-        requires std::same_as<location_type_of<Mdspan>, no_location_policy> or std::same_as<location_type_of<Mdspan>, host::source_policy>
+        requires std::same_as<location_type_of<Mdspan>, no_location_policy> or std::same_as<location_type_of<Mdspan>, host::location_policy>
     struct mdspan_caster
     {
         using cpp_type = Mdspan;
@@ -105,7 +105,7 @@ namespace emu::cast::detail
 #ifdef EMU_CUDA
 
     // template<cpts::mdspan Mdspan>
-    //     requires std::same_as<location_type_of<Mdspan>, cuda::device_source_policy>
+    //     requires std::same_as<location_type_of<Mdspan>, cuda::device_location_policy>
     // struct mdspan_caster
     // {
 

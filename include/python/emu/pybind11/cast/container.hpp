@@ -1,8 +1,7 @@
 #pragma once
 
-
+#include <emu/mdalgo.hpp>
 #include <emu/pybind11/cast/detail/capsule.hpp>
-#include <emu/mdspan.hpp>
 #include <emu/pybind11/cast/detail/mdspan_caster.hpp>
 
 #include <emu/container.hpp>

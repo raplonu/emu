@@ -76,6 +76,15 @@ namespace detail
     /**
      * @brief Utility to delay the evaluation of a static_assert.
      *
+     * Example:
+     *
+     * template<typename T>
+     * void toto() {
+     *    //
+     *    static_assert(dependent_false<T>, "T is not valid");
+     * }
+     *
+     *
      * @tparam typename
      */
     template <typename>

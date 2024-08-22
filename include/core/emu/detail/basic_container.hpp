@@ -118,7 +118,7 @@ namespace emu::detail
         ~basic_container() noexcept = default;
 
         emu::capsule&        capsule() &      noexcept { return static_cast<emu::capsule&>(*this); }
-        emu::capsule const & capsule() const& noexcept { return static_cast<emu::capsule>(*this); }
+        emu::capsule const & capsule() const& noexcept { return static_cast<const emu::capsule&>(*this); }
         emu::capsule         capsule() &&     noexcept { return static_cast<emu::capsule>(*this); }
 
         // auto use_count() const noexcept { return capsule_.use_count(); }

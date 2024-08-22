@@ -1,8 +1,9 @@
 #pragma once
 
 #include <emu/type_traits.hpp>
-#include <emu/detail/basic_mdspan.hpp>
+#include <emu/detail/basic_mdcontainer.hpp>
 #include <emu/host/container.hpp>
+#include <emu/host/location_policy.hpp>
 
 namespace emu
 {
@@ -11,11 +12,11 @@ namespace host
 
     template<typename T, typename Extents, typename LayoutPolicy = layout_right, typename AccessorPolicy = default_accessor<T>>
     struct mdcontainer : emu::detail::basic_mdcontainer<
-        T, Extents, LayoutPolicy, AccessorPolicy, host::source_policy,
+        T, Extents, LayoutPolicy, AccessorPolicy, host::location_policy,
         mdcontainer<T, Extents, LayoutPolicy, AccessorPolicy>
     >
     {
-        using base = emu::detail::basic_mdcontainer< T, Extents, LayoutPolicy, AccessorPolicy, host::source_policy, mdcontainer >;
+        using base = emu::detail::basic_mdcontainer< T, Extents, LayoutPolicy, AccessorPolicy, host::location_policy, mdcontainer >;
 
         using base::base;
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <emu/span.hpp>
+#include <emu/mdalgo.hpp>
 #include <emu/pybind11/cast/detail/mdspan_caster.hpp>
 
 PYBIND11_NAMESPACE_BEGIN(PYBIND11_NAMESPACE)

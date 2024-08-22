@@ -2,6 +2,7 @@
 
 #include <emu/type_traits.hpp>
 #include <emu/concepts.hpp>
+#include <emu/detail/basic_mdspan.hpp>
 
 #include <emu/info.hpp>
 #include <emu/utility.hpp>
@@ -14,8 +15,6 @@
 
 namespace emu
 {
-
-    using std::dynamic_extent;
 
 namespace detail
 {
@@ -173,12 +172,6 @@ namespace detail
         }
 
     };
-
-    inline auto format_extent(fmt::format_context::iterator it, size_t extent) {
-        return (extent == dynamic_extent)
-            ? fmt::format_to(it, "dyn")
-            : fmt::format_to(it, "{}", extent);
-    }
 
 } // namespace detail
 
