@@ -2,6 +2,7 @@
 
 #include <emu/assert.hpp>
 #include <emu/concepts.hpp>
+#include <emu/functor.hpp>
 
 #include <tl/expected.hpp>
 
@@ -50,14 +51,29 @@ namespace emu
      **/
     using tl::unexpected;
 
-    template<typename T, typename E>
-    struct spe::map< expected<T, E> > {
 
-        template<typename Fr, typename Fn>
-        constexpr auto operator()(Fr&& opt, Fn&& fn) const {
-            return EMU_FWD(opt).map(EMU_FWD(fn));
-        }
-    };
+    namespace spe
+    {
+        template<typename T, typename E>
+        struct map< expected<T, E> > {
+
+            template<typename Fr, typename Fn>
+            constexpr auto operator()(Fr&& opt, Fn&& fn) const {
+                return EMU_FWD(opt).map(EMU_FWD(fn));
+            }
+        };
+
+        template<typename T, typename E>
+        struct unwrap_error<expected<T, E>> {
+            constexpr unexpected<E> operator()(const expected<T, E>& e) const {
+                return unexpected(e.error());
+            }
+        };
+
+
+    } // namespace spe
+
+
 
     template<typename Expected>
         requires cpts::expected<decay<Expected>>
@@ -92,14 +108,6 @@ namespace emu
     // }
 
 } // namespace emu
-
-/// Return unexpected if condition is false, continue otherwise.
-#define EMU_TRUE_OR_RETURN_UNEXPECTED( expr, ... ) \
-    if (not (expr) ) return ::emu::unexpected(__VA_ARGS__)
-
-/// Return expected error value if it exists, continue otherwise.
-#define EMU_TRUE_OR_RETURN_ERROR( expected ) \
-    if ( not (expected) ) return ::emu::fwd_error(expected)
 
 template<typename T, typename E, typename Char>
 struct fmt::formatter<tl::expected<T, E>, Char> : fmt::formatter<T, Char>

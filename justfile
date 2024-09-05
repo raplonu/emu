@@ -10,6 +10,8 @@ install *args:
 dev *args:
     just register
     conan build . -b missing {{args}}
+    @# copy compile_commands.json from either debug of release folder
+    @-cp build/*/compile_commands.json build/
 
 build build_type="release":
     cmake --build --preset "conan-{{build_type}}"

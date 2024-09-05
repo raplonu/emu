@@ -10,21 +10,25 @@ class EmuConan(ConanFile):
     url = 'https://gitlab.obspm.fr/cosmic/tools/emu'
     description = 'Set of utilities for C++, CUDA and python'
 
-    # generates shared and fpic options
-    implements = ["auto_shared_fpic"]
+    settings = 'os', 'compiler', 'build_type', 'arch'
 
     exports_sources = 'CMakeLists.txt', 'include/*', 'src/*', 'test/*'
 
-    settings = 'os', 'compiler', 'build_type', 'arch'
+    # generates header_only, shared and fpic logic. Experimental for now. Keep it commented
+    # implements = ["auto_shared_fpic"]
 
     options = {
         'cuda'          : [True, False],
         'python'        : [True, False],
+        'shared'        : [True, False],
+        'fPIC'          : [True, False],
     }
 
     default_options = {
         'cuda'       : False,
         'python'     : False,
+        'shared'     : False,
+        'fPIC'       : True,
     }
 
     def requirements(self):
@@ -35,6 +39,7 @@ class EmuConan(ConanFile):
         self.requires('tl-expected/1.1.0', transitive_headers=True)
         self.requires('tl-optional/1.1.0', transitive_headers=True)
         self.requires('half/2.2.0', transitive_headers=True)
+        self.requires('dlpack/0.8', transitive_headers=True)
 
         if self.options.cuda:
             self.requires('cuda-api-wrappers/0.7.0', transitive_headers=True)
@@ -96,7 +101,8 @@ class EmuConan(ConanFile):
             'tl-expected::expected',
             'tl-optional::optional',
             'mdspan::mdspan',
-            'half::half'
+            'half::half',
+            'dlpack::dlpack'
         ]
 
         if self.options.cuda:
@@ -110,12 +116,10 @@ class EmuConan(ConanFile):
                 'cuda-api-wrappers::cuda-api-wrappers',
                 'matx::matx'
             ]
+            #TODO: check if FMT_USE_CONSTEXPR is still needed to use {fmt} in .cu files
             self.cpp_info.components['cuda'].defines = ['EMU_CUDA', 'FMT_USE_CONSTEXPR=1']
 
             self.python_requires['conan_cuda'].module.append_cuda(self.cpp_info.components['cuda'], ['cuda', 'cudart', 'cublas'])
-
-            # not supported by conan.
-            # self.cpp_info.components['cuda'].set_property('cudaflags', ['--extended-lambda', '--expt-relaxed-constexpr'])
 
         if self.options.python:
             self.cpp_info.components['python'].bindirs = []

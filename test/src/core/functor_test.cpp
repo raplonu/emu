@@ -91,4 +91,100 @@ namespace
 
     }
 
+    TEST(Functor, UnwrapMacroWithOptional) {
+        auto f1 = [] () -> emu::optional<int> {
+            return 42;
+        };
+
+        auto f2 = [] () -> emu::optional<int> {
+            return emu::nullopt;
+        };
+
+        bool function_called = false;
+
+        auto add = [&](int i, int j) -> int {
+            function_called = true;
+            return i + j;
+        };
+
+        auto test = [&]() -> emu::optional<int> {
+            auto i = EMU_UNWRAP(f1());
+            auto j = EMU_UNWRAP(f2());
+            return add(i, j);
+        };
+
+        auto res = test();
+
+        EXPECT_FALSE(res.has_value());
+        EXPECT_FALSE(function_called);
+    }
+
+    TEST(Functor, UnwrapMacroWithExpected) {
+        auto f1 = [] () -> emu::expected<int, char> {
+            return 42;
+        };
+
+        auto f2 = [] () -> emu::expected<int, char> {
+            return emu::unexpected('x');
+        };
+
+        bool function_called = false;
+
+        auto add = [&](int i, int j) -> int {
+            function_called = true;
+            return i + j;
+        };
+
+        auto test = [&]() -> emu::expected<int, char> {
+            auto i = EMU_UNWRAP(f1());
+            auto j = EMU_UNWRAP(f2());
+            return add(i, j);
+        };
+
+        auto res = test();
+
+        EXPECT_FALSE(function_called);
+
+        EXPECT_FALSE(res.has_value());
+        EXPECT_EQ(res.error(), 'x');
+    }
+
+    TEST(Functor, UnwrapMacroWithNonCopyable) {
+        using u_ptr = std::unique_ptr<int>;
+
+        auto f1 = [] () -> emu::expected<u_ptr, char> {
+            return std::make_unique<int>(42);
+        };
+
+        auto f2 = [] () -> emu::expected<u_ptr, char> {
+            return emu::unexpected('x');
+        };
+
+        bool f1_returned = false;
+        bool add_called = false;
+
+        auto add = [&](int i, int j) -> int {
+            add_called = true;
+            return i + j;
+        };
+
+        auto test = [&]() -> emu::expected<int, char> {
+            auto i = EMU_UNWRAP(f1());
+            f1_returned = true;
+            EXPECT_TRUE(i);
+            auto j = EMU_UNWRAP(f2());
+            return add(*i, *j);
+        };
+
+        auto res = test();
+
+        EXPECT_FALSE(add_called);
+        EXPECT_TRUE(f1_returned);
+
+        EXPECT_FALSE(res.has_value());
+        EXPECT_EQ(res.error(), 'x');
+    }
+
+
+
 } // namespace

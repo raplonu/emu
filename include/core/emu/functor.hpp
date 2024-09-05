@@ -55,7 +55,33 @@ namespace detail {
 } // namespace detail
 
     template<typename T>
-    constexpr auto as = detail::as<T>{};
+    EMU_HODE_CONSTEXPR detail::as<T> as;
+
+namespace spe
+{
+
+    template<typename T>
+    struct unwrap_error {
+        constexpr bool operator()(const T&) const {
+            return false;
+        }
+    };
+
+} // namespace spe
+
+namespace detail
+{
+
+    struct unwrap_error {
+        template<typename T>
+        constexpr auto operator()(const T& t) const {
+            return spe::unwrap_error<T>{}(t);
+        }
+    };
+
+} // namespace detail
+
+    EMU_HODE_CONSTEXPR detail::unwrap_error unwrap_error;
 
 } // namespace emu
 

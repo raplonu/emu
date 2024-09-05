@@ -31,8 +31,8 @@ namespace detail
     using matching_word = typename matching_word_impl<sizeof(T)>::type;
 
 
-    template<typename T, typename Op>
-    EMU_DEVICE T atomic_op(T * address, T val, Op op)
+    template<auto Op, typename T>
+    EMU_DEVICE T atomic_op(T * address, T val)
     {
         using word_t = matching_word<T>;
 
@@ -41,7 +41,7 @@ namespace detail
 
         do {
             assumed = old;
-            auto res = op(*reinterpret_cast<T*>(&assumed), val);
+            auto res = Op(*reinterpret_cast<T*>(&assumed), val);
             word_t new_ = *reinterpret_cast<word_t*>(&res);
             old = atomicCAS(address_as_word, assumed, new_);
 
@@ -51,37 +51,47 @@ namespace detail
         return *reinterpret_cast<T*>(&old);
     }
 
-    template<typename Op> struct AtomicDispatch;
+    // template<typename Op> struct AtomicDispatch;
 
 } // namespace detail
 
-#define EMU_ADD_ATOMIC_FUNCTION(FUN_NAME, OP_TYPE, CUDA_OP)                                                 \
-namespace detail {                                                                                          \
-    EMU_GENERATE_TRAITS_HAS(HasAtomic##FUN_NAME, T, CUDA_OP(std::declval<T*>(), std::declval<T>()));        \
-    template<>                                                                                              \
-    struct AtomicDispatch<OP_TYPE> {                                                                        \
-        template<typename T>                                                                                \
-        static EMU_DEVICE EnableIf<    HasAtomic##FUN_NAME<T>, T> call(T * addr, T val) noexcept {          \
-            return CUDA_OP(addr, val);                                                                      \
-        }                                                                                                   \
-        template<typename T>                                                                                \
-        static EMU_DEVICE EnableIf<not HasAtomic##FUN_NAME<T>, T> call(T * addr, T val) noexcept {          \
-            return atomic_op(addr, val, OP_TYPE{});                                                         \
-        }                                                                                                   \
-    };                                                                                                      \
-}                                                                                                           \
-template<typename T>                                                                                        \
-EMU_DEVICE T FUN_NAME(T * addr, T val) noexcept { detail::AtomicDispatch<OP_TYPE>::call(addr, val); }
+// #define EMU_ADD_ATOMIC_FUNCTION(FUN_NAME, OP_TYPE, CUDA_OP)                                                 \
+// namespace detail {                                                                                          \
+//     EMU_GENERATE_TRAITS_HAS(HasAtomic##FUN_NAME, T, CUDA_OP(std::declval<T*>(), std::declval<T>()));        \
+//     template<>                                                                                              \
+//     struct AtomicDispatch<OP_TYPE> {                                                                        \
+//         template<typename T>                                                                                \
+//         static EMU_DEVICE EnableIf<    HasAtomic##FUN_NAME<T>, T> call(T * addr, T val) noexcept {          \
+//             return CUDA_OP(addr, val);                                                                      \
+//         }                                                                                                   \
+//         template<typename T>                                                                                \
+//         static EMU_DEVICE EnableIf<not HasAtomic##FUN_NAME<T>, T> call(T * addr, T val) noexcept {          \
+//             return atomic_op(addr, val, OP_TYPE{});                                                         \
+//         }                                                                                                   \
+//     };                                                                                                      \
+// }                                                                                                           \
+// template<typename T>                                                                                        \
+// EMU_DEVICE T FUN_NAME(T * addr, T val) noexcept { detail::AtomicDispatch<OP_TYPE>::call(addr, val); }
 
-EMU_ADD_ATOMIC_FUNCTION(add , math::add_t , atomicAdd);
-EMU_ADD_ATOMIC_FUNCTION(sub , math::sub_t , atomicSub);
-EMU_ADD_ATOMIC_FUNCTION(mul , math::mul_t , atomicMul);
-EMU_ADD_ATOMIC_FUNCTION(div , math::div_t , atomicDiv);
-EMU_ADD_ATOMIC_FUNCTION(min , math::min_t , atomicMin);
-EMU_ADD_ATOMIC_FUNCTION(max , math::max_t , atomicMax);
-EMU_ADD_ATOMIC_FUNCTION(bor , math::bor_t , atomicOr );
-EMU_ADD_ATOMIC_FUNCTION(band, math::band_t, atomicAnd);
-EMU_ADD_ATOMIC_FUNCTION(bxor, math::bxor_t, atomicXor);
+#define EMU_ADD_ATOMIC_FUNCTION(FUN_NAME, MATH_OP, CUDA_OP)                \
+template<typename T>                                                       \
+EMU_DEVICE T FUN_NAME(T * addr, T val) noexcept {                          \
+    if constexpr (requires { {CUDA_OP(addr, val)} -> std::same_as<T>; }) { \
+        return CUDA_OP(addr, val);                                         \
+    } else {                                                               \
+        return detail::atomic_op<MATH_OP>(addr, val);                      \
+    }                                                                      \
+}
+
+EMU_ADD_ATOMIC_FUNCTION(add , math::add , atomicAdd);
+EMU_ADD_ATOMIC_FUNCTION(sub , math::sub , atomicSub);
+EMU_ADD_ATOMIC_FUNCTION(mul , math::mul , atomicMul);
+EMU_ADD_ATOMIC_FUNCTION(div , math::div , atomicDiv);
+EMU_ADD_ATOMIC_FUNCTION(min , math::min , atomicMin);
+EMU_ADD_ATOMIC_FUNCTION(max , math::max , atomicMax);
+EMU_ADD_ATOMIC_FUNCTION(bor , math::bor , atomicOr );
+EMU_ADD_ATOMIC_FUNCTION(band, math::band, atomicAnd);
+EMU_ADD_ATOMIC_FUNCTION(bxor, math::bxor, atomicXor);
 
 #undef EMU_ADD_ATOMIC_FUNCTION;
 

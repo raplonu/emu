@@ -2,7 +2,7 @@
 
 #include <emu/type_traits.hpp>
 #include <emu/detail/basic_container.hpp>
-#include <emu/device/mdcontainer.hpp>
+#include <emu/cuda/device/mdcontainer.hpp>
 #include <emu/cuda.hpp>
 #include <emu/mdalgo.hpp>
 
@@ -32,16 +32,16 @@ namespace cuda::device
         return container<T>(u_span.data(), size, std::move(u_span));
     }
 
-    template<typename T>
-    container<T> make_container(stream_cref stream, size_t size) {
-        region_t region = cu::memory::device::async::allocate(stream, size * sizeof(T));
+    // template<typename T>
+    // container<T> make_container(stream_cref stream, size_t size) {
+    //     region_t region = cu::memory::device::async::allocate(stream, size * sizeof(T));
 
-        return container<T>(
-            region.as_span<T>(),
-            size,
-            scoped{[ptr = region.get(), stream_h = stream.handle()]{ cudaFreeAsync(ptr, stream_h); }}
-        );
-    }
+    //     return container<T>(
+    //         region.as_span<T>(),
+    //         size,
+    //         scoped{[ptr = region.get(), stream_h = stream.handle()]{ cudaFreeAsync(ptr, stream_h); }}
+    //     );
+    // }
 
 } // namespace cuda::device
 
@@ -49,7 +49,7 @@ namespace cuda::device
     struct spe::md_converter<cuda::device::container<T, Extent>>
     {
         static constexpr auto convert(const cuda::device::container<T, Extent> &s) noexcept {
-            return cuda::device::mdcontainer<T, extents<size_t, Extent>, layout_right, default_accessor<T> >(s.data(), s.capsule(), exts_flag, s.size());
+            return cuda::device::mdcontainer<T, extents<size_t, Extent>, layout_right, default_accessor<T> >(s.data(), s.capsule(), emu::exts_flag, s.size());
         }
     };
 

@@ -5,9 +5,7 @@
 
 #include <emu/assert.hpp>
 #include <emu/type_name.hpp>
-// #include <emu/detail/basic_span.hpp>
-
-#include <experimental/mdspan>
+#include <emu/detail/mdspan_types.hpp>
 
 #include <fmt/core.h>
 #include <fmt/ranges.h>
@@ -17,38 +15,6 @@
 
 namespace emu
 {
-
-    using std::dynamic_extent;
-
-    namespace stdex = std::experimental;
-
-    using stdex::layout_right;
-    using stdex::layout_left;
-    using stdex::layout_stride;
-
-    using layout_c = layout_right;
-    using layout_f = layout_left;
-
-    using layout_row    = layout_right;
-    using layout_column = layout_left;
-
-    using stdex::default_accessor;
-
-    using stdex::dextents;
-
-    using stdex::extents;
-
-    using stdex::full_extent_t;
-    using stdex::full_extent;
-
-    template<std::size_t N>
-    using dims = dextents<std::size_t, N>;
-
-    using d0 = dims<0>;
-    using d1 = dims<1>;
-    using d2 = dims<2>;
-    using d3 = dims<3>;
-    using d4 = dims<4>;
 
 namespace detail
 {
@@ -354,6 +320,31 @@ namespace detail
         }
         return true;
     }
+
+    // inline size_t compute_memory_size(span<const size_t> shape, span<const size_t> strides = {}) {
+    //     size_t size = 0;
+    //     size_t stride = 1;
+
+    //     for (size_t i = shape.size(); i-- > 0;) {
+    //         size += (shape[i] - 1) * (strides.empty() ? stride : strides[i]);
+    //         stride *= shape[i];
+    //     }
+
+    //     return size + 1;
+    // }
+
+    // size_t compute_memory_size(std::span<const size_t> shape, std::span<const ptrdiff_t> strides = {}) {
+    //     size_t size = 0;
+    //     ptrdiff_t stride = 1;
+
+    //     for (size_t i = shape.size(); i-- > 0;) {
+    //         ptrdiff_t effective_stride = strides.empty() ? stride : strides[i];
+    //         size += (shape[i] - 1) * std::abs(effective_stride);
+    //         stride *= shape[i];
+    //     }
+
+    //     return size + 1;
+    // }
 
 namespace spe
 {

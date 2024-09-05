@@ -64,7 +64,7 @@
 
 #define EMU_COMMA ,
 
-#define EMU_CONCAT(a, b) BOOST_PP_CAT(a, b)
+#define EMU_CONCAT(a, b)             BOOST_PP_CAT(a, b)
 #define EMU_CONCAT_2(a, b)          BOOST_PP_CAT(a, b)
 #define EMU_CONCAT_3(a, b, c)       BOOST_PP_CAT(a, EMU_CONCAT_2(b, c))
 #define EMU_CONCAT_4(a, b, c, d)    BOOST_PP_CAT(a, EMU_CONCAT_3(b, c, d))
@@ -72,19 +72,71 @@
 
 #define EMU_UNIQUE_NAME(base) EMU_CONCAT(base, __COUNTER__)
 
-
-/// Return false if condition is false, continue otherwise.
-#define EMU_TRUE_OR_RETURN_FALSE( ... ) if ( not (__VA_ARGS__) ) return false
-
-/// Return nullopt if condition is false, continue otherwise.
-#define EMU_TRUE_OR_RETURN_NULLOPT( ... ) if ( not (__VA_ARGS__) ) return emu::nullopt
+// ################
+// # truthy macro #
+// ################
 
 /// For implicit bool convertible types. Return value if it is truthy, continue otherwise.
 #define EMU_RETURN_IF_TRUE( ... ) \
     if (auto&& value__ = __VA_ARGS__ ; value__) { return ::std::move(value__); }
 
 /// For implicit bool convertible types. Return dereferenced value if it is truthy, continue otherwise.
-#define EMU_DEREF_RETURN_IF_TRUE( ... ) \
+#define EMU_UNWRAP_RETURN_IF_TRUE( ... ) \
     if (auto&& value__ = __VA_ARGS__ ; value__) { return *::std::move(value__); }
 
-// for EMU_TRUE_OR_RETURN_UNEXPECTED, see emu/expected.hpp
+// ############################
+// # unsucsseful return macro #
+// ############################
+
+#define EMU_TRUE_OR_RETURN( maybe, else_value) if ( not(maybe) ) return else_value
+
+/// Return false if condition is false, continue otherwise.
+#define EMU_TRUE_OR_RETURN_FALSE( maybe ) EMU_TRUE_OR_RETURN(maybe, false)
+
+/// Return nullopt if condition is false, continue otherwise.
+#define EMU_TRUE_OR_RETURN_NULLOPT( maybe ) EMU_TRUE_OR_RETURN(maybe, ::emu::nullopt)
+
+/// Return unexpected if condition is false, continue otherwise.
+#define EMU_TRUE_OR_RETURN_UNEXPECTED( maybe, unex ) EMU_TRUE_OR_RETURN(maybe, ::emu::unexpected(unex))
+
+/// Return expected error value if it exists, continue otherwise.
+#define EMU_TRUE_OR_RETURN_ERROR( expected ) \
+    EMU_TRUE_OR_RETURN(expected, ::emu::unexpected(::std::move(expected).error()))
+
+
+// ################
+// # assign macro #
+// ################
+
+/// Take a truthy dereferencable type. If true, dereference,
+/// else return the error type assiociated. (default is false)
+/// for optional types, will return emu::nullopt
+/// for expected<T, E>, will return the error
+#define EMU_UNWRAP(maybe)                                     \
+    ({  auto&& value__ = (maybe);                             \
+        if (not value__) return ::emu::unwrap_error(value__); \
+        *EMU_FWD(value__); })
+
+/// Assign value with dereference if thruthy or return nullopt
+#define EMU_UNWRAP_OR_RETURN_FALSE(maybe)  \
+    ({  auto&& value__ = (maybe);          \
+        EMU_TRUE_OR_RETURN_FALSE(value__); \
+        *EMU_FWD(value__); })
+
+/// Assign value with dereference if thruthy or return nullopt
+#define EMU_UNWRAP_OR_RETURN_NULLOPT(maybe)  \
+    ({  auto&& value__ = (maybe);            \
+        EMU_TRUE_OR_RETURN_NULLOPT(value__); \
+        *EMU_FWD(value__); })
+
+/// Assign value with dereference if thruthy or return unexpected
+#define EMU_UNWRAP_OR_RETURN_UNEXPECTED(maybe, ... )       \
+    ({  auto&& value__ = (maybe);                          \
+        EMU_TRUE_OR_RETURN_UNEXPECTED(maybe, __VA_ARGS__); \
+        *EMU_FWD(value__); })
+
+/// Assign value with dereference if thruthy or return error
+#define EMU_UNWRAP_OR_RETURN_ERROR(expected ) \
+    ({  auto&& value__ = (maybe);             \
+        EMU_TRUE_OR_RETURN_ERROR(expected);   \
+        *EMU_FWD(value__); })

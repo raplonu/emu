@@ -59,7 +59,7 @@ namespace memory
 #endif // EMU_DEVICE_CONTEXT
 
     template<typename T>
-    T read(const T * ptr, stream_cref_t stream)
+    T read(const T * ptr, stream_cref stream)
     {
         T res;
         emu::cuda::copy(&res, ptr, 1, stream);
@@ -67,7 +67,7 @@ namespace memory
     }
 
     template<typename T>
-    void write(T * ptr, T value, stream_cref_t stream)
+    void write(T * ptr, T value, stream_cref stream)
     {
         emu::cuda::copy(ptr, &value, 1 ,stream);
     }

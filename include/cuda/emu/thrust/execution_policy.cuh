@@ -22,9 +22,9 @@ namespace detail
         using base_t::base_t;
 
         friend EMU_HODE
-        ::cuda::status_t synchronize_stream(execute_on_stream_async&) noexcept
+        cudaError_t synchronize_stream(execute_on_stream_async&) noexcept
         {
-            return CUDA_SUCCESS;
+            return cudaSuccess;
         }
     };
 

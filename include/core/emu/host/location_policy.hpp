@@ -1,34 +1,30 @@
 #pragma once
 
 #include <emu/location_policy.hpp>
+#include <emu/detail/dlpack_types.hpp>
 
 namespace emu::host
 {
-
-namespace detail
-{
-
-    struct ctx_manager
-    {
-        void* data = nullptr;
-        int64_t* shane_and_strides = nullptr;
-    };
-
-} // namespace detail
-
 
     struct location_policy
     {
         template <typename T>
         static constexpr bool validate_source = spe::enable_host_range<rm_cvref<T>>;
 
-        // static constexpr DLDevice dl_device_of(void*) { return {kDLCPU, 0}; }
+        static constexpr dlpack::device_t device_of(const byte*) noexcept {
+            return {.device_type=dlpack::device_type_t::kDLCPU, .device_id=0};
+        }
 
-        // template<cpts::mdspan MdSpan>
-        // DLManagedTensor dlpack(const MdSpan& m) {
-
-        //     return
+        // static constexpr bool check_device(dlpack::device_t device) noexcept {
+        //     return device.device_type == dlpack::device_type_t::kDLCPU
+        //         or device.device_type == dlpack::device_type_t::kDLCUDAHost
+        //         or device.device_type == dlpack::device_type_t::kDLCUDAManaged
+        //         or device.device_type == dlpack::device_type_t::kDLROCMHost
+        //     ;
         // }
+
+        // static constexpr dlpack::device_type_t device_type = dlpack::device_type_t::kDLCPU;
+
     };
 
 } // namespace emu::host

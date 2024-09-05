@@ -2,7 +2,7 @@
 
 #include <emu/macro.hpp>
 #include <emu/concepts.hpp>
-#include <emu/utility.hpp>
+#include <emu/functor.hpp>
 
 #include <cmath>
 
@@ -12,58 +12,75 @@ namespace emu::math
 namespace std
 {
 
-    constexpr EMU_HODE float       ceil (float       v ) noexcept { return ::std::ceilf ( v ); }
-    constexpr EMU_HODE double      ceil (double      v ) noexcept { return ::std::ceil  ( v ); }
-    constexpr EMU_HODE long double ceil (long double v ) noexcept { return ::std::ceill ( v ); }
+    //Note: being C++, should be using ::std math function but it doesn't work
+    // with CUDA for some reasons. Try again later I guess.
 
-    constexpr EMU_HODE float       floor(float       v ) noexcept { return ::std::floorf( v ); }
-    constexpr EMU_HODE double      floor(double      v ) noexcept { return ::std::floor ( v ); }
-    constexpr EMU_HODE long double floor(long double v ) noexcept { return ::std::floorl( v ); }
+    constexpr float       ceil (float       v ) noexcept { return ::ceilf ( v ); }
+    constexpr double      ceil (double      v ) noexcept { return ::ceil  ( v ); }
+    constexpr long double ceil (long double v ) noexcept { return ::ceill ( v ); }
 
-    constexpr EMU_HODE float       trunc(float       v ) noexcept { return ::std::truncf( v ); }
-    constexpr EMU_HODE double      trunc(double      v ) noexcept { return ::std::trunc ( v ); }
-    constexpr EMU_HODE long double trunc(long double v ) noexcept { return ::std::truncl( v ); }
+    constexpr float       floor(float       v ) noexcept { return ::floorf( v ); }
+    constexpr double      floor(double      v ) noexcept { return ::floor ( v ); }
+    constexpr long double floor(long double v ) noexcept { return ::floorl( v ); }
 
-    constexpr EMU_HODE float       round(float       v ) noexcept { return ::std::roundf( v ); }
-    constexpr EMU_HODE double      round(double      v ) noexcept { return ::std::round ( v ); }
-    constexpr EMU_HODE long double round(long double v ) noexcept { return ::std::roundl( v ); }
+    constexpr float       trunc(float       v ) noexcept { return ::truncf( v ); }
+    constexpr double      trunc(double      v ) noexcept { return ::trunc ( v ); }
+    constexpr long double trunc(long double v ) noexcept { return ::truncl( v ); }
+
+    constexpr float       round(float       v ) noexcept { return ::roundf( v ); }
+    constexpr double      round(double      v ) noexcept { return ::round ( v ); }
+    constexpr long double round(long double v ) noexcept { return ::roundl( v ); }
+
+    constexpr float       fma(float       a, float       b, float       c) noexcept { return ::fmaf(a, b, c); }
+    constexpr double      fma(double      a, double      b, double      c) noexcept { return ::fma (a, b, c); }
+    constexpr long double fma(long double a, long double b, long double c) noexcept { return ::fmal(a, b, c); }
 
 } // namespace std
 
-namespace detail
-{
+    // template<typename To>
+    // struct as_t
+    // {
+    //     template<typename From> constexpr To ceil (From from) const noexcept;
+    //     template<typename From> constexpr To floor(From from) const noexcept;
+    //     template<typename From> constexpr To trunc(From from) const noexcept;
+    //     template<typename From> constexpr To round(From from) const noexcept;
+    // };
 
-    template<typename T1, typename T2>
-    concepts can_use_cast = cpts::equivalent<T1, T2> or (::std::is_integral_v<T1> and ::std::is_integral_v<T2>);
+    template<typename To> struct ceil_t  {
+        template<typename From>
+        constexpr To operator()(From from) const noexcept { return static_cast<To>(from); }
 
-    // template<typename T1, typename T2>
-    // using DifferentTypes = EnableIf<not Equivalent<T1, T2> and not (::std::is_integral_v<T1> and ::std::is_integral_v<T2>), T1>;
+        constexpr To operator()(To from) const noexcept requires ::std::floating_point<To> { return std::ceil(from); }
+    };
+    template<typename To> struct floor_t {
+        template<typename From>
+        constexpr To operator()(From from) const noexcept { return static_cast<To>(from); }
 
-} // namespace detail
+        constexpr To operator()(To from) const noexcept requires ::std::floating_point<To> { return std::floor(from); }
+    };
+    template<typename To> struct trunc_t {
+        template<typename From>
+        constexpr To operator()(From from) const noexcept { return static_cast<To>(from); }
 
-    template<typename To>
-    struct as_t : emu::detail::as_t<To> {
-        template<typename From> requires(     detail::can_use_cast<To, Fom> ) EMU_HODE constexpr To ceil (From from) const noexcept { return as<To>(from); }
-        template<typename From> requires(     detail::can_use_cast<To, Fom> ) EMU_HODE constexpr To floor(From from) const noexcept { return as<To>(from); }
-        template<typename From> requires(     detail::can_use_cast<To, Fom> ) EMU_HODE constexpr To trunc(From from) const noexcept { return as<To>(from); }
-        template<typename From> requires(     detail::can_use_cast<To, Fom> ) EMU_HODE constexpr To round(From from) const noexcept { return as<To>(from); }
+        constexpr To operator()(To from) const noexcept requires ::std::floating_point<To> { return std::trunc(from); }
+    };
+    template<typename To> struct round_t {
+        template<typename From>
+        constexpr To operator()(From from) const noexcept { return static_cast<To>(from); }
 
-        template<typename From> requires( not detail::can_use_cast<To, Fom> ) EMU_HODE constexpr To ceil (From from) const noexcept;
-        template<typename From> requires( not detail::can_use_cast<To, Fom> ) EMU_HODE constexpr To floor(From from) const noexcept;
-        template<typename From> requires( not detail::can_use_cast<To, Fom> ) EMU_HODE constexpr To trunc(From from) const noexcept;
-        template<typename From> requires( not detail::can_use_cast<To, Fom> ) EMU_HODE constexpr To round(From from) const noexcept;
+        constexpr To operator()(To from) const noexcept requires ::std::floating_point<To> { return std::round(from); }
     };
 
-#define ADD_CONVERTER(FROM, TO, METHOD, IMPL)                                   \
-    template<> template<> constexpr                                             \
-    TO as_t<TO>::METHOD(FROM from) const noexcept \
+#define ADD_CONVERTER(TYPE, FROM, TO, IMPL)     \
+    template<> template<> constexpr                     \
+    TO TYPE<TO>::operator()<FROM>(FROM from) const noexcept \
     { return IMPL(from); }
 
 #define ADD_CONVERTER_COMPONENT(FROM, TO, CEIL, FLOOR, TRUNC, ROUND) \
-    ADD_CONVERTER(FROM, TO, ceil , CEIL )                            \
-    ADD_CONVERTER(FROM, TO, floor, FLOOR)                            \
-    ADD_CONVERTER(FROM, TO, trunc, TRUNC)                            \
-    ADD_CONVERTER(FROM, TO, round, ROUND)
+    ADD_CONVERTER(ceil_t , FROM, TO, CEIL )                            \
+    ADD_CONVERTER(floor_t, FROM, TO, FLOOR)                            \
+    ADD_CONVERTER(trunc_t, FROM, TO, TRUNC)                            \
+    ADD_CONVERTER(round_t, FROM, TO, ROUND)
 
 #define ADD_CAST_CONVERTER_COMPONENT(FROM, TO)                        \
     ADD_CONVERTER_COMPONENT(FROM, TO, as<TO>, as<TO>, as<TO>, as<TO>)
@@ -140,7 +157,6 @@ namespace detail
     ADD_DEVICE_CONVERTER_COMPONENT(double, unsigned long     , double, ull );
     ADD_DEVICE_CONVERTER_COMPONENT(double, unsigned long long, double, ull );
 
-
     ADD_DEVICE_CONVERTER_COMPONENT(float , short             , float , int );
     ADD_DEVICE_CONVERTER_COMPONENT(float , int               , float , int );
     ADD_DEVICE_CONVERTER_COMPONENT(float , long              , float , ll  );
@@ -176,25 +192,7 @@ namespace detail
 #undef ADD_HOST_CONVERTER_COMPONENT
 #undef ADD_DEVICE_CONVERTER_COMPONENT
 
-    template<typename To> EMU_HODE_CONSTEXPR auto as = as_t<To>{};
-
-    template<typename To> struct ceil_t  {
-        template<typename From>
-        constexpr EMU_HODE To operator()(From from) const noexcept { return as<To>.ceil (from); }
-    };
-    template<typename To> struct floor_t {
-        template<typename From>
-        constexpr EMU_HODE To operator()(From from) const noexcept { return as<To>.floor(from); }
-    };
-    template<typename To> struct trunc_t {
-        template<typename From>
-        constexpr EMU_HODE To operator()(From from) const noexcept { return as<To>.trunc(from); }
-    };
-    template<typename To> struct round_t {
-        template<typename From>
-        constexpr EMU_HODE To operator()(From from) const noexcept { return as<To>.round(from); }
-    };
-
+    // was EMU_HODE_CONSTEXPR before. Should not be necessary.
     template<typename To> EMU_HODE_CONSTEXPR auto ceil  = ceil_t <To>{};
     template<typename To> EMU_HODE_CONSTEXPR auto floor = floor_t<To>{};
     template<typename To> EMU_HODE_CONSTEXPR auto trunc = trunc_t<To>{};
@@ -202,53 +200,59 @@ namespace detail
 
     struct add_t  {
         template<typename T>
-        constexpr EMU_HODE T operator()(T a, std::type_identity_t<T> b) const noexcept { return a + b; }
+        constexpr T operator()(T a, ::std::type_identity_t<T> b) const noexcept { return a + b; }
     };
     struct sub_t {
         template<typename T>
-        constexpr EMU_HODE T operator()(T a, std::type_identity_t<T> b) const noexcept { return a - b; }
+        constexpr T operator()(T a, ::std::type_identity_t<T> b) const noexcept { return a - b; }
     };
     struct mul_t {
         template<typename T>
-        constexpr EMU_HODE T operator()(T a, std::type_identity_t<T> b) const noexcept { return a * b; }
+        constexpr T operator()(T a, ::std::type_identity_t<T> b) const noexcept { return a * b; }
     };
     struct div_t {
         template<typename T>
-        constexpr EMU_HODE T operator()(T a, std::type_identity_t<T> b) const noexcept { return a / b; }
+        constexpr T operator()(T a, ::std::type_identity_t<T> b) const noexcept { return a / b; }
     };
     struct min_t {
         template<typename T>
-        constexpr EMU_HODE T operator()(T a, std::type_identity_t<T> b) const noexcept { return (a < b) ? a : b; }
+        constexpr T operator()(T a, ::std::type_identity_t<T> b) const noexcept { return (a < b) ? a : b; }
     };
     struct max_t {
         template<typename T>
-        constexpr EMU_HODE T operator()(T a, std::type_identity_t<T> b) const noexcept { return (a > b) ? a : b; }
+        constexpr T operator()(T a, ::std::type_identity_t<T> b) const noexcept { return (a > b) ? a : b; }
     };
     struct bor_t {
         template<typename T>
-        constexpr EMU_HODE T operator()(T a, std::type_identity_t<T> b) const noexcept { return a | b; }
+        constexpr T operator()(T a, ::std::type_identity_t<T> b) const noexcept { return a | b; }
     };
     struct band_t {
         template<typename T>
-        constexpr EMU_HODE T operator()(T a, std::type_identity_t<T> b) const noexcept { return a & b; }
+        constexpr T operator()(T a, ::std::type_identity_t<T> b) const noexcept { return a & b; }
     };
     struct bxor_t {
         template<typename T>
-        constexpr EMU_HODE T operator()(T a, std::type_identity_t<T> b) const noexcept { return a ^ b; }
+        constexpr T operator()(T a, ::std::type_identity_t<T> b) const noexcept { return a ^ b; }
     };
-    // struct exch_t {
-    //     template<typename T>
-    //     constexpr EMU_HODE T operator()(T a, std::type_identity_t<T> b) const noexcept { return a + b; }
-    // };
+    struct exch_t {
+        template<typename T>
+        constexpr T operator()(T& a, ::std::type_identity_t<T> b) const noexcept { return ::std::exchange(a, b); }
+    };
+    struct fma_t {
+        template<typename T>
+        constexpr T operator()(T a, ::std::type_identity_t<T> b, ::std::type_identity_t<T> c) const noexcept { return math::std::fma(a, b, c); }
+    };
 
-    constexpr auto add  = add_t {};
-    constexpr auto sub  = sub_t {};
-    constexpr auto mul  = mul_t {};
-    constexpr auto div  = div_t {};
-    constexpr auto min  = min_t {};
-    constexpr auto max  = max_t {};
-    constexpr auto bor  = bor_t {};
-    constexpr auto band = band_t{};
-    constexpr auto bxor = bxor_t{};
+    EMU_HODE_CONSTEXPR add_t  add  {};
+    EMU_HODE_CONSTEXPR sub_t  sub  {};
+    EMU_HODE_CONSTEXPR mul_t  mul  {};
+    EMU_HODE_CONSTEXPR div_t  div  {};
+    EMU_HODE_CONSTEXPR min_t  min  {};
+    EMU_HODE_CONSTEXPR max_t  max  {};
+    EMU_HODE_CONSTEXPR bor_t  bor  {};
+    EMU_HODE_CONSTEXPR band_t band {};
+    EMU_HODE_CONSTEXPR bxor_t bxor {};
+    EMU_HODE_CONSTEXPR exch_t exch {};
+    EMU_HODE_CONSTEXPR fma_t  fma  {};
 
-} // namespace math::emu
+} // namespace emu::math

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <emu/type_traits.hpp>
 #include <emu/concepts.hpp>
 #include <emu/detail/basic_mdspan.hpp>
@@ -168,7 +169,11 @@ namespace detail
 
         template<typename OT, size_t OExtent>
         constexpr auto from_span(std::span<OT, OExtent> sp) const noexcept {
-            return actual_type::from_span(sp);
+            return self().from_span(sp);
+        }
+
+        const actual_type& self() const noexcept {
+            return static_cast<const actual_type&>(*this);
         }
 
     };
@@ -270,6 +275,13 @@ template<emu::cpts::emu_span EmuSpan>
 inline constexpr bool
 std::ranges::enable_view<EmuSpan>
     = EmuSpan::extent == 0 || EmuSpan::extent == std::dynamic_extent;
+
+template<emu::cpts::span Span>
+struct std::hash<Span> {
+    std::size_t operator()(const Span& sp) const noexcept {
+        return std::hash<uintptr_t>{}(reinterpret_cast<uintptr_t>(sp.data())) ^ std::hash<size_t>{}(sp.size());
+    }
+};
 
 #define EMU_DEFINE_SPAN_DEDUCTION_GUIDES                                  \
     template< class It, class EndOrSize >                                 \

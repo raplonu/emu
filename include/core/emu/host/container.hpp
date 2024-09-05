@@ -16,7 +16,14 @@ namespace host
     {
         using base = emu::detail::basic_container<ElementType, Extent, host::location_policy, container>;
 
+        using value_type = typename base::value_type;
+
         using base::base;
+
+        //Note: Do to a bug with gcc 11, we need to define this constructor here.
+        constexpr container(std::initializer_list<value_type> il)
+            : base(std::vector(il))
+        {}
 
         template<typename OT, size_t OExtent>
         auto from_span(std::span<OT, OExtent> sp) const noexcept {

@@ -16,20 +16,20 @@ namespace detail
     template<typename T, typename Extents, typename LayoutPolicy, typename AccessorPolicy, typename LocationPolicy, typename ActualType>
     struct basic_mdcontainer : basic_mdspan<T, Extents, LayoutPolicy, AccessorPolicy, LocationPolicy, ActualType>, emu::capsule
     {
-        using base = basic_mdspan<T, Extents, LayoutPolicy, AccessorPolicy, LocationPolicy, ActualType>;
+        using mdspan_type = basic_mdspan<T, Extents, LayoutPolicy, AccessorPolicy, LocationPolicy, ActualType>;
         using capsule_base = emu::capsule;
 
-        using extents_type     = typename base::extents_type;
-        using layout_type      = typename base::layout_type;
-        using accessor_type    = typename base::accessor_type;
-        using mapping_type     = typename base::mapping_type;
-        using element_type     = typename base::element_type;
-        using value_type       = typename base::value_type;
-        using index_type       = typename base::index_type;
-        using size_type        = typename base::size_type;
-        using rank_type        = typename base::rank_type;
-        using data_handle_type = typename base::data_handle_type;
-        using reference        = typename base::reference;
+        using extents_type     = typename mdspan_type::extents_type;
+        using layout_type      = typename mdspan_type::layout_type;
+        using accessor_type    = typename mdspan_type::accessor_type;
+        using mapping_type     = typename mdspan_type::mapping_type;
+        using element_type     = typename mdspan_type::element_type;
+        using value_type       = typename mdspan_type::value_type;
+        using index_type       = typename mdspan_type::index_type;
+        using size_type        = typename mdspan_type::size_type;
+        using rank_type        = typename mdspan_type::rank_type;
+        using data_handle_type = typename mdspan_type::data_handle_type;
+        using reference        = typename mdspan_type::reference;
 
         using location_type = LocationPolicy;
         using actual_type = ActualType;
@@ -37,7 +37,7 @@ namespace detail
         template <typename Type>
         inline static constexpr bool validate_source = location_type::template validate_source<Type>;
 
-        using base::base;
+        using mdspan_type::mdspan_type;
 
         // ##########################################
         // # Sized range constructor (non standard) #
@@ -45,10 +45,10 @@ namespace detail
 
         template< cpts::contiguous_sized_range Range >
             requires validate_source<Range>
-                 and (base::rank() == 1)
+                 and (mdspan_type::rank() == 1)
                  and (std::ranges::borrowed_range<Range> or is_const<element_type> or cpts::relocatable_owning_range<Range>)
         constexpr explicit basic_mdcontainer( Range&& r )
-            : base( std::ranges::data(r), std::ranges::size(r) )
+            : mdspan_type( std::ranges::data(r), std::ranges::size(r) )
             , capsule_base(capsule_from_range(EMU_FWD(r)))
         {}
 
@@ -61,9 +61,9 @@ namespace detail
             requires validate_source<Range>
                 and (std::convertible_to<OtherIndexTypes, size_type> and ...)
                 and (std::is_nothrow_convertible_v<OtherIndexTypes, size_type> and ...)
-                and (sizeof...(OtherIndexTypes) == base::rank_dynamic() or sizeof...(OtherIndexTypes) == base::rank())
+                and (sizeof...(OtherIndexTypes) == mdspan_type::rank_dynamic() or sizeof...(OtherIndexTypes) == mdspan_type::rank())
         constexpr explicit basic_mdcontainer( Range&& r, OtherIndexTypes... exts )
-            : base( std::ranges::data(r), exts... )
+            : mdspan_type( std::ranges::data(r), exts... )
             , capsule_base(capsule_from_range(EMU_FWD(r)))
         {}
 
@@ -74,10 +74,10 @@ namespace detail
             requires validate_source<Range>
                 and (std::convertible_to<OtherIndexTypes, size_type> and ...)
                 and (std::is_nothrow_convertible_v<OtherIndexTypes, size_type> and ...)
-                and (sizeof...(OtherIndexTypes) == base::rank_dynamic() or sizeof...(OtherIndexTypes) == base::rank())
+                and (sizeof...(OtherIndexTypes) == mdspan_type::rank_dynamic() or sizeof...(OtherIndexTypes) == mdspan_type::rank())
                 // and (not std::convertible_to<DataHolder, size_type>)
         constexpr explicit basic_mdcontainer( Range&& r, DataHolder&& dh, exts_flag_t, OtherIndexTypes... exts )
-            : base( std::ranges::data(r), exts... )
+            : mdspan_type( std::ranges::data(r), exts... )
             , capsule_base(EMU_FWD(dh))
         {}
 
@@ -85,10 +85,10 @@ namespace detail
         template< typename DataHolder, typename... OtherIndexTypes >
             requires (std::convertible_to<OtherIndexTypes, size_type> and ...)
                 and (std::is_nothrow_convertible_v<OtherIndexTypes, size_type> and ...)
-                and (sizeof...(OtherIndexTypes) == base::rank_dynamic() or sizeof...(OtherIndexTypes) == base::rank())
+                and (sizeof...(OtherIndexTypes) == mdspan_type::rank_dynamic() or sizeof...(OtherIndexTypes) == mdspan_type::rank())
                 // and (not std::convertible_to<DataHolder, size_type>)
         constexpr explicit basic_mdcontainer( data_handle_type p, DataHolder&& dh, exts_flag_t, OtherIndexTypes... exts )
-            : base( p, exts... )
+            : mdspan_type( p, exts... )
             , capsule_base(EMU_FWD(dh))
         {}
 
@@ -101,10 +101,10 @@ namespace detail
             requires validate_source<Range>
                  and std::convertible_to<OtherIndexType, size_type>
                  and std::is_nothrow_convertible_v<OtherIndexType, size_type>
-                 and ((N == base::rank()) || (N == base::rank_dynamic()))
-        constexpr explicit(N != base::rank_dynamic())
+                 and ((N == mdspan_type::rank()) || (N == mdspan_type::rank_dynamic()))
+        constexpr explicit(N != mdspan_type::rank_dynamic())
         basic_mdcontainer( Range&& r, std::span<OtherIndexType, N> exts )
-            : base( std::ranges::data(r), exts )
+            : mdspan_type( std::ranges::data(r), exts )
             , capsule_base(capsule_from_range(EMU_FWD(r)))
         {}
 
@@ -112,20 +112,20 @@ namespace detail
             requires validate_source<Range>
                  and std::convertible_to<OtherIndexType, size_type>
                  and std::is_nothrow_convertible_v<OtherIndexType, size_type>
-                 and ((N == base::rank()) || (N == base::rank_dynamic()))
-        constexpr explicit(N != base::rank_dynamic())
+                 and ((N == mdspan_type::rank()) || (N == mdspan_type::rank_dynamic()))
+        constexpr explicit(N != mdspan_type::rank_dynamic())
         basic_mdcontainer( Range&& r, DataHolder&& dh, std::span<OtherIndexType, N> exts )
-            : base( std::ranges::data(r), exts )
+            : mdspan_type( std::ranges::data(r), exts )
             , capsule_base(EMU_FWD(dh))
         {}
 
         template< typename DataHolder, typename OtherIndexType, std::size_t N >
             requires std::convertible_to<OtherIndexType, size_type>
                  and std::is_nothrow_convertible_v<OtherIndexType, size_type>
-                 and ((N == base::rank()) || (N == base::rank_dynamic()))
-        constexpr explicit(N != base::rank_dynamic())
+                 and ((N == mdspan_type::rank()) || (N == mdspan_type::rank_dynamic()))
+        constexpr explicit(N != mdspan_type::rank_dynamic())
         basic_mdcontainer( data_handle_type p, DataHolder&& dh, std::span<OtherIndexType, N> exts )
-            : base( p, exts )
+            : mdspan_type( p, exts )
             , capsule_base(EMU_FWD(dh))
         {}
 
@@ -136,24 +136,24 @@ namespace detail
 
         template< std::ranges::contiguous_range Range, typename OtherIndexType, std::size_t N >
             requires validate_source<Range>
-        constexpr explicit(N != base::rank_dynamic())
+        constexpr explicit(N != mdspan_type::rank_dynamic())
         basic_mdcontainer( Range&& r, const std::array<OtherIndexType, N>& exts )
-            : base( std::ranges::data(r), exts )
+            : mdspan_type( std::ranges::data(r), exts )
             , capsule_base(capsule_from_range(EMU_FWD(r)))
         {}
 
         template< std::ranges::contiguous_range Range, typename DataHolder, typename OtherIndexType, std::size_t N >
             requires validate_source<Range>
-        constexpr explicit(N != base::rank_dynamic())
+        constexpr explicit(N != mdspan_type::rank_dynamic())
         basic_mdcontainer( Range&& r, DataHolder&& dh, const std::array<OtherIndexType, N>& exts )
-            : base( std::ranges::data(r), exts )
+            : mdspan_type( std::ranges::data(r), exts )
             , capsule_base(EMU_FWD(dh))
         {}
 
         template< typename DataHolder, typename OtherIndexType, std::size_t N >
-        constexpr explicit(N != base::rank_dynamic())
+        constexpr explicit(N != mdspan_type::rank_dynamic())
         basic_mdcontainer( data_handle_type p, DataHolder&& dh, const std::array<OtherIndexType, N>& exts )
-            : base( p, exts )
+            : mdspan_type( p, exts )
             , capsule_base(EMU_FWD(dh))
         {}
 
@@ -165,24 +165,24 @@ namespace detail
         template< std::ranges::contiguous_range Range >
             requires validate_source<Range>
         basic_mdcontainer( Range&& r, const extents_type& exts )
-            : base( std::ranges::data(r), exts )
+            : mdspan_type( std::ranges::data(r), exts )
             , capsule_base(capsule_from_range(EMU_FWD(r)))
         {
-            base::check_range_size(r);
+            mdspan_type::check_range_size(r);
         }
 
         template< std::ranges::contiguous_range Range, typename DataHolder >
             requires validate_source<Range>
         basic_mdcontainer( Range&& r, DataHolder&& dh, const extents_type& exts )
-            : base( std::ranges::data(r), exts )
+            : mdspan_type( std::ranges::data(r), exts )
             , capsule_base(EMU_FWD(dh))
         {
-            base::check_range_size(r);
+            mdspan_type::check_range_size(r);
         }
 
         template< typename DataHolder >
         basic_mdcontainer( data_handle_type p, DataHolder&& dh, const extents_type& exts )
-            : base( p, exts )
+            : mdspan_type( p, exts )
             , capsule_base(EMU_FWD(dh))
         {}
 
@@ -194,24 +194,24 @@ namespace detail
         template< std::ranges::contiguous_range Range >
             requires validate_source<Range>
         basic_mdcontainer( Range&& r, const mapping_type& m )
-            : base( std::ranges::data(r), m )
+            : mdspan_type( std::ranges::data(r), m )
             , capsule_base(capsule_from_range(EMU_FWD(r)))
         {
-            base::check_range_size(r);
+            mdspan_type::check_range_size(r);
         }
 
         template< std::ranges::contiguous_range Range, typename DataHolder >
             requires validate_source<Range>
         basic_mdcontainer( Range&& r, DataHolder&& dh, const mapping_type& m )
-            : base( std::ranges::data(r), m )
+            : mdspan_type( std::ranges::data(r), m )
             , capsule_base(EMU_FWD(dh))
         {
-            base::check_range_size(r);
+            mdspan_type::check_range_size(r);
         }
 
         template< typename DataHolder >
         basic_mdcontainer( data_handle_type p, DataHolder&& dh, const mapping_type& m )
-            : base( p, m )
+            : mdspan_type( p, m )
             , capsule_base(EMU_FWD(dh))
         {}
 
@@ -223,24 +223,24 @@ namespace detail
         template< std::ranges::contiguous_range Range >
             requires validate_source<Range>
         basic_mdcontainer( Range&& r, const mapping_type& m, const accessor_type& a )
-            : base( std::ranges::data(r), m, a )
+            : mdspan_type( std::ranges::data(r), m, a )
             , capsule_base(capsule_from_range(EMU_FWD(r)))
         {
-            base::check_range_size(r);
+            mdspan_type::check_range_size(r);
         }
 
         template< std::ranges::contiguous_range Range, typename DataHolder >
             requires validate_source<Range>
         basic_mdcontainer( Range&& r, DataHolder&& dh, const mapping_type& m, const accessor_type& a )
-            : base( std::ranges::data(r), m, a )
+            : mdspan_type( std::ranges::data(r), m, a )
             , capsule_base(EMU_FWD(dh))
         {
-            base::check_range_size(r);
+            mdspan_type::check_range_size(r);
         }
 
         template< typename DataHolder >
         basic_mdcontainer( data_handle_type p, DataHolder&& dh, const mapping_type& m, const accessor_type& a )
-            : base( p, m, a )
+            : mdspan_type( p, m, a )
             , capsule_base(EMU_FWD(dh))
         {}
 
@@ -265,7 +265,7 @@ namespace detail
         basic_mdcontainer( const basic_mdcontainer<OtherElementType, OtherExtents,
                              OtherLayoutPolicy, OtherAccessor,
                              location_type, OActualType>& other )
-            : base(static_cast<const base&>(other))
+            : mdspan_type(static_cast<const mdspan_type&>(other))
             , capsule_base(other.capsule())
         {}
 
@@ -284,7 +284,7 @@ namespace detail
                              OtherLayoutPolicy, OtherAccessor,
                              location_type, OActualType>& other,
                       DataHolder&& dh )
-            : base( other )
+            : mdspan_type( other )
             , capsule_base(EMU_FWD(dh))
         {}
 
@@ -302,7 +302,7 @@ namespace detail
         basic_mdcontainer( const stdex::mdspan<OtherElementType, OtherExtents,
                              OtherLayoutPolicy, OtherAccessor>& other,
                       DataHolder&& dh )
-            : base( other )
+            : mdspan_type( other )
             , capsule_base(EMU_FWD(dh))
         {}
 

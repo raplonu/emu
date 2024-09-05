@@ -75,7 +75,7 @@ namespace
         }
 
         {
-            const emu::host::container con{ std::vector(5, 0) };
+            const emu::host::container con( std::vector(5, 0) );
 
             EXPECT_NE(con.data(), nullptr);
             EXPECT_EQ(con.size(), 5);

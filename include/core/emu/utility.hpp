@@ -10,18 +10,40 @@
 #include <type_traits>
 #include <algorithm>
 #include <functional>
+#include <ranges>
 #include <utility>
 #include <memory>
 #include <cstddef>
+#include <string_view>
+#include <ranges>
 
 namespace emu
 {
 
-    using std::size_t, std::move, std::byte;
+    using std::size_t, std::ptrdiff_t, std::move, std::byte;
+
+    using std::string_view;
 
     using boost::hana::make;
 
-    //###################### SIZE ########################
+    // template<typename T>
+    // auto data_handle(const T& t) noexcept {
+    //     if      constexpr (std::is_pointer_v<T>)
+    //         return t;
+    //     else if constexpr (std::ranges::contiguous_range<T>)
+    //         return t.data();
+    //     else if constexpr (cpts::any_mdspan<T>)
+    //         return t.data_handle();
+    // }
+
+    constexpr inline auto split_string(string_view words, string_view delim = " ") {
+        return std::views::split(words, delim) | std::views::transform([](auto sub_str) {
+                // sub_str is not categorized as contiguous range but it is.
+                // We have to use the deref hack to construct the string_view.
+                return string_view(&*sub_str.begin(), std::ranges::distance(sub_str));
+            });
+    }
+
 
     /**
     * Calculate the ceil result of a / b
@@ -35,7 +57,7 @@ namespace emu
 
     template<typename T>
     EMU_HODE constexpr
-    T next_mul(T a, T b) { return ( (a - 1) / b + 1) * b; }
+    T next_mul(T a, T b) noexcept { return ( (a - 1) / b + 1) * b; }
 
     template<size_t key_id, typename Tuple>
     EMU_HODE constexpr

@@ -21,14 +21,14 @@ add_library(emucore)
 
 target_sources(emucore
     PRIVATE
-        src/core/fun.cpp
+        src/core/error.cpp
+        src/core/pointer.cpp
 )
 
 target_sources(emucore
     PUBLIC FILE_SET HEADERS BASE_DIRS include/core FILES
     include/core/emu/blas.hpp
     include/core/emu/tuple.hpp
-    include/core/emu/fun.hpp
     include/core/emu/assert.hpp
     include/core/emu/detail/error.hpp
     include/core/emu/detail/basic_container.hpp
@@ -83,6 +83,7 @@ find_package(mdspan REQUIRED)
 find_package(tl-expected REQUIRED)
 find_package(tl-optional REQUIRED)
 find_package(half REQUIRED)
+find_package(dlpack REQUIRED)
 
 target_link_libraries(emucore PUBLIC
     Boost::boost
@@ -92,6 +93,7 @@ target_link_libraries(emucore PUBLIC
     tl::optional
     std::mdspan
     half::half
+    dlpack::dlpack
 )
 
 add_library(emu::core ALIAS emucore)
@@ -113,6 +115,9 @@ if (emu_build_cuda)
             src/cuda/cublas/handle.cpp
             src/cuda/cublas/error.cpp
             src/cuda/cublas.cpp
+
+            src/cuda/cuda/pointer.cpp
+            src/cuda/cuda/error.cpp
 
             # src/cuda/cufft/handle.cpp
             # src/cuda/cufft/error.cpp
@@ -187,6 +192,9 @@ if (emu_build_cuda)
     install(TARGETS emucuda
         FILE_SET HEADERS
     )
+
+    add_library(force_emucuda INTERFACE)
+    target_link_libraries(force_emucuda INTERFACE -Wl,--whole-archive emucuda -Wl,--no-whole-archive)
 endif()
 
 if (emu_build_python)

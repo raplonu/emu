@@ -59,6 +59,9 @@ namespace cpts
     template<typename T>
     concept pointer = std::is_pointer_v<T>;
 
+    template<typename T>
+    concept truthy = std::convertible_to<T, bool>;
+
     // #########################
     // # utility type concepts #
     // #########################

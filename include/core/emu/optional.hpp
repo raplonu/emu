@@ -101,9 +101,10 @@ namespace emu
             return nullopt;
     }
 
-
+namespace spe
+{
     template<typename T>
-    struct spe::map< std::optional<T> > {
+    struct map< std::optional<T> > {
 
         template<typename Fr, typename Fn>
         constexpr auto operator()(Fr&& opt, Fn&& fn)
@@ -117,13 +118,31 @@ namespace emu
     };
 
     template<typename T>
-    struct spe::map< tl::optional<T> > {
+    struct map< tl::optional<T> > {
 
         template<typename Fr, typename Fn>
         constexpr auto operator()(Fr&& opt, Fn&& fn) const {
             return EMU_FWD(opt).map(EMU_FWD(fn));
         }
     };
+
+    template<typename T>
+    struct unwrap_error<std::optional<T>> {
+        constexpr std::nullopt_t operator()(const std::optional<T>&) const {
+            return std::nullopt;
+        }
+    };
+
+
+    template<typename T>
+    struct unwrap_error<tl::optional<T>> {
+        constexpr tl::nullopt_t operator()(const tl::optional<T>&) const {
+            return tl::nullopt;
+        }
+    };
+
+} // namespace spe
+
 
     template<typename T>
     tl::optional<T> as_opt(T* ptr) noexcept {

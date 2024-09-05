@@ -6,7 +6,9 @@
 #include <emu/detail/basic_span.hpp>
 #include <emu/capsule.hpp>
 
+#include <initializer_list>
 #include <ranges>
+#include <vector>
 
 namespace emu::detail
 {
@@ -14,24 +16,22 @@ namespace emu::detail
     template <typename ElementType, size_t Extent, typename LocationPolicy, typename ActualType>
     struct basic_container : basic_span<ElementType, Extent, LocationPolicy, ActualType>, emu::capsule
     {
-
-
-        using base = basic_span<ElementType, Extent, LocationPolicy, ActualType>;
+        using span_type = basic_span<ElementType, Extent, LocationPolicy, ActualType>;
         using capsule_base = emu::capsule;
 
-        using element_type     = typename base::element_type;
-        using value_type       = typename base::value_type;
-        using size_type        = typename base::size_type;
-        using difference_type  = typename base::difference_type;
-        using pointer          = typename base::pointer;
-        using const_pointer    = typename base::const_pointer;
-        using reference        = typename base::reference;
-        using const_reference  = typename base::const_reference;
-        using iterator         = typename base::iterator;
-        using reverse_iterator = typename base::reverse_iterator;
+        using element_type     = typename span_type::element_type;
+        using value_type       = typename span_type::value_type;
+        using size_type        = typename span_type::size_type;
+        using difference_type  = typename span_type::difference_type;
+        using pointer          = typename span_type::pointer;
+        using const_pointer    = typename span_type::const_pointer;
+        using reference        = typename span_type::reference;
+        using const_reference  = typename span_type::const_reference;
+        using iterator         = typename span_type::iterator;
+        using reverse_iterator = typename span_type::reverse_iterator;
 
-        using location_type   = typename base::location_type;
-        using actual_type     = typename base::actual_type;
+        using location_type   = typename span_type::location_type;
+        using actual_type     = typename span_type::actual_type;
 
         static constexpr size_t extent = Extent;
 
@@ -39,12 +39,12 @@ namespace emu::detail
         inline static constexpr bool validate_source = location_type::template validate_source<Type>;
 
     public:
-        using base::base;
+        using span_type::span_type;
 
         template <std::contiguous_iterator It, typename DataHolder>
             explicit(extent != dynamic_extent)
         constexpr basic_container(It first, size_t count, DataHolder&& dh)
-            : base(first, count)
+            : span_type(first, count)
             , capsule_base(EMU_FWD(dh))
         {}
 
@@ -52,7 +52,7 @@ namespace emu::detail
             requires(not std::is_convertible_v<End, size_t>)
             explicit(extent != dynamic_extent)
         constexpr basic_container(It first, End last, DataHolder&& dh)
-            : base(first, last)
+            : span_type(first, last)
             , capsule_base(EMU_FWD(dh))
         {}
 
@@ -61,9 +61,9 @@ namespace emu::detail
                  and (std::ranges::borrowed_range<Range> or is_const<element_type> or cpts::relocatable_owning_range<Range>)
             explicit(extent != dynamic_extent)
         constexpr basic_container(Range&& range)
-            noexcept( noexcept(base(range))
+            noexcept( noexcept(span_type(range))
                   and noexcept(capsule_from_range(EMU_FWD(range))))
-            : base(range)
+            : span_type(range)
             , capsule_base(capsule_from_range(EMU_FWD(range)))
         {}
 
@@ -71,7 +71,7 @@ namespace emu::detail
             requires (validate_source<Range>)
             explicit(extent != dynamic_extent)
         constexpr basic_container(Range&& range, DataHolder&& dh)
-            : base(EMU_FWD(range))
+            : span_type(EMU_FWD(range))
             , capsule_base(EMU_FWD(dh))
         {}
 
@@ -79,7 +79,7 @@ namespace emu::detail
         // constexpr basic_container( std::initializer_list<value_type> il ) noexcept
         //     requires validate_source<std::initializer_list<value_type>>
         //          and std::is_const_v<element_type>
-        //     : base(il.begin(), il.end())
+        //     : span_type(il.begin(), il.end())
         // {}
 
         template<typename OT, size_t OExtent, typename OActualType, typename DataHolder>
@@ -88,7 +88,7 @@ namespace emu::detail
                or extent == OExtent)
         constexpr explicit(extent != dynamic_extent && OExtent != dynamic_extent)
         basic_container(const basic_container<OT, OExtent, LocationPolicy, OActualType>& other) noexcept
-            : base(static_cast<const base&>(other))
+            : span_type(static_cast<const span_type&>(other))
             , capsule_base(other.capsule())
         {}
 
@@ -98,14 +98,14 @@ namespace emu::detail
                or extent == OExtent)
         constexpr explicit(extent != dynamic_extent && OExtent != dynamic_extent)
         basic_container(const basic_span<OT, OExtent, LocationPolicy, OActualType>& other, DataHolder&& dh) noexcept
-            : base(static_cast<const base&>(other))
+            : span_type(static_cast<const span_type&>(other))
             , capsule_base(EMU_FWD(dh))
         {}
 
         template<typename DataHolder>
         constexpr explicit
-        basic_container(base s, DataHolder&& dh)
-            : base(s)
+        basic_container(span_type s, DataHolder&& dh)
+            : span_type(s)
             , capsule_base(EMU_FWD(dh))
         {}
 
@@ -222,4 +222,4 @@ std::ranges::enable_view<Container>
     container( std::span<const T, N>, DataHolder&& ) -> container< const T, N>;                     \
                                                                                                     \
     template< typename T >                                                                          \
-    container( std::initializer_list<T> ) -> container< const T, dynamic_extent>;
+    container( std::initializer_list<T> ) -> container< T, dynamic_extent>;

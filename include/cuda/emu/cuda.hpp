@@ -1,5 +1,6 @@
 #pragma once
 
+#include <emu/cuda/error.hpp>
 #include <emu/cuda/device.hpp>
 #include <emu/cuda/stream.hpp>
 
@@ -20,6 +21,17 @@ namespace cuda
 
     using stream_ref  =       cu::stream_t &;
     using stream_cref = const cu::stream_t &;
+
+namespace stream
+{
+
+    inline cu::stream_t wrap(cu::stream::handle_t stream_handle, cu::device_t device, bool take_ownership = false) {
+        auto pc = device.primary_context(cu::do_not_hold_primary_context_refcount_unit);
+	    cu::device::primary_context::detail_::increase_refcount(device.id());
+        return cu::stream::wrap(device.id(), pc.handle(), stream_handle, take_ownership, cu::do_hold_primary_context_refcount_unit);
+    }
+
+} // namespace stream
 
 namespace detail
 {
