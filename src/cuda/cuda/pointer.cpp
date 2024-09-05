@@ -1,5 +1,6 @@
 #include <emu/pointer.hpp>
 
+#include <emu/utility.hpp>
 #include <emu/cuda.hpp>
 
 #include <fmt/format.h>
@@ -8,7 +9,7 @@ namespace emu::cuda
 {
 
     optional<dlpack::device_t> get_device_of_pointer(const byte * ptr) {
-        auto v_ptr = const_cast<void*>(reinterpret_cast<const void*>(ptr));
+        auto* v_ptr = v_ptr_of(ptr);
 
         auto type = cu::memory::type_of(v_ptr);
 

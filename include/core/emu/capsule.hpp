@@ -1,5 +1,6 @@
 #pragma once
 
+#include "type_traits.hpp"
 #include <emu/fwd.hpp>
 #include <emu/config.hpp>
 #include <emu/concepts.hpp>
@@ -91,7 +92,8 @@ namespace emu
          */
         template<typename DataHolder>
             requires (not cpts::capsule_owner<DataHolder>)
-                 and cpts::not_equivalent<DataHolder, capsule>
+                 and (cpts::not_equivalent<DataHolder, capsule>)
+                 and (not std::derived_from<rm_cvref<DataHolder>, capsule>)
                  and (not std::derived_from<rm_ptr<DataHolder>, interface>)
                  and (not is_lref<DataHolder>)
         constexpr explicit capsule(DataHolder&& d)

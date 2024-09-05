@@ -100,10 +100,8 @@ namespace
             return emu::nullopt;
         };
 
-        bool function_called = false;
-
         auto add = [&](int i, int j) -> int {
-            function_called = true;
+            ADD_FAILURE() << "This function should not be called since f2 does not return a value";
             return i + j;
         };
 
@@ -116,7 +114,6 @@ namespace
         auto res = test();
 
         EXPECT_FALSE(res.has_value());
-        EXPECT_FALSE(function_called);
     }
 
     TEST(Functor, UnwrapMacroWithExpected) {
@@ -128,10 +125,8 @@ namespace
             return emu::unexpected('x');
         };
 
-        bool function_called = false;
-
         auto add = [&](int i, int j) -> int {
-            function_called = true;
+            ADD_FAILURE() << "This function should not be called since f2 does not return a value";
             return i + j;
         };
 
@@ -142,8 +137,6 @@ namespace
         };
 
         auto res = test();
-
-        EXPECT_FALSE(function_called);
 
         EXPECT_FALSE(res.has_value());
         EXPECT_EQ(res.error(), 'x');
@@ -161,10 +154,9 @@ namespace
         };
 
         bool f1_returned = false;
-        bool add_called = false;
 
         auto add = [&](int i, int j) -> int {
-            add_called = true;
+            ADD_FAILURE() << "This function should not be called since f2 does not return a value";
             return i + j;
         };
 
@@ -178,7 +170,6 @@ namespace
 
         auto res = test();
 
-        EXPECT_FALSE(add_called);
         EXPECT_TRUE(f1_returned);
 
         EXPECT_FALSE(res.has_value());

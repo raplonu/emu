@@ -6,7 +6,7 @@ namespace
 {
     TEST(DLPack, Scalar)
     {
-        float f = 3.14;
+        const float f = 3.14;
         emu::dlpack::scoped_tensor st;
 
         {
@@ -27,7 +27,7 @@ namespace
 
             EXPECT_TRUE(f2_result);
 
-            float& f2 = f2_result.value();
+            const float& f2 = f2_result.value();
 
             EXPECT_EQ(&f, &f2);
         }
@@ -37,7 +37,7 @@ namespace
     TEST(DLPack, Span)
     {
         std::array data{1, 2, 3, 4, 5, 6, 7, 8, 9};
-        std::span span{data};
+        const std::span span{data};
 
         emu::dlpack::scoped_tensor st;
 
@@ -57,7 +57,7 @@ namespace
 
             EXPECT_TRUE(span_result);
 
-            std::span<int> span2 = span_result.value();
+            const std::span<int> span2 = span_result.value();
 
             EXPECT_EQ(span.data(), span2.data());
             EXPECT_EQ(span.size(), span2.size());
@@ -97,7 +97,7 @@ namespace
     TEST(DLPack, MDSpan2D)
     {
         std::array data{1, 2, 3, 4, 5, 6, 7, 8, 9};
-        emu::mdspan mdspan{data.data(), 3, 3};
+        const emu::mdspan mdspan{data.data(), 3, 3};
 
         emu::dlpack::scoped_tensor st;
 
@@ -118,7 +118,7 @@ namespace
 
             EXPECT_TRUE(data_result);
 
-            emu::mdspan mdspan2 = data_result.value();
+            const emu::mdspan mdspan2 = data_result.value();
 
             EXPECT_EQ(mdspan.data_handle(), mdspan2.data_handle());
             EXPECT_EQ(mdspan.size(), mdspan2.size());
@@ -130,7 +130,7 @@ namespace
     {
         std::array data{1, 2, 3, 4, 5, 6, 7, 8, 9};
         // Drop every second element in the second dimension
-        emu::mdspan_2d_s<int> mdspan{data.data(), {emu::d2{3, 2}, std::array{3, 2}}};
+        const emu::mdspan_2d_s<int> mdspan{data.data(), {emu::d2{3, 2}, std::array{3, 2}}};
 
         emu::dlpack::scoped_tensor st;
 
@@ -153,7 +153,7 @@ namespace
 
             EXPECT_TRUE(data_result);
 
-            emu::mdspan mdspan2 = data_result.value();
+            const emu::mdspan mdspan2 = data_result.value();
 
             EXPECT_EQ(mdspan.data_handle(), mdspan2.data_handle());
             EXPECT_EQ(mdspan.size(), mdspan2.size());

@@ -31,5 +31,5 @@ test build_type="release":
 @clean:
     just unregister
     rm -rf                            \
-        build/*                       \
+        build                         \
         CMakeUserPresets.json

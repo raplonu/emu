@@ -355,7 +355,7 @@ namespace spe
             }
 
             container<int64_t> strides;
-            if constexpr (not m.is_always_exhaustive()) {
+            if constexpr (not MdSpanType::is_always_exhaustive()) {
                 strides = make_container<int64_t>(m.rank());
                 for (std::size_t i = 0; i < m.rank(); ++i) {
                     strides[i] = m.stride(i);

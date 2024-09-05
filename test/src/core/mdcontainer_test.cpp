@@ -65,14 +65,14 @@ REGISTER_TYPED_TEST_SUITE_P(
     void check(C &container, size_t expected_size, int expected_ptr_count, const std::array<A,N> &dims){
         check(container, expected_size, expected_ptr_count);
         for(std::size_t i = 0; i < N; i++) {
-            EXPECT_EQ(container.extents().extent(i),dims[i]);
+            EXPECT_EQ(container.extents().extent(i), dims[i]);
         }
     }
     template<typename C, typename T, typename A, std::size_t N>
     void check(C &container, size_t expected_size, int expected_ptr_count, const T *ptr, const std::array<A,N> &dims){
         check(container, expected_size, expected_ptr_count, ptr);
         for(std::size_t i = 0; i < N; i++) {
-            EXPECT_EQ(container.extents().extent(i),dims[i]);
+            EXPECT_EQ(container.extents().extent(i), dims[i]);
         }
     }
 

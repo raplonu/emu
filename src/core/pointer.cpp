@@ -19,7 +19,7 @@ namespace detail
     }
 
     void register_device_finder(device_finder_engine finder) {
-        get_device_finders().push_back(finder);
+        get_device_finders().push_back(move(finder));
     }
 
     // linux memory maps location
@@ -41,7 +41,7 @@ namespace detail
 
             auto begin = tokens.begin();
 
-            std::uintptr_t start, stop;
+            std::uintptr_t start = 0, stop = 0;
             {
                 auto memory_range = split_string(*begin++, "-");
                 auto it = memory_range.begin();
@@ -58,17 +58,16 @@ namespace detail
                 }
             }
 
-            auto perm = *begin++;
-            *begin++;
-            *begin++;
-            *begin++;
-            std::string_view location = *begin;
+            std::advance(begin, 4);
+            //begin++; begin++; begin++; begin++;
 
-            if (start <= ptr and ptr < stop){
+            const std::string_view location = *begin;
+
+            if (start <= ptr and ptr < stop) {
                 if (location.empty())
                     return "anonymous";
-                else
-                    return std::string(location.begin(), location.end());
+
+                return std::string(location); //.begin(), location.end());
             }
 
         }

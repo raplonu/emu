@@ -1,33 +1,51 @@
 ---
 # Try to use as many checks as possible to catch as many issues as possible.
-# modernize-use-trailing-return-type: Disabled for now. Doesn't bring much value.
 # readability-named-parameter: Prefer the simpler approach of not naming unused parameters.
 # readability-identifier-length: Too much noise. A lot of variables are short and still meaningful.
+# readability-isolate-declaration: Disable because not very useful.
+# readability-braces-around-statements: Not having braces can be actually more readable.
+# readability-uppercase-literal-suffix: force numeric suffix to be upper case... Just why ???
+# readability-implicit-bool-conversion: Implicit bool conversion is one of the safest and most useful implicit conversions.
 # *-magic-numbers: Disable for now. May be useful in the future.
 # clang-analyzer-cplusplus.StringChecker: Disable because it triggers errors present in third-party libraries.
 # *-avoid-c-arrays: Disable because it doesn't allow using std::*_ptr<T[]> and std::make_*_ptr<T[]>.
+# modernize-use-trailing-return-type: Disabled for now. Doesn't bring much value.
+# modernize-return-braced-init-list: Does not work with template function that returns types with explicit constructor
 # bugprone-easily-swappable-parameters: Disable because too hard to fix. The idea is good though.
-# readability-isolate-declaration: Disable because not very useful.
-# readability-braces-around-statements: Not having braces can be actually more readable.
 # pro-bounds-constant-array-index: Reconsidere when c++23 and std::ranges::enumerate, std::ranges::zip, etc.
-# readability-implicit-bool-conversion: Implicit bool conversion is one of the safest and most useful implicit conversions.
 # misc-include-cleaner: Doesn't work well with a lot of standard headers. (i.e. std::operator""s)
+# cppcoreguidelines-pro-bounds-constant-array-index:
+# cppcoreguidelines-pro-type-reinterpret-cast: Conbersome to adds ignore statements for every correct uses of reinterpret_cast.
+# cppcoreguidelines-macro-usage: Cannot detect non replaceable macros doing code generation.
+# cppcoreguidelines-pro-bounds-pointer-arithmetic: Way too restrictive...
+# cppcoreguidelines-pro-bounds-constant-array-index: Unusable with current state of C++...
+# clang-diagnostic-unqualified-std-cast-call: It makes sens to use this one. Need to replace back call to `move` by `std::move`
+# clang-diagnostic-gnu-statement-expression-from-macro-expansion: non standard but so useful !
 Checks: >
   clang-diagnostic-*, clang-analyzer-*, cppcoreguidelines-*,
   modernize-*, readability-*, bugprone-*, misc-*, performance-*,
   ColumnLimit, llvm-namespace-comment,
-  -modernize-use-trailing-return-type,
   -readability-named-parameter,
   -readability-identifier-length,
   -readability-magic-numbers, -cppcoreguidelines-avoid-magic-numbers,
-  -clang-analyzer-cplusplus.StringChecker,
-  -modernize-avoid-c-arrays, -cppcoreguidelines-avoid-c-arrays,
-  -bugprone-easily-swappable-parameters,
   -readability-isolate-declaration,
   -readability-braces-around-statements,
-  -cppcoreguidelines-pro-bounds-constant-array-index,
   -readability-implicit-bool-conversion,
-  -misc-include-cleaner
+  -readability-uppercase-literal-suffix,
+  -clang-analyzer-cplusplus.StringChecker,
+  -modernize-avoid-c-arrays, -cppcoreguidelines-avoid-c-arrays,
+  -modernize-use-trailing-return-type,
+  -modernize-return-braced-init-list,
+  -bugprone-easily-swappable-parameters,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
+  -cppcoreguidelines-macro-usage,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -cppcoreguidelines-pro-bounds-constant-array-index,
+  -misc-include-cleaner,
+  -clang-diagnostic-unqualified-std-cast-call,
+  -clang-diagnostic-gnu-statement-expression-from-macro-expansion
+
+# -cppcoreguidelines-pro-bounds-constant-array-index,
 
 FormatStyle: GNU
 CheckOptions:
@@ -93,4 +111,6 @@ CheckOptions:
 # Allow private and protected members to have trailing underscores.
   - { key: readability-identifier-naming.PrivateMemberIgnoredRegexp   , value: '[a-zA-Z]+(_[a-zA-Z]+)*_$' }
   - { key: readability-identifier-naming.ProtectedMemberIgnoredRegexp , value: '[a-zA-Z]+(_[a-zA-Z]+)*_$' }
+
+  - { key: misc-non-private-member-variables-in-classes.IgnorePublicMemberVariables, value: true }
 ...

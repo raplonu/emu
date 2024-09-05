@@ -2,7 +2,6 @@
 
 #include <emu/type_traits.hpp>
 #include <emu/detail/basic_mdcontainer.hpp>
-#include <emu/host/container.hpp>
 #include <emu/host/location_policy.hpp>
 
 namespace emu
@@ -32,9 +31,9 @@ namespace host
 
 } // namespace host
 
-    template<typename T, std::size_t Extent>
-    constexpr auto as_md(host::container<T, Extent> s) noexcept {
-        return host::mdspan<T, extents<size_t, Extent>, layout_right, default_accessor<T> >{s.data(), s.size()};
-    }
+    // template<typename T, std::size_t Extent>
+    // constexpr auto as_md(host::container<T, Extent> s) noexcept {
+    //     return host::mdspan<T, extents<size_t, Extent>, layout_right, default_accessor<T> >{s.data(), s.size()};
+    // }
 
 } // namespace emu

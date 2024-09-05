@@ -38,7 +38,10 @@ namespace
             EXPECT_EQ(device_value.device_type, emu::dlpack::device_type_t::kDLCUDA);
             EXPECT_EQ(device_value.device_id, 0);
         }
+    }
 
+    TEST(Pointer, DeviceHeapPointerMultiDevice)
+    {
 
         if (auto devices = cuda::devices(); devices.size() > 1)
         {

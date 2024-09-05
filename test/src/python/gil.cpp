@@ -11,15 +11,8 @@ namespace
         // start the interpreter and keep it alive
         pybind11::scoped_interpreter guard;
 
-        GilEnvironment() {
-            // fmt::print("GilEnvironment\n");
-        }
-
-        ~GilEnvironment() override {
-            // fmt::print("~GilEnvironment\n");
-        }
     };
 
-    testing::Environment* const gil_env = testing::AddGlobalTestEnvironment(new GilEnvironment);
+    gsl::owner<const testing::Environment* const> gil_env = testing::AddGlobalTestEnvironment(new GilEnvironment);
 
 } // namespace

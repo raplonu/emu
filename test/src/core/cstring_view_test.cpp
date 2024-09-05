@@ -9,7 +9,7 @@ namespace
 {
     TEST(CStringView, FromLiteral)
     {
-        emu::cstring_view csv("Hello, World!");
+        const emu::cstring_view csv("Hello, World!");
         EXPECT_EQ(csv.size(), 13);
         EXPECT_EQ(csv[0], 'H');
         EXPECT_EQ(csv[12], '!');
@@ -17,8 +17,8 @@ namespace
 
     TEST(CStringView, FromString)
     {
-        std::string str = "Hello, World!";
-        emu::cstring_view csv(str);
+        const std::string str = "Hello, World!";
+        const emu::cstring_view csv(str);
         EXPECT_EQ(csv.size(), 13);
         EXPECT_EQ(csv[0], 'H');
         EXPECT_EQ(csv[12], '!');
@@ -26,8 +26,8 @@ namespace
 
     TEST(CStringView, Format)
     {
-        emu::cstring_view csv("Hello, World!");
-        std::string str = fmt::format("{}", csv);
+        const emu::cstring_view csv("Hello, World!");
+        const std::string str = fmt::format("{}", csv);
         EXPECT_EQ(str, "Hello, World!");
     }
 

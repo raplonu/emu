@@ -16,13 +16,13 @@ struct DeviceRange {
     int* begin() { return &i; }
     int* end() { return &i + 1; }
 
-    const int* begin() const { return &i; }
-    const int* end() const { return &i + 1; }
+    [[nodiscard]] const int* begin() const { return &i; }
+    [[nodiscard]] const int* end() const { return &i + 1; }
 
-    int* data() { return &i; }
-    const int* data() const { return &i; }
+    [[nodiscard]] int* data() { return &i; }
+    [[nodiscard]] const int* data() const { return &i; }
 
-    std::size_t size() const { return 1; }
+    [[nodiscard]] static std::size_t size() { return 1; }
 
 };
 
@@ -67,7 +67,7 @@ namespace
         {
             std::vector vec(3, 0);
 
-            emu::host::container con( vec );
+            const emu::host::container con( vec );
 
             EXPECT_EQ(con.data(), vec.data());
             EXPECT_EQ(con.size(), vec.size());

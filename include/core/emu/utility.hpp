@@ -16,6 +16,7 @@
 #include <cstddef>
 #include <string_view>
 #include <ranges>
+#include <span>
 
 namespace emu
 {
@@ -25,6 +26,26 @@ namespace emu
     using std::string_view;
 
     using boost::hana::make;
+
+    template<typename T>
+    inline byte* b_ptr_of(const T* t) {
+        return const_cast<byte*>(reinterpret_cast<const byte*>(t));
+    }
+
+    template<typename T>
+    inline byte* b_ptr_of(std::span<T> s) {
+        return b_ptr_of(s.data());
+    }
+
+    template<typename T>
+    inline void* v_ptr_of(const T* t) {
+        return const_cast<void*>(reinterpret_cast<const void*>(t));
+    }
+
+    template<typename T>
+    inline void* v_ptr_of(std::span<T> s) {
+        return v_ptr_of(s.data());
+    }
 
     // template<typename T>
     // auto data_handle(const T& t) noexcept {

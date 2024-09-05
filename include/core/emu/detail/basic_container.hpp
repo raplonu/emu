@@ -57,7 +57,8 @@ namespace emu::detail
         {}
 
         template<cpts::contiguous_sized_range Range>
-            requires (validate_source<Range>)
+            requires (cpts::not_derived_from<rm_cvref<Range>, basic_container>)
+                 and (validate_source<Range>)
                  and (std::ranges::borrowed_range<Range> or is_const<element_type> or cpts::relocatable_owning_range<Range>)
             explicit(extent != dynamic_extent)
         constexpr basic_container(Range&& range)

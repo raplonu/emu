@@ -97,9 +97,9 @@ namespace
 
     struct CapsuleHolder
     {
-        emu::capsule capsule_;
+        emu::capsule cap;
 
-        emu::capsule& capsule() { return capsule_; }
+        emu::capsule& capsule() { return cap; }
     };
 
     TEST(Capsule, CapsuleHolder)
@@ -109,7 +109,7 @@ namespace
         EXPECT_EQ(data.capsule().use_count(), 1);
 
         // Create a new capsule from the CapsuleHolder. Capsule detect that CapsuleHolder hold a capsule and use it.
-        emu::capsule cap2( data );
+        const emu::capsule cap2( data );
         EXPECT_EQ(data.capsule().use_count(), 2);
         EXPECT_EQ(cap2.use_count(), 2);
         EXPECT_EQ(data.capsule().holder, cap2.holder);
@@ -132,12 +132,12 @@ namespace
         EXPECT_EQ(cap1.size(), 3);
 
         // cap2 shares the same object
-        capsule cap2 = cap1;
+        // NOLINTNEXTLINE(cppcoreguidelines-slicing) - I know what I'm doing
+        const capsule cap2(cap1);
         EXPECT_EQ(cap1.use_count(), 2);
 
         // cap3 stole the object from cap1
-        capsule cap3 = std::move(cap1);
-        EXPECT_EQ(cap1.use_count(), 0);
+        const capsule cap3 = std::move(cap1);
         EXPECT_EQ(cap3.use_count(), 2);
     }
 

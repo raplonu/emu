@@ -7,7 +7,7 @@ namespace
 {
     TEST(Pointer, StackPointer)
     {
-        int x = 42;
+        const int x = 42;
 
         auto device = emu::get_device_of_pointer(&x);
 

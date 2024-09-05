@@ -62,6 +62,8 @@
 
 #endif
 
+#define EMU_STR(str) #str
+
 #define EMU_COMMA ,
 
 #define EMU_CONCAT(a, b)             BOOST_PP_CAT(a, b)
@@ -113,30 +115,43 @@
 /// for optional types, will return emu::nullopt
 /// for expected<T, E>, will return the error
 #define EMU_UNWRAP(maybe)                                     \
-    ({  auto&& value__ = (maybe);                             \
+    ({                                                        \
+        auto&& value__ = (maybe);                             \
         if (not value__) return ::emu::unwrap_error(value__); \
-        *EMU_FWD(value__); })
+        *EMU_FWD(value__);                                    \
+    })
+
 
 /// Assign value with dereference if thruthy or return nullopt
-#define EMU_UNWRAP_OR_RETURN_FALSE(maybe)  \
-    ({  auto&& value__ = (maybe);          \
-        EMU_TRUE_OR_RETURN_FALSE(value__); \
-        *EMU_FWD(value__); })
+#define EMU_UNWRAP_OR_RETURN_FALSE(maybe)             \
+    ({                                                \
+        auto&& value__ = (maybe);                     \
+        EMU_TRUE_OR_RETURN_FALSE(value__);            \
+        *EMU_FWD(value__);                            \
+    })
 
 /// Assign value with dereference if thruthy or return nullopt
-#define EMU_UNWRAP_OR_RETURN_NULLOPT(maybe)  \
-    ({  auto&& value__ = (maybe);            \
-        EMU_TRUE_OR_RETURN_NULLOPT(value__); \
-        *EMU_FWD(value__); })
+#define EMU_UNWRAP_OR_RETURN_NULLOPT(maybe)          \
+    ({                                               \
+        auto&& value__ = (maybe);                    \
+        EMU_TRUE_OR_RETURN_NULLOPT(value__);         \
+        *EMU_FWD(value__);                           \
+    })
 
 /// Assign value with dereference if thruthy or return unexpected
 #define EMU_UNWRAP_OR_RETURN_UNEXPECTED(maybe, ... )       \
-    ({  auto&& value__ = (maybe);                          \
+    ({                                                     \
+        auto&& value__ = (maybe);                          \
         EMU_TRUE_OR_RETURN_UNEXPECTED(maybe, __VA_ARGS__); \
-        *EMU_FWD(value__); })
+        *EMU_FWD(value__);                                 \
+    })
 
 /// Assign value with dereference if thruthy or return error
-#define EMU_UNWRAP_OR_RETURN_ERROR(expected ) \
-    ({  auto&& value__ = (maybe);             \
-        EMU_TRUE_OR_RETURN_ERROR(expected);   \
-        *EMU_FWD(value__); })
+#define EMU_UNWRAP_OR_RETURN_ERROR(expected )        \
+    ({                                               \
+        auto&& value__ = (maybe);                    \
+        EMU_TRUE_OR_RETURN_ERROR(expected);          \
+        *EMU_FWD(value__);                           \
+    })
+
+#pragma GCC diagnostic pop

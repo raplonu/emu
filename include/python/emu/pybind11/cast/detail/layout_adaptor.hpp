@@ -27,7 +27,7 @@ namespace emu::cast::detail
             std::size_t last_stride = sizeof(ElementType);
             for(int i = Extents::rank() - 1; i >= 0; --i) {
                 EMU_TRUE_OR_RETURN_NULLOPT(buffer_info.strides[i] > 0);
-                EMU_TRUE_OR_RETURN_NULLOPT(last_stride * last_extent == buffer_info.strides[i]);
+                EMU_TRUE_OR_RETURN_NULLOPT(last_stride * last_extent == static_cast<size_t>(buffer_info.strides[i]));
                 last_extent = buffer_info.shape[i];
                 last_stride = buffer_info.strides[i];
                 if(Extents::static_extent(i) == std::dynamic_extent)

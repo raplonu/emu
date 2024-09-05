@@ -54,7 +54,7 @@ endif()
 if (emu_build_python)
 
     add_executable(emupythontest
-        src/python/gil.cpp
+        src/python/main.cpp
         src/python/span_test.cpp
         src/python/container_test.cpp
         src/python/mdspan_test.cpp
@@ -63,7 +63,7 @@ if (emu_build_python)
     )
 
     target_link_libraries(emupythontest PRIVATE
-        GTest::gtest GTest::gtest_main emupython pybind11::embed
+        GTest::gtest emupython pybind11::embed
     )
 
     target_include_directories(emupythontest PRIVATE include)

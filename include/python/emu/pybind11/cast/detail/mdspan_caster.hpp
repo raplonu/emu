@@ -65,7 +65,7 @@ namespace emu::cast::detail
 
                 for(auto i = 0; i < cpp_type::rank(); ++i)
                     // Must be Extent if span is not dynamic.
-                    EMU_TRUE_OR_RETURN_NULLOPT(cpp_type::static_extent(i) == std::dynamic_extent or buffer_info.shape[i] == cpp_type::static_extent(i));
+                    EMU_TRUE_OR_RETURN_NULLOPT(cpp_type::static_extent(i) == std::dynamic_extent or static_cast<size_t>(buffer_info.shape[i]) == cpp_type::static_extent(i));
 
                 return layout_adaptor::mapping_from(buffer_info).map([ptr = buffer_info.ptr] (auto mapping) {
                     return cpp_type(reinterpret_cast<element_type*>(ptr), mapping);

@@ -11,8 +11,9 @@
 
 struct Relocatable : std::ranges::view_base
 {
-    int* begin() const { return nullptr;}
-    int* end()   const { return nullptr;}
+    int value = 42;
+    [[nodiscard]] int* begin() { return &value;}
+    [[nodiscard]] int* end()   { return &value + 1;}
 };
 
 template<>
@@ -24,33 +25,33 @@ namespace
 
     TEST(Concepts, RelocatableRange)
     {
-        static_assert(emu::cpts::relocatable_owning_range<std::vector<int>> == true );
-        static_assert(emu::cpts::relocatable_owning_range<std::span<int>  > == false);
+        static_assert(    emu::cpts::relocatable_owning_range<std::vector<int>>);
+        static_assert(not emu::cpts::relocatable_owning_range<std::span<int>  >);
 
-        static_assert(emu::cpts::relocatable_owning_range<std::array<int, 3>> == false);
-        static_assert(emu::cpts::relocatable_owning_range<int[ ]            > == false);
-        static_assert(emu::cpts::relocatable_owning_range<int[3]            > == false);
+        static_assert(not emu::cpts::relocatable_owning_range<std::array<int, 3>>);
+        static_assert(not emu::cpts::relocatable_owning_range<int[ ]            >);
+        static_assert(not emu::cpts::relocatable_owning_range<int[3]            >);
 
-        static_assert(emu::cpts::relocatable_owning_range<Relocatable   > == true );
+        static_assert(    emu::cpts::relocatable_owning_range<Relocatable   >);
     }
 
     TEST(Concepts, RelocatableRangeReference)
     {
-        static_assert(emu::cpts::relocatable_owning_range<std::vector<int> &      > == false);
-        static_assert(emu::cpts::relocatable_owning_range<std::vector<int> const &> == false);
-        static_assert(emu::cpts::relocatable_owning_range<std::vector<int> &&     > == true );
+        static_assert(not emu::cpts::relocatable_owning_range<std::vector<int> &      >);
+        static_assert(not emu::cpts::relocatable_owning_range<std::vector<int> const &>);
+        static_assert(    emu::cpts::relocatable_owning_range<std::vector<int> &&     >);
 
-        static_assert(emu::cpts::relocatable_owning_range<std::span<int> &      > == false);
-        static_assert(emu::cpts::relocatable_owning_range<std::span<int> const &> == false);
-        static_assert(emu::cpts::relocatable_owning_range<std::span<int> &&     > == false);
+        static_assert(not emu::cpts::relocatable_owning_range<std::span<int> &      >);
+        static_assert(not emu::cpts::relocatable_owning_range<std::span<int> const &>);
+        static_assert(not emu::cpts::relocatable_owning_range<std::span<int> &&     >);
 
-        static_assert(emu::cpts::relocatable_owning_range<std::array<int, 3> &      > == false);
-        static_assert(emu::cpts::relocatable_owning_range<std::array<int, 3> const &> == false);
-        static_assert(emu::cpts::relocatable_owning_range<std::array<int, 3> &&     > == false);
+        static_assert(not emu::cpts::relocatable_owning_range<std::array<int, 3> &      >);
+        static_assert(not emu::cpts::relocatable_owning_range<std::array<int, 3> const &>);
+        static_assert(not emu::cpts::relocatable_owning_range<std::array<int, 3> &&     >);
 
-        static_assert(emu::cpts::relocatable_owning_range<Relocatable &      > == true );
-        static_assert(emu::cpts::relocatable_owning_range<Relocatable const &> == true );
-        static_assert(emu::cpts::relocatable_owning_range<Relocatable &&     > == true );
+        static_assert(    emu::cpts::relocatable_owning_range<Relocatable &      >);
+        static_assert(    emu::cpts::relocatable_owning_range<Relocatable const &>);
+        static_assert(    emu::cpts::relocatable_owning_range<Relocatable &&     >);
     }
 
 } // namespace

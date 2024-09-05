@@ -72,4 +72,4 @@ namespace
         EXPECT_EQ(math::trunc<long double>(-1.8_ld), -1._ld);
     }
 
-}
+} // namespace
