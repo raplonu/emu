@@ -24,7 +24,8 @@ namespace emu
         using function_type = F;
 
         /// The object to be destroyed.
-        static constexpr bool noexcept_invoke = EMU_NOEXCEPT_EXPR(std::declval<function_type&>()(std::declval<value_type&>()));
+        static constexpr bool noexcept_invoke = std::is_nothrow_invocable_v<function_type, value_type>;
+        //();EMU_NOEXCEPT_EXPR(std::declval<function_type&>()(std::declval<value_type&>()));
 
         /**
          * @brief Default constructor.
@@ -70,8 +71,8 @@ namespace emu
          * @param oc The scoped object to be moved.
          */
         constexpr scoped(scoped && oc)
-            EMU_NOEXCEPT_EXPR(value_type(move(oc.value)), function_type(move(oc.function)))
-            : value(move(oc.value)), function(move(oc.function))
+            EMU_NOEXCEPT_EXPR(value_type(std::move(oc.value)), function_type(std::move(oc.function)))
+            : value(std::move(oc.value)), function(std::move(oc.function))
             , owning_(std::exchange(oc.owning_, false))
         {}
 
@@ -84,12 +85,12 @@ namespace emu
          * @return scoped& The reference to the moved scoped object.
          */
         scoped& operator=(scoped && oc)
-            noexcept(noexcept_invoke and noexcept(std::declval<value_type&>() = move(oc.value), std::declval<function_type&>() = move(oc.function)))
+            noexcept(noexcept_invoke and noexcept(std::declval<value_type&>() = std::move(oc.value), std::declval<function_type&>() = std::move(oc.function)))
         {
             invoke();
 
-            value    = move(oc.value);
-            function = move(oc.function);
+            value    = std::move(oc.value);
+            function = std::move(oc.function);
             owning_ = std::exchange(oc.owning_, false);
 
             return *this;
@@ -130,10 +131,10 @@ namespace emu
          * @return T The released value.
          */
         constexpr T release()
-            EMU_NOEXCEPT_EXPR(move(std::declval<value_type&>()))
+            EMU_NOEXCEPT_EXPR(std::move(std::declval<value_type&>()))
         {
             owning_ = false;
-            return move(value);
+            return std::move(value);
         }
 
         /**
@@ -218,20 +219,20 @@ namespace emu
         scoped(const scoped & oc) = delete;
 
         constexpr scoped(scoped && oc)
-            EMU_NOEXCEPT_EXPR(function_type(move(oc.function)))
+            EMU_NOEXCEPT_EXPR(function_type(std::move(oc.function)))
         :
-            function(move(oc.function)),
+            function(std::move(oc.function)),
             owning_(std::exchange(oc.owning_, false))
         {}
 
         scoped& operator=(const scoped & oc) = delete;
 
         scoped& operator=(scoped && oc)
-            noexcept(noexcept_invoke and noexcept(std::declval<function_type&>() = move(oc.function)))
+            noexcept(noexcept_invoke and noexcept(std::declval<function_type&>() = std::move(oc.function)))
         {
             invoke();
 
-            function = move(oc.function);
+            function = std::move(oc.function);
             owning_ = std::exchange(oc.owning_, false);
 
             return *this;
@@ -318,13 +319,23 @@ namespace detail
         EMU_NOEXCEPT_EXPR(std::exchange(t, EMU_FWD(v)))
     {
         auto old = std::exchange(t, EMU_FWD(v));
-        return scoped([&t, old = move(old)]{ t = move(old); });
+        return scoped([&t, old = std::move(old)]{ t = std::move(old); });
     }
+
+    template<typename T, typename V>
+    constexpr auto assign_at_scope_exit(T & t, V && v)
+    {
+        return scoped([&t, v = std::move(v)]{ t = std::move(v); });
+    }
+
 
 } // namespace emu
 
-#define EMU_INVOKE_AT_SCOPE_EXIT(F)                              \
+#define EMU_INVOKE_AT_SCOPE_EXIT(F) \
     const ::emu::scoped EMU_UNIQUE_NAME(invoke_at_scope_exit)(F)
 
-#define EMU_ASSIGN_FOR_CURRENT_SCOPE(T, V)                                                     \
+#define EMU_ASSIGN_FOR_CURRENT_SCOPE(T, V) \
     const auto EMU_UNIQUE_NAME(assign_value_for_scope) = ::emu::assign_for_current_scope(T, V)
+
+#define EMU_ASSIGN_AT_SCOPE_EXIT(T, V) \
+    const auto EMU_UNIQUE_NAME(assign_value_at_scope_exit) = ::emu::assign_at_scope_exit(T, V)

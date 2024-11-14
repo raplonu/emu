@@ -15,13 +15,13 @@ namespace emu_test
     struct Spy
     {
 
-        spy_flag *flag;
+        mutable spy_flag *flag;
 
         Spy(spy_flag *flag):
             flag(flag)
         {}
 
-        Spy(Spy& s):
+        Spy(const Spy& s) noexcept:
             flag(std::exchange(s.flag, nullptr))
         {
             if (flag) flag->copied = true;
@@ -31,6 +31,20 @@ namespace emu_test
             flag(std::exchange(s.flag, nullptr))
         {
             if (flag) flag->moved = true;
+        }
+
+        Spy& operator=(const Spy & s) noexcept {
+            if (&s == this) return *this;
+
+            flag = std::exchange(s.flag, nullptr);
+            return *this;
+        }
+
+        Spy& operator=(Spy && s) noexcept {
+            if (&s == this) return *this;
+
+            flag = std::exchange(s.flag, nullptr);
+            return *this;
         }
 
         ~Spy()
@@ -63,6 +77,31 @@ namespace emu_test
     static_assert(std::ranges::range<SpyContainer>);
     static_assert(std::ranges::sized_range<SpyContainer>);
     static_assert(std::ranges::contiguous_range<SpyContainer>);
+
+    struct SpyAddress {
+        SpyAddress **snitch = nullptr;
+
+        SpyAddress(SpyAddress **snitch) : snitch(snitch) { *snitch = this; }
+
+        SpyAddress(const SpyAddress& other) { *this = other; }
+        SpyAddress(SpyAddress&& other) noexcept { *this = other; }
+
+        SpyAddress& operator=(const SpyAddress & other) {
+            snitch = other.snitch;
+            *snitch = this;
+            return *this;
+        }
+
+        SpyAddress& operator=(SpyAddress && other)  noexcept {
+            snitch = other.snitch;
+            *snitch = this;
+            return *this;
+        }
+
+        ~SpyAddress() {
+            *snitch = nullptr;
+        }
+    };
 
 } // namespace emu_test
 

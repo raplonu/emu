@@ -37,6 +37,4 @@ namespace emu::cuda
 
 } // namespace emu::cuda
 
-EMU_REGISTER_DEVICE_FINDER {
-    return emu::cuda::get_device_of_pointer;
-}
+EMU_REGISTER_DEVICE_FINDER(emu_cuda_device_pointer, emu::cuda::get_device_of_pointer)

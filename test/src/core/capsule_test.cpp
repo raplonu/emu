@@ -3,6 +3,8 @@
 #include <emu/capsule.hpp>
 #include <emu/scoped.hpp>
 
+#include <test_utility/spy.hpp>
+
 using namespace emu;
 
 // NOLINTBEGIN(performance-*)
@@ -146,13 +148,40 @@ namespace
         int called_nb = 0;
         scoped incr_at_destruction([&]{ called_nb++; });
 
-        capsule cap{ move(incr_at_destruction) };
+        capsule cap{ std::move(incr_at_destruction) };
 
         EXPECT_EQ(called_nb, 0);
 
         cap.reset();
 
         EXPECT_EQ(called_nb, 1);
+    }
+
+    TEST(Capsule, MakeCapsule)
+    {
+        emu::capsule cap;
+
+        auto& array = cap.emplace<std::array<int, 3>>();
+
+        EXPECT_EQ(cap.use_count(), 1);
+        EXPECT_EQ(array.size(), 3);
+    }
+
+    TEST(Capsule, MakeCapsuleNoCopy)
+    {
+        emu_test::SpyAddress *snitch = nullptr;
+
+        {
+            emu::capsule cap;
+
+            auto& sa = cap.emplace<emu_test::SpyAddress>(&snitch);
+
+            EXPECT_EQ(cap.use_count(), 1);
+            EXPECT_EQ(snitch, &sa) << "The returned ref should have same address than the one snitched by SpyAddress constructor";
+        }
+
+        EXPECT_EQ(snitch, nullptr) << "The SpyAddress instance is no more, it sould have snitched one last time and set snitch to nullptr";
+
     }
 
 } // namespace

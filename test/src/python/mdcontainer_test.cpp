@@ -14,6 +14,8 @@ namespace
         // The rest of the arguments are the test names.
         CppToPythonToCppView, CppToPythonToCppContainer);
 
+    namespace py = pybind11;
+
     struct mdcontainer_1d_of_int {
 
         using data_type = int;
@@ -22,6 +24,7 @@ namespace
         using const_view_type = emu::mdcontainer_1d<const int>;
 
         constexpr static std::size_t rank = 1;
+        constexpr static bool support_read_only = true;
 
         static view_type get_view() {
             return view_type(emu_test::md_helper::get_vector<data_type>(), emu_test::md_helper::buffer_size);
@@ -29,6 +32,10 @@ namespace
 
         static const_view_type get_const_view() {
             return const_view_type(emu_test::md_helper::get_vector<data_type>(), emu_test::md_helper::buffer_size);
+        }
+
+        static py::dict get_array_interface(py::object obj) {
+            return obj.attr("__array_interface__").cast<py::dict>();
         }
 
     };

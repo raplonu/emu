@@ -6,6 +6,7 @@
 #include <emu/optional.hpp>
 
 #include <functional>
+#include <string>
 
 namespace emu
 {
@@ -18,6 +19,14 @@ namespace detail
 
 } // namespace detail
 
+    struct pointer_descriptor
+    {
+        std::string location;
+        std::span<byte> base_region;
+    };
+
+    optional<pointer_descriptor> pointer_descritor_of(const byte* b_ptr);
+
     result<dlpack::device_t> get_device_of_pointer(const byte * ptr);
 
     template<typename T>
@@ -28,11 +37,7 @@ namespace detail
 
 } // namespace emu
 
-#define EMU_REGISTER_DEVICE_FINDER                                                         \
-    struct EMU_CONCAT(device_finder_, __LINE__) {                                          \
-        EMU_CONCAT(device_finder_, __LINE__)() {                                           \
-            emu::detail::register_device_finder(instantiate());                            \
-        }                                                                                  \
-        emu::detail::device_finder_engine instantiate();                                   \
-    } EMU_CONCAT(device_finder_instance_, __LINE__);                                       \
-    emu::detail::device_finder_engine EMU_CONCAT(device_finder_, __LINE__)::instantiate()
+#define EMU_REGISTER_DEVICE_FINDER(NAME, FUNC)             \
+    extern "C" __attribute__ ((constructor)) void NAME() { \
+        ::emu::detail::register_device_finder(FUNC);       \
+    }

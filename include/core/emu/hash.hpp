@@ -25,7 +25,8 @@ namespace emu
     struct hash : std::hash<T>
     {};
 
-    template<cpts::c_string String>
+    template<typename String>
+        requires cpts::any_string_view<String> or cpts::c_string<String>
     struct hash<String> : string_hash<typename String::value_type, typename String::traits_type>
     {};
 

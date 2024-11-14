@@ -9,7 +9,7 @@ namespace emu
 namespace host
 {
 
-    template<typename T, typename Extents, typename LayoutPolicy = layout_right, typename AccessorPolicy = default_accessor<T>>
+    template<typename T, typename Extents, typename LayoutPolicy, typename AccessorPolicy>
     struct mdcontainer : emu::detail::basic_mdcontainer<
         T, Extents, LayoutPolicy, AccessorPolicy, host::location_policy,
         mdcontainer<T, Extents, LayoutPolicy, AccessorPolicy>

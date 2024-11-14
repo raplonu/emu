@@ -5,7 +5,7 @@
 #include <emu/type_traits.hpp>
 
 #include <boost/callable_traits/args.hpp>
-#include <boost/hana/fwd/core/make.hpp>
+#include <boost/hana/core/make.hpp>
 
 #include <type_traits>
 #include <algorithm>
@@ -21,7 +21,7 @@
 namespace emu
 {
 
-    using std::size_t, std::ptrdiff_t, std::move, std::byte;
+    using std::size_t, std::ptrdiff_t, std::byte;
 
     using std::string_view;
 
@@ -32,8 +32,8 @@ namespace emu
         return const_cast<byte*>(reinterpret_cast<const byte*>(t));
     }
 
-    template<typename T>
-    inline byte* b_ptr_of(std::span<T> s) {
+    template<typename T, size_t Extent>
+    inline byte* b_ptr_of(std::span<T, Extent> s) {
         return b_ptr_of(s.data());
     }
 
@@ -42,8 +42,8 @@ namespace emu
         return const_cast<void*>(reinterpret_cast<const void*>(t));
     }
 
-    template<typename T>
-    inline void* v_ptr_of(std::span<T> s) {
+    template<typename T, size_t Extent>
+    inline void* v_ptr_of(std::span<T, Extent> s) {
         return v_ptr_of(s.data());
     }
 

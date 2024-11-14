@@ -120,6 +120,27 @@ namespace emu::detail
             );
         }
 
+        // template<typename ElementType, typename Mapping>
+        // static inline optional<Mapping> mapping_from(py::handle handle)
+        // {
+        //     if (py::buffer::check_(handle))
+        //         try
+        //         {
+        //             // Requesting may fail for severals reasons including constness incompatibility.
+        //             auto buffer_info = py::buffer(handle, /* is_borrowed = */ true).request(/* writable = */ not is_const<ElementType>);
+
+        //             // Not using `py::format_descriptor` anymore since format are not consistent with buffer_info...
+        //             // if (py::format_descriptor<value_type>::format() == buffer_info.format)
+        //             if (py::dtype::of<rm_const<ElementType>>() == py::dtype::from_args(py::str(buffer_info.format))) {
+
+        //                 return buffer_info;
+        //             }
+        //         }
+        //         catch(py::error_already_set&) { } // ignore the exception and return nullopt
+
+        //     return nullopt;
+        // }
+
     };
 
 #endif // EMU_CUDA

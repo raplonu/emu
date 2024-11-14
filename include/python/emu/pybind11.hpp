@@ -23,8 +23,8 @@ namespace emu::pybind11
     inline optional<py::detail::str_attr_accessor> try_attr(py::handle handle, cstring_view name) {
         if (py::hasattr(handle, name.c_str()))
             return handle.attr(name.c_str());
-        else
-            return nullopt;
+
+        return nullopt;
     }
 
     template<typename T>
@@ -40,15 +40,15 @@ namespace emu::pybind11
 
         if(conv.load(handle, true))
             return cast_op<T>(conv);
-        else
-            return nullopt;
+
+        return nullopt;
     }
 
     inline optional<py::handle> not_none(py::handle handle) {
         if (handle.is_none())
             return nullopt;
-        else
-            return handle;
+
+        return handle;
     }
 
 namespace cpts
@@ -76,25 +76,46 @@ namespace fmt
 
     template <emu::pybind11::cpts::derived_from_handle T, typename Char>
     struct formatter<T, Char> : formatter<std::string, Char> {
+        using base = fmt::formatter<std::string, Char>;
 
-        std::string format_ = "{}";
+        format_parse_context::iterator it, end;
 
-        auto parse(format_parse_context& ctx) -> decltype(ctx.begin()) {
-            auto it = ctx.begin(), end = ctx.end();
+        constexpr auto parse(format_parse_context& ctx)
+            -> format_parse_context::iterator
+        {
+            auto it = ctx.begin();
 
-            // No formating, keep the default format.
-            if((end - it) <= 1)
+            // Special case when '{}' begin and end are equal.
+            if (it == ctx.end()) {
+                this->it = it;
+                this->end = it;
                 return it;
+            }
 
-            format_ = fmt::format("{{:{}", fmt::join(ctx, ""));
+            // Now, We know that it point to the first char after '{:'
 
-            return --end;
+            // Point back at '{'
+            this->it = it - 2;
+
+            // Iterate until we reach the '}'
+            while (*it != '}') it++;
+
+            // Go past it to include '}' in the range.
+            this->end = it + 1;
+
+            // Won't compile if it is not pointing to '}'
+            return it;
         }
 
         template <typename FormatContext>
-        auto format(const pybind11::handle& obj, FormatContext& ctx) {
+        auto format(const pybind11::handle& obj, FormatContext& ctx) const {
+            std::string format_str;
+            if (it != end)
+                format_str = fmt::to_string(fmt::join(it, end, ""));
+            else
+                format_str = "{}";
 
-            return formatter<std::string, Char>::format(std::string(pybind11::str(format_).format(obj)), ctx);
+            return base::format(std::string(pybind11::str(format_str).format(obj)), ctx);
         }
     };
 

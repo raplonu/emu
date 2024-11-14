@@ -8,7 +8,7 @@
 namespace emu
 {
 
-    template <typename ElementType, size_t Extent = dynamic_extent>
+    template <typename ElementType, size_t Extent>
     struct container : emu::detail::basic_container<ElementType, Extent, no_location_policy, container<ElementType, Extent>>
     {
         using base = emu::detail::basic_container<ElementType, Extent, no_location_policy, container>;

@@ -1,8 +1,10 @@
 #pragma once
 
+#include <emu/error.hpp>
+#include <emu/detail/dlpack_types.hpp>
+
 #include <cstdint>
 #include <half.hpp>
-#include <emu/detail/dlpack_types.hpp>
 #include <complex>
 
 namespace emu
@@ -12,47 +14,59 @@ namespace emu
     // TODO: replace by std::float16_t when C++23 is available.
     using half_float::half;
 
-    enum class data_type_t {
-        boolean,
-        uint8,
-        uint16,
-        uint32,
-        uint64,
-        int8,
-        int16,
-        int32,
-        int64,
-        float16,
-        float32,
-        float64,
-        float128,
-        complex32,
-        complex64,
-        complex128,
-        complex256,
-        bfloat16
-    };
+    // enum class data_type_t {
+    //     boolean,
+    //     uint8,
+    //     uint16,
+    //     uint32,
+    //     uint64,
+    //     int8,
+    //     int16,
+    //     int32,
+    //     int64,
+    //     float16,
+    //     float32,
+    //     float64,
+    //     float128,
+    //     complex16,
+    //     complex32,
+    //     complex64,
+    //     complex128,
+    //     complex256,
+    //     bfloat16
+    // };
 
     namespace detail
     {
         template<typename T>
         struct dlpack_supported : std::false_type {};
 
-        template <typename TypeIn>
-        constexpr data_type_t data_type_impl();
+        // template <typename TypeIn>
+        // constexpr data_type_t data_type_impl();
 
         template <typename TypeIn>
-        constexpr dlpack::data_type_t dl_data_type_impl();
+        constexpr dlpack::data_type_t dl_data_type_impl() {
+            // For the general case, types are considered opaque handle. Similar to numpy object dtype.
+            // Consumer need to know the data type and cannot rely on the code field.
+            return {.code = static_cast<uint8_t>(kDLOpaqueHandle), .bits = sizeof(TypeIn) * CHAR_BIT, .lanes = 1};
+        }
+
+        template <typename TypeIn>
+        constexpr dlpack::data_type_ext_t dl_data_type_ext_impl() {
+            // For the general case, types are considered opaque handle. Similar to numpy object dtype.
+            // Consumer need to know the data type and cannot rely on the code field.
+            return {.code = static_cast<uint8_t>(kDLOpaqueHandle), .bits = sizeof(TypeIn) * CHAR_BIT, .lanes = 1};
+        }
 
         #define MAP_TYPE(type, value, dl_code, dl_lanes)                                                        \
         template <>                                                                                             \
         struct dlpack_supported<type> : std::true_type {};                                                      \
         template <>                                                                                             \
-        constexpr data_type_t data_type_impl<type>() {                                                          \
-            return value;                                                                                       \
+        constexpr dlpack::data_type_t dl_data_type_impl<type>() {                                               \
+            return {.code = static_cast<uint8_t>(dl_code), .bits = sizeof(type) * CHAR_BIT, .lanes = dl_lanes}; \
         }                                                                                                       \
         template <>                                                                                             \
-        constexpr dlpack::data_type_t dl_data_type_impl<type>() {                                               \
+        constexpr dlpack::data_type_ext_t dl_data_type_ext_impl<type>() {                                       \
             return {.code = static_cast<uint8_t>(dl_code), .bits = sizeof(type) * CHAR_BIT, .lanes = dl_lanes}; \
         }
 
@@ -75,10 +89,11 @@ namespace emu
         MAP_TYPE(std::complex<float>,       data_type_t::complex64,  dlpack::data_type_code_t::kDLComplex, 1)
         MAP_TYPE(std::complex<double>,      data_type_t::complex128, dlpack::data_type_code_t::kDLComplex, 1)
         // MAP_TYPE(std::complex<long double>, data_type_t::complex256, dlpack::data_type_code_t::kDLComplex, 1)
+
     }
 
-    template<typename T>
-    constexpr data_type_t data_type = detail::data_type_impl<T>();
+    // template<typename T>
+    // constexpr data_type_t data_type = detail::data_type_impl<T>();
 
 namespace dlpack
 {
@@ -86,15 +101,14 @@ namespace dlpack
     template<typename T>
     constexpr dlpack::data_type_t data_type = detail::dl_data_type_impl<T>();
 
+    template<typename T>
+    constexpr dlpack::data_type_ext_t data_type_ext = detail::dl_data_type_ext_impl<T>();
+
 } // namespace dlpack
 
-namespace cpts
-{
+    // result<data_type_t> from_dl_data_type(dlpack::data_type_t dtype);
 
-    template<typename T>
-    concept dlpack_supported_data_type = detail::dlpack_supported<T>::value;
-
-} // namespace cpts
-
+    // dlpack::data_type_t to_dl_data_type(data_type_t dtype);
+    // dlpack::data_type_ext_t to_dl_data_type_ext(data_type_t dtype);
 
 } // namespace emu

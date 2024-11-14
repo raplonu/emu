@@ -114,10 +114,10 @@ namespace cpts
                 or emu_span<T>;
 
     template <typename T>
-    concept const_span = span<T> and std::is_const_v<typename T::element_type>;
+    concept const_span = span<T> and is_const<typename T::element_type>;
 
     template <typename T>
-    concept mutable_span = span<T> and (not std::is_const_v<typename T::element_type>);
+    concept mutable_span = span<T> and (not is_const<typename T::element_type>);
 
     // ######################
     // # container concepts #
@@ -319,6 +319,12 @@ namespace cpts
     template<typename T>
     concept any_mdcontainer = mdcontainer<T> or host::cpts::mdcontainer<T> or cuda::device::cpts::mdcontainer<T>;
 
-} // namespace host::cpts
+    template<typename T>
+    concept any_view = any_span<T> or any_mdspan<T>;
+
+    template<typename T>
+    concept any_owning = any_container<T> or any_mdcontainer<T>;
+
+} // namespace cpts
 
 } // namespace emu

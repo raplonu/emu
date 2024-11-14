@@ -115,7 +115,7 @@ struct fmt::formatter<tl::expected<T, E>, Char> : fmt::formatter<T, Char>
     using base = fmt::formatter<T, Char>;
 
     template<typename FormatContext>
-    auto format(const tl::expected<T, E>& exp, FormatContext& ctx) {
+    auto format(const tl::expected<T, E>& exp, FormatContext& ctx) const  {
         if (exp) {
             // First print the prefix and update the context to the end of it.
             ctx.advance_to(fmt::format_to(ctx.out(), "expected("));

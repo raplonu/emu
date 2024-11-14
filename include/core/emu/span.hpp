@@ -13,7 +13,7 @@
 namespace emu
 {
 
-    template <typename ElementType, size_t Extent = dynamic_extent>
+    template <typename ElementType, size_t Extent>
     struct span : emu::detail::basic_span<ElementType, Extent, no_location_policy, span<ElementType, Extent> >
     {
         using base = emu::detail::basic_span<ElementType, Extent, no_location_policy, span >;

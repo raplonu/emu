@@ -7,7 +7,7 @@
 namespace emu::cuda::device
 {
 
-    template<typename T, typename Extents, typename LayoutPolicy = layout_right, typename AccessorPolicy = default_accessor<T>>
+    template<typename T, typename Extents, typename LayoutPolicy, typename AccessorPolicy>
     struct mdspan : emu::detail::basic_mdspan<
         T, Extents, LayoutPolicy, AccessorPolicy, cuda::device_location_policy,
         mdspan<T, Extents, LayoutPolicy, AccessorPolicy>

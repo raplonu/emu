@@ -21,7 +21,9 @@ add_executable(emucoretest
     src/core/expected_test.cpp
     src/core/optional_test.cpp
     src/core/scoped_test.cpp
+    src/core/managed_object_test.cpp
     src/core/mdalgo_test.cpp
+    src/core/detail/dlpack_types_test.cpp
 )
 
 target_link_libraries(emucoretest PRIVATE
@@ -43,7 +45,7 @@ if (emu_build_cuda)
     )
 
     target_link_libraries(emucudatest PRIVATE
-        GTest::gtest GTest::gtest_main force_emucuda
+        GTest::gtest GTest::gtest_main emucuda
     )
 
     target_include_directories(emucudatest PRIVATE include)
@@ -51,7 +53,7 @@ if (emu_build_cuda)
     gtest_discover_tests(emucudatest)
 endif()
 
-if (emu_build_python)
+if (emu_build_python_test)
 
     add_executable(emupythontest
         src/python/main.cpp
@@ -61,6 +63,14 @@ if (emu_build_python)
         src/python/mdcontainer_test.cpp
         src/python/cstring_view_test.cpp
     )
+
+    if(emu_build_cuda)
+        target_sources(emupythontest PRIVATE
+            src/python/cuda_span_test.cpp
+        )
+    endif()
+
+    find_package(pybind11 REQUIRED)
 
     target_link_libraries(emupythontest PRIVATE
         GTest::gtest emupython pybind11::embed

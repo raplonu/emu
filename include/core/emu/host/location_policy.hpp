@@ -23,7 +23,7 @@ namespace emu::host
         //     ;
         // }
 
-        // static constexpr dlpack::device_type_t device_type = dlpack::device_type_t::kDLCPU;
+        static constexpr dlpack::device_type_t device_type = dlpack::device_type_t::kDLCPU;
 
     };
 

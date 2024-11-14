@@ -8,9 +8,12 @@ namespace detail
 {
 
     template<emu::cpts::mdspan Mdspan>
-    struct type_caster< Mdspan > : emu::cast::detail::mdspan_caster<Mdspan>
+    struct type_caster< Mdspan >
     {
-        using base_caster = emu::cast::detail::mdspan_caster<Mdspan>;
+        // span location
+        using location_policy = emu::location_type_of<Mdspan>;
+
+        using base_caster = emu::cast::detail::mdspan_caster_for<location_policy>::template md_caster<Mdspan>;
 
         using cpp_type = Mdspan;
 

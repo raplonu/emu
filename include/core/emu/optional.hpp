@@ -168,7 +168,7 @@ struct fmt::formatter<tl::optional<T>, Char> : fmt::formatter<T, Char>
     using base = fmt::formatter<T>;
 
     template<typename FormatContext>
-    auto format(const tl::optional<T>& opt, FormatContext& ctx) {
+    auto format(const tl::optional<T>& opt, FormatContext& ctx) const {
         if (opt) {
             // First print the prefix and update the context to the end of it.
             ctx.advance_to(format_to(ctx.out(), "optional("));

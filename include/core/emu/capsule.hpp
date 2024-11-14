@@ -10,6 +10,7 @@
 
 #include <atomic>
 #include <unistd.h>
+#include <utility>
 
 namespace emu
 {
@@ -35,7 +36,7 @@ namespace emu
             /**
              * @brief Destructor.
              */
-            virtual ~interface() = default;
+            virtual ~interface() noexcept = default;
 
             std::atomic<long> use_count = 1; /**< The reference count of the held object. */
 
@@ -67,13 +68,11 @@ namespace emu
         template<typename DataHolder>
         struct DLL_LOCAL impl : interface
         {
-            /**
-             * @brief Constructor.
-             * @param d The held object.
-             */
-            impl(auto&& d) : data_holder(EMU_FWD(d)) {}
+            impl() = default;
 
-            ~impl() = default;
+            impl(auto&&... ds) : data_holder(EMU_FWD(ds)...) {}
+
+            ~impl() noexcept = default;
 
             DataHolder data_holder; /**< The held object. */
         };
@@ -110,10 +109,10 @@ namespace emu
             : capsule( t.capsule() )
         {}
 
-        constexpr explicit capsule(gsl::owner<interface*> holder) noexcept
+        constexpr explicit capsule(gsl::owner<interface*> holder, bool borrow = false) noexcept
             : holder(holder)
         {
-            if (holder) holder->hold();
+            if (holder and not borrow) holder->hold();
         }
 
         /**
@@ -175,6 +174,17 @@ namespace emu
             holder = nullptr;
         }
 
+        template<typename T, typename... Args>
+        decay<T>& emplace(Args&&... args) {
+            reset();
+            auto impl_ptr = std::make_unique<capsule::impl<T>>(EMU_FWD(args)...);
+            auto& ref = impl_ptr->data_holder;
+
+            holder = impl_ptr.release();
+
+            return ref;
+        }
+
         /**
          * @brief Returns the reference count of the held object.
          * @return The reference count of the held object.
@@ -212,6 +222,22 @@ namespace emu
 
         auto operator<=>(const capsule&) const = default;
     };
+
+    /**
+     * @brief Construct emplace provided type T into a capsule and returns the capsule in addition
+     * to a pointer to the constructed type before it becomes lost.
+     *
+     * @tparam T The requested T to be constructed in the capsule.
+     * @param args The argument to construct the type T.
+     * @return std::tuple<capsule, T*> Returns the capsule and the address of T instance.
+     */
+    template<typename T, typename... Args>
+    std::tuple<capsule, T*> make_capsule_and_keep_addr(Args&&... args) {
+        auto impl_ptr = std::make_unique<capsule::impl<T>>(EMU_FWD(args)...);
+        auto* ptr = &(impl_ptr->data_holder);
+
+        return std::forward_as_tuple(capsule(impl_ptr.release(), /* borrow = */ true), ptr);
+    }
 
     /**
      * @brief Utility function to create a capsule object from a relocatable range.

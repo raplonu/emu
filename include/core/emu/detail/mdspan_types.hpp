@@ -29,6 +29,8 @@ namespace emu
     using stdex::full_extent_t;
     using stdex::full_extent;
 
+    using stdex::strided_slice;
+
     template<std::size_t N>
     using dims = dextents<std::size_t, N>;
 

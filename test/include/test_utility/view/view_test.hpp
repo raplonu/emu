@@ -38,7 +38,7 @@ namespace
             static_assert(not std::constructible_from<view_type, std::array<int, 5>&&>);
         }
         {
-            std::vector vec(3, 0);
+            std::vector<data_type> vec(3, 0);
 
             view_type con( vec );
 
@@ -51,6 +51,15 @@ namespace
 
             EXPECT_NE(con.data(), nullptr);
             EXPECT_EQ(con.size(), 5);
+        }
+
+        {
+            std::vector<data_type> vec(3, 0);
+
+            const_view_type con( vec );
+
+            EXPECT_EQ(con.data(), vec.data());
+            EXPECT_EQ(con.size(), vec.size());
         }
     }
 

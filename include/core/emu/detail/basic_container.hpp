@@ -120,7 +120,7 @@ namespace emu::detail
 
         emu::capsule&        capsule() &      noexcept { return static_cast<emu::capsule&>(*this); }
         emu::capsule const & capsule() const& noexcept { return static_cast<const emu::capsule&>(*this); }
-        emu::capsule         capsule() &&     noexcept { return static_cast<emu::capsule>(*this); }
+        emu::capsule&&         capsule() &&     noexcept { return static_cast<emu::capsule&&>(*this); }
 
         // auto use_count() const noexcept { return capsule_.use_count(); }
 
@@ -151,6 +151,14 @@ namespace emu::detail
         constexpr auto subcontainer( size_type offset,
                  size_type count = std::dynamic_extent ) const noexcept {
             return actual_type::subspan(offset, count);
+        }
+
+        std::pair<span_type, emu::capsule> as_pair() const & noexcept  {
+            return {span_type(*this), capsule()};
+        }
+
+        std::pair<span_type, emu::capsule> as_pair() && noexcept {
+            return {span_type(*this), std::move(capsule())};
         }
 
         // template< size_t Offset, size_t Count = dynamic_extent >

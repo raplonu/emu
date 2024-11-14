@@ -410,8 +410,8 @@ struct fmt::formatter<emu::detail::static_extent_t<Extent>>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
 
-    template<typename FormatContext>
-    auto format(const emu::detail::static_extent_t<Extent>& s, FormatContext& ctx) {
+    template <typename FormatContext>
+    auto format(const emu::detail::static_extent_t<Extent>& s, FormatContext& ctx) const {
         auto it = ctx.out();
         if constexpr (Extent::rank() > 0) {
             it = emu::detail::format_extent(it, Extent::static_extent(0));
@@ -431,7 +431,7 @@ struct fmt::formatter<emu::detail::extent_t<Mapping>>
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
 
     template<typename FormatContext>
-    auto format(const emu::detail::extent_t<Mapping>& s, FormatContext& ctx) {
+    auto format(const emu::detail::extent_t<Mapping>& s, FormatContext& ctx) const {
         auto it = ctx.out();
         if constexpr (Mapping::extents_type::rank() > 0) {
             it = fmt::format_to(it, "{}", s.m.extents().extent(0));
@@ -448,7 +448,7 @@ struct fmt::formatter<emu::detail::stride_t<Mapping>>
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
 
     template<typename FormatContext>
-    auto format(const emu::detail::stride_t<Mapping>& s, FormatContext& ctx) {
+    auto format(const emu::detail::stride_t<Mapping>& s, FormatContext& ctx) const {
         auto it = ctx.out();
         if constexpr (Mapping::extents_type::rank() > 0) {
             it = fmt::format_to(it, "{}", s.m.stride(0));

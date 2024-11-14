@@ -6,10 +6,9 @@
 
 #include <cuda/api.hpp>
 
-namespace emu
-{
+#include <string_view>
 
-namespace cuda
+namespace emu::cuda
 {
     namespace cu = ::cuda;
 
@@ -105,9 +104,8 @@ namespace detail
     }
 
     inline cu::launch_configuration_t make_linear_launch_config(
-        const cu::device_t  device,
-        size_t                length)
-    {
+        const cu::device_t&  device, size_t length
+    ) {
         // auto threads_per_block = device.properties().max_threads_per_block();
         // cu::grid::dimension_t num_blocks =
         //     (length / threads_per_block) +
@@ -120,9 +118,27 @@ namespace detail
             .build();
     }
 
-    // template<typename T>
-    // using DataContainer = emu::scoped_t<T*, cu::memory::device::detail_::deleter>;
+} // namespace emu::cuda
 
-} // namespace cuda
+namespace cuda::memory
+{
+    inline auto format_as(cuda::memory::type_t type) -> std::string_view
+    {
+        switch (type)
+        {
+        case cuda::memory::type_t::host_:
+            return "host";
+        case cuda::memory::type_t::device_:
+            return "device";
+        case cuda::memory::type_t::array:
+            return "array";
+        case cuda::memory::type_t::unified_:
+            return "unified";
+        case cuda::memory::type_t::non_cuda:
+            return "non-cuda";
+        default:
+            return "unknown";
+        }
+    }
 
-} // namespace emu
+} // namespace cuda::memory

@@ -10,7 +10,7 @@ namespace emu
 namespace cuda::device
 {
 
-    template <typename ElementType, size_t Extent = dynamic_extent>
+    template <typename ElementType, size_t Extent>
     struct span : emu::detail::basic_span<ElementType, Extent, cuda::device_location_policy, span<ElementType, Extent> >
     {
         using base = emu::detail::basic_span<ElementType, Extent, cuda::device_location_policy, span >;

@@ -46,4 +46,14 @@ namespace cuda
         return unexpected<std::error_code>{ make_error_code(e) };
     }
 
+    void throw_error( CUresult e ) {
+        throw_error( make_error_code( e) );
+    }
+    void throw_error( cudaError_t e ) {
+        throw_error( make_error_code( e) );
+    }
+    void throw_error( ::cuda::status::named_t e ) {
+        throw_error( make_error_code( e) );
+    }
+
 } // namespace emu

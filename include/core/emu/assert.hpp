@@ -3,7 +3,6 @@
 #include <emu/config.hpp>
 #include <emu/macro.hpp>
 
-#include <gsl/assert>
 #include <boost/assert.hpp>
 
 #define EMU_ASSERT(cond) BOOST_ASSERT(cond)
@@ -13,8 +12,6 @@
 #define EMU_VERIFY_MSG(cond, msg) BOOST_VERIFY_MSG(cond, msg)
 
 #define EMU_ASSERT_IS_VOID BOOST_ASSERT_IS_VOID
-
-#define EMU_ASSUME(cond) GSL_ASSUME(cond)
 
 #define EMU_ASSERT_ASSUME(cond) \
     do {                        \
@@ -36,6 +33,3 @@
 
 #define EMU_EXPECTS(cond) Expects(cond)
 #define EMU_ENSURES(cond) Ensures(cond)
-
-#define EMU_LIKELY(cond)   GSL_LIKELY(cond)
-#define EMU_UNLIKELY(cond) GSL_UNLIKELY(cond)

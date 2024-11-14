@@ -1,30 +1,10 @@
 #pragma once
 
+#include <emu/detail/mdspan_types.hpp>
+
 #include <cstddef>
-
-namespace std
-{
-
-    template <typename T>
-    struct optional;
-
-} // namespace std
-
-
-namespace std::experimental
-{
-
-    class layout_right;
-    class layout_left;
-    class layout_stride;
-
-    template <class IndexType, size_t... Extents>
-    class extents;
-
-    template <typename ElementType, typename Extents, typename LayoutPolicy, typename AccessorPolicy>
-    class mdspan;
-
-} // namespace std::experimental
+#include <type_traits>
+#include <optional>
 
 namespace tl
 {
@@ -62,25 +42,31 @@ namespace detail
 
 } // namespace detail
 
-    template<typename ElementType, std::size_t Extent>
+    template<typename ElementType, std::size_t Extent = std::dynamic_extent>
+    struct span;
+
+    template<typename ElementType, std::size_t Extent = std::dynamic_extent>
     struct container;
 
-    template <typename ElementType, typename Extents, typename LayoutPolicy, typename AccessorPolicy>
+    // template <typename ElementType, typename Extents, typename LayoutPolicy = layout_right, typename AccessorPolicy = default_accessor<ElementType>>
+    // struct mdspan;
+
+    template <typename ElementType, typename Extents, typename LayoutPolicy = layout_right, typename AccessorPolicy = default_accessor<ElementType>>
     struct mdcontainer;
 
 namespace host
 {
 
-    template<typename ElementType, std::size_t Extent>
+    template<typename ElementType, std::size_t Extent = std::dynamic_extent>
     struct span;
 
-    template<typename ElementType, std::size_t Extent>
+    template<typename ElementType, std::size_t Extent = std::dynamic_extent>
     struct container;
 
-    template <typename ElementType, typename Extents, typename LayoutPolicy, typename AccessorPolicy>
+    template <typename ElementType, typename Extents, typename LayoutPolicy = layout_right, typename AccessorPolicy = default_accessor<ElementType>>
     struct mdspan;
 
-    template <typename ElementType, typename Extents, typename LayoutPolicy, typename AccessorPolicy>
+    template <typename ElementType, typename Extents, typename LayoutPolicy = layout_right, typename AccessorPolicy = default_accessor<ElementType>>
     struct mdcontainer;
 
 } // namespace host
@@ -88,16 +74,16 @@ namespace host
 namespace cuda::device
 {
 
-    template<typename ElementType, std::size_t Extent>
+    template<typename ElementType, std::size_t Extent = std::dynamic_extent>
     struct span;
 
-    template<typename ElementType, std::size_t Extent>
+    template<typename ElementType, std::size_t Extent = std::dynamic_extent>
     struct container;
 
-    template <typename ElementType, typename Extents, typename LayoutPolicy, typename AccessorPolicy>
+    template <typename ElementType, typename Extents, typename LayoutPolicy = layout_right, typename AccessorPolicy = default_accessor<ElementType>>
     struct mdspan;
 
-    template <typename ElementType, typename Extents, typename LayoutPolicy, typename AccessorPolicy>
+    template <typename ElementType, typename Extents, typename LayoutPolicy = layout_right, typename AccessorPolicy = default_accessor<ElementType>>
     struct mdcontainer;
 
 } // namespace cuda::device

@@ -49,6 +49,13 @@ namespace
 
             check_view(con, vec.data(), md_helper::get_extents<rank>());
         }
+        {
+            auto vec = md_helper::get_vector<data_type>();
+
+            const_view_type con( vec, md_helper::get_extents<rank>() );
+
+            check_view(con, vec.data(), md_helper::get_extents<rank>());
+        }
     }
 
 }

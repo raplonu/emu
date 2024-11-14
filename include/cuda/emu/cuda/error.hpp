@@ -12,8 +12,8 @@ namespace cuda
 
     struct error_category: public std::error_category
     {
-        const char * name() const noexcept;
-        std::string message( int ev ) const;
+        [[nodiscard]] std::string message( int ev ) const override;
+        [[nodiscard]] const char * name() const noexcept override;
 
         static std::error_category const& instance();
     };
@@ -29,14 +29,20 @@ namespace cuda
     unexpected<std::error_code> make_unexpected( cudaError_t e );
     unexpected<std::error_code> make_unexpected( ::cuda::status::named_t e );
 
-    void throw_error( CUresult e );
-    void throw_error( cudaError_t e );
-    void throw_error( ::cuda::status::named_t e );
+    [[noreturn]] void throw_error( CUresult e );
+    [[noreturn]] void throw_error( cudaError_t e );
+    [[noreturn]] void throw_error( ::cuda::status::named_t e );
 
 } // namespace emu
 
-#define EMU_CHECK_RETURN_UN_EC(...) \
-    do { auto status__ = __VA_ARGS__; EMU_TRUE_OR_RETURN_UN_EC(status__ == cudaSuccess, status__); } while(false)
+#define EMU_CUDA_CHECK_RETURN_UN_EC(expr) \
+    EMU_SUCCESS_OR_RETURN_UN_EC(expr, cudaSuccess)
 
-#define EMU_CHECK_THROW(...) \
-    do { auto status__ = __VA_ARGS__; EMU_TRUE_OR_THROW_ERROR(status__ == cudaSuccess, status__); } while(false)
+#define EMU_CUDA_CHECK_RETURN_UN_EC_LOG(expr, ...) \
+    EMU_SUCCESS_OR_RETURN_UN_EC_LOG(expr, cudaSuccess, __VA_ARGS__)
+
+#define EMU_CUDA_CHECK_THROW_ERROR(expr) \
+    EMU_SUCCESS_OR_THROW(expr, cudaSuccess)
+
+#define EMU_CUDA_CHECK_THROW_ERROR_LOG(expr, ...) \
+    EMU_SUCCESS_OR_THROW_LOG(expr, cudaSuccess, __VA_ARGS__)

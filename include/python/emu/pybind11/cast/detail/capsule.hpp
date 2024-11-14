@@ -31,7 +31,7 @@ namespace emu::pybind11::detail
 
         }
         // Asume that if base and is not none exist, it holds some kind of capsule that needs to be kept alive.
-        return emu::capsule(move(base));
+        return emu::capsule(std::move(base));
     }
 
     inline emu::capsule handle_to_capsule(py::handle handle)
@@ -47,11 +47,11 @@ namespace emu::pybind11::detail
                 .map(array_base_to_capsule)
         , [&]{
             // fallback: Last resort, assume that the whole handle needs to be kept alive.
-            return emu::capsule(move(handle));
+            return emu::capsule(std::move(handle));
         });
     }
 
-    inline py::handle capsule_to_handle(emu::capsule& capsule)
+    inline py::handle capsule_to_handle(emu::capsule capsule)
     {
         if (capsule) {
             auto* ptr = capsule.holder;

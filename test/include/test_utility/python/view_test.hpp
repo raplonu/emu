@@ -27,12 +27,16 @@ namespace
             auto obj = py::cast(view);
 
             {
-                py::array arr = obj;
-                EXPECT_TRUE(arr.writeable());
-                EXPECT_EQ(arr.itemsize(), sizeof(data_type));
-                EXPECT_EQ(arr.size(), view.size());
-                EXPECT_EQ(arr.ndim(), TestFixture::rank);
-                EXPECT_EQ(data_of(view), static_cast<const data_type*>(arr.data()));
+                auto data = TestFixture::get_array_interface(obj)["data"].template cast<py::tuple>();
+
+                auto ptr = data[0].template cast<uintptr_t>();
+                auto read_only = data[1].template cast<bool>();
+
+                EXPECT_FALSE(read_only);
+                EXPECT_EQ(obj.attr("itemsize").template cast<size_t>(), sizeof(data_type));
+                EXPECT_EQ(obj.attr("size").template cast<size_t>(), view.size());
+                EXPECT_EQ(obj.attr("ndim").template cast<size_t>(), TestFixture::rank);
+                EXPECT_EQ(reinterpret_cast<const data_type*>(ptr), data_of(view));
             }
 
             // python to c++
@@ -48,14 +52,19 @@ namespace
             auto obj = py::cast(cview);
 
             {
-                py::array arr = obj;
-                EXPECT_FALSE(arr.writeable());
-                EXPECT_EQ(arr.itemsize(), sizeof(data_type));
-                EXPECT_EQ(arr.size(), cview.size());
-                EXPECT_EQ(arr.ndim(), TestFixture::rank);
-                EXPECT_EQ(data_of(cview), static_cast<const data_type*>(arr.data()));
+                auto data = TestFixture::get_array_interface(obj)["data"].template cast<py::tuple>();
 
+                auto ptr = data[0].template cast<uintptr_t>();
+                auto read_only = data[1].template cast<bool>();
 
+                if (TestFixture::support_read_only) {
+                    EXPECT_TRUE(read_only);
+                }
+
+                EXPECT_EQ(obj.attr("itemsize").template cast<size_t>(), sizeof(data_type));
+                EXPECT_EQ(obj.attr("size").template cast<size_t>(), cview.size());
+                EXPECT_EQ(obj.attr("ndim").template cast<size_t>(), TestFixture::rank);
+                EXPECT_EQ(reinterpret_cast<const data_type*>(ptr), data_of(cview));
             }
 
             // python to c++

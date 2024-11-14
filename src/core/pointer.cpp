@@ -22,13 +22,22 @@ namespace detail
         get_device_finders().push_back(move(finder));
     }
 
+    optional<dlpack::device_t> device_from_descriptor(pointer_descriptor desc) {
+        if (desc.location == "[heap]" or desc.location == "[stack]") {
+            return optional<dlpack::device_t>{in_place, dlpack::device_type_t::kDLCPU, 0};
+        }
+        return nullopt;
+    }
+
     // linux memory maps location
     constexpr auto maps_path = "/proc/self/maps";
 
-    optional<std::string> location_of(const byte* b_ptr) {
+} // namespace detail
+
+    optional<pointer_descriptor> pointer_descritor_of(const byte* b_ptr) {
         auto ptr = reinterpret_cast<std::uintptr_t>(b_ptr);
 
-        std::ifstream file{maps_path};  // create regular file
+        std::ifstream file{detail::maps_path};  // create regular file
 
         EMU_TRUE_OR_RETURN_NULLOPT(file);
 
@@ -47,51 +56,42 @@ namespace detail
                 auto it = memory_range.begin();
                 {
                     auto [ptr, ec] = std::from_chars((*it).begin(), (*it).end(), start, 16);
-                    // EMU_TRUE_OR_RETURN_UN_EC(ec == std::errc{}, ec);
                     EMU_TRUE_OR_RETURN_NULLOPT(ec == std::errc{});
                 }
                 ++it;
                 {
                     auto [ptr, ec] = std::from_chars((*it).begin(), (*it).end(), stop, 16);
-                    // EMU_TRUE_OR_RETURN_UN_EC(ec == std::errc{}, ec);
                     EMU_TRUE_OR_RETURN_NULLOPT(ec == std::errc{});
                 }
             }
 
-            std::advance(begin, 4);
-            //begin++; begin++; begin++; begin++;
 
-            const std::string_view location = *begin;
+            std::advance(begin, 4);
+
+            std::string_view location = *begin;
 
             if (start <= ptr and ptr < stop) {
+                auto base_region = std::span{reinterpret_cast<byte*>(start), stop};
                 if (location.empty())
-                    return "anonymous";
+                    location = "[anonymous]";
 
-                return std::string(location); //.begin(), location.end());
+                return pointer_descriptor{.location = std::string(location), .base_region = base_region};
             }
 
         }
-        return "unknown";
+        return pointer_descriptor{.location = "unknown", .base_region = {}};
     }
 
-    optional<dlpack::device_t> device_from_location(std::string_view location) {
-        if (location == "[heap]" or location == "[stack]") {
-            return optional<dlpack::device_t>{in_place, dlpack::device_type_t::kDLCPU, 0};
-        }
-        return nullopt;
-    }
-
-} // namespace detail
 
     result<dlpack::device_t> get_device_of_pointer(const byte * ptr) {
         for (auto const& finder : detail::get_device_finders()) {
             EMU_UNWRAP_RETURN_IF_TRUE(finder(ptr));
         }
-        //TODO: location_of may fail for other reasons than not finding the pointer
+        //TODO: pointer_descritor_of may fail for other reasons than not finding the pointer
         // It should not be considered an error.
-        EMU_UNWRAP_RETURN_IF_TRUE(detail::location_of(ptr).and_then(detail::device_from_location));
+        EMU_UNWRAP_RETURN_IF_TRUE(pointer_descritor_of(ptr).and_then(detail::device_from_descriptor));
 
-        return make_unexpected(error::pointer_device_not_found);
+        return make_unexpected(errc::pointer_device_not_found);
     }
 
 } // namespace emu

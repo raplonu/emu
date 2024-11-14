@@ -13,9 +13,15 @@ namespace detail
 {
 
     template<emu::cpts::container Container>
-    struct type_caster< Container > : emu::cast::detail::mdspan_caster< emu::md_equivalent<Container> >
+    struct type_caster< Container >
     {
-        using base_caster = emu::cast::detail::mdspan_caster< emu::md_equivalent<Container> >;
+        // span location
+        using location_policy = emu::location_type_of<Container>;
+
+        // mdspan equivalent of the span (mdspan_1d)
+        using md_equivalent = emu::md_equivalent<Container>;
+
+        using base_caster = emu::cast::detail::mdspan_caster_for<location_policy>::template md_caster<md_equivalent>;
 
         using cpp_type = Container;
 

@@ -18,4 +18,4 @@ namespace emu
         return o;
     }
 
-} // emu
+} // namespace emu
