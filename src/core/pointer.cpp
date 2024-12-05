@@ -30,8 +30,7 @@ namespace detail
     pointer_descriptor from_line(std::string_view line) {
         auto not_empty = [](auto sv) { return not sv.empty(); };
 
-        auto tokens = split_string(line)
-                    | std::views::filter(not_empty); // ignore empty strings
+        auto tokens = split_string_no_empty(line);
 
         auto begin = tokens.begin();
 

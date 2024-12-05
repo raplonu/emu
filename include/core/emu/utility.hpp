@@ -65,6 +65,9 @@ namespace emu
             });
     }
 
+    constexpr inline auto split_string_no_empty(string_view words, string_view delim = " ") {
+        return split_string(words, delim) | std::views::filter([](auto sv) { return not sv.empty(); });
+    }
 
     /**
     * Calculate the ceil result of a / b
