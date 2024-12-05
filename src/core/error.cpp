@@ -4,6 +4,8 @@
 namespace emu
 {
 
+    const std::error_code success{};
+
     std::string error_category::message( int ev ) const {
         switch (static_cast<errc>(ev)) {
             case errc::success:
@@ -27,10 +29,15 @@ namespace emu
             case errc::numeric_dl_data_type_not_supported:
                 return "numeric dlpack data type not supported";
 
+            case errc::pointer_desc_not_found:
+                return "pointer's descriptor not found";
             case errc::pointer_device_not_found:
                 return "pointer's device not found";
             case errc::pointer_maps_file_not_found:
                 return "pointer's maps file not found";
+
+            case errc::not_implemented:
+                return "not implemented";
         }
         return "unknown";
     }

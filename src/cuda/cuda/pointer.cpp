@@ -8,7 +8,7 @@
 namespace emu::cuda
 {
 
-    optional<dlpack::device_t> get_device_of_pointer(const byte * ptr) {
+    optional<dlpack::device_t> get_device_of_pointer(const byte* ptr) {
         auto* v_ptr = v_ptr_of(ptr);
 
         auto type = cu::memory::type_of(v_ptr);

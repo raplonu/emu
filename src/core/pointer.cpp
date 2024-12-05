@@ -1,10 +1,10 @@
 #include <emu/pointer.hpp>
 #include <emu/utility.hpp>
+#include <emu/charconv.hpp>
 
 #include <filesystem>
 #include <list>
 #include <string>
-#include <charconv>
 namespace emu
 {
 
@@ -22,74 +22,99 @@ namespace detail
         get_device_finders().push_back(move(finder));
     }
 
-    optional<dlpack::device_t> device_from_descriptor(pointer_descriptor desc) {
-        if (desc.location == "[heap]" or desc.location == "[stack]") {
-            return optional<dlpack::device_t>{in_place, dlpack::device_type_t::kDLCPU, 0};
-        }
-        return nullopt;
-    }
-
     // linux memory maps location
     constexpr auto maps_path = "/proc/self/maps";
 
 } // namespace detail
 
-    optional<pointer_descriptor> pointer_descritor_of(const byte* b_ptr) {
-        auto ptr = reinterpret_cast<std::uintptr_t>(b_ptr);
+    pointer_descriptor from_line(std::string_view line) {
+        auto not_empty = [](auto sv) { return not sv.empty(); };
 
+        auto tokens = split_string(line)
+                    | std::views::filter(not_empty); // ignore empty strings
+
+        auto begin = tokens.begin();
+
+        std::uintptr_t start = 0, stop = 0;
+        {
+            auto memory_range = split_string(*begin++, "-");
+            auto it = memory_range.begin();
+
+            EMU_RES_TRUE_OR_THROW(emu::from_chars(*it, start, 16));
+
+            ++it;
+
+            EMU_RES_TRUE_OR_THROW(emu::from_chars(*it, stop, 16));
+
+        }
+
+        auto size = stop - start;
+
+        auto permissions_str = *begin++;
+
+        std::filesystem::perms permissions = std::filesystem::perms::none;
+
+        if (permissions_str.size() == 4) {
+            if (permissions_str[0] == 'r') permissions |= std::filesystem::perms::owner_read;
+            if (permissions_str[1] == 'w') permissions |= std::filesystem::perms::owner_write;
+            if (permissions_str[2] == 'x') permissions |= std::filesystem::perms::owner_exec;
+            // if (permissions_str[3] == 'p') permissions |= # not supported
+        }
+
+        std::advance(begin, 3);
+
+        std::string_view location = *begin;
+
+        if (location.empty())
+            location = "[anonymous]";
+
+        return pointer_descriptor{.location = std::string(location), .permissions = permissions, .base_region = std::span{reinterpret_cast<byte*>(start), size}};
+    }
+
+    optional<pointer_descriptor> pointer_descritor_of(const byte* b_ptr) {
         std::ifstream file{detail::maps_path};  // create regular file
 
         EMU_TRUE_OR_RETURN_NULLOPT(file);
 
-        auto not_empty = [](auto sv) { return not sv.empty(); };
+        std::string line;
+        while (std::getline(file, line)) {
+            auto desc = from_line(line);
+
+            auto region = desc.base_region;
+
+            if (region.data() <= b_ptr and b_ptr < region.data() + region.size()) {
+                return desc;
+            }
+        }
+        return nullopt;
+    }
+
+    optional<std::span<byte>> region_from_location(std::string_view location) {
+        std::ifstream file{detail::maps_path};  // create regular file
+
+        EMU_TRUE_OR_RETURN_NULLOPT(file);
 
         std::string line;
         while (std::getline(file, line)) {
-            auto tokens = split_string(line)
-                        | std::views::filter(not_empty); // ignore empty strings
+            auto desc = from_line(line);
 
-            auto begin = tokens.begin();
-
-            std::uintptr_t start = 0, stop = 0;
-            {
-                auto memory_range = split_string(*begin++, "-");
-                auto it = memory_range.begin();
-                {
-                    auto [ptr, ec] = std::from_chars((*it).begin(), (*it).end(), start, 16);
-                    EMU_TRUE_OR_RETURN_NULLOPT(ec == std::errc{});
-                }
-                ++it;
-                {
-                    auto [ptr, ec] = std::from_chars((*it).begin(), (*it).end(), stop, 16);
-                    EMU_TRUE_OR_RETURN_NULLOPT(ec == std::errc{});
-                }
+            if (desc.location == location) {
+                return desc.base_region;
             }
-
-
-            std::advance(begin, 4);
-
-            std::string_view location = *begin;
-
-            if (start <= ptr and ptr < stop) {
-                auto base_region = std::span{reinterpret_cast<byte*>(start), stop};
-                if (location.empty())
-                    location = "[anonymous]";
-
-                return pointer_descriptor{.location = std::string(location), .base_region = base_region};
-            }
-
         }
-        return pointer_descriptor{.location = "unknown", .base_region = {}};
+        return nullopt;
     }
-
 
     result<dlpack::device_t> get_device_of_pointer(const byte * ptr) {
         for (auto const& finder : detail::get_device_finders()) {
             EMU_UNWRAP_RETURN_IF_TRUE(finder(ptr));
         }
-        //TODO: pointer_descritor_of may fail for other reasons than not finding the pointer
-        // It should not be considered an error.
-        EMU_UNWRAP_RETURN_IF_TRUE(pointer_descritor_of(ptr).and_then(detail::device_from_descriptor));
+
+        auto desc = EMU_UNWRAP_OR_RETURN_UN_EC(pointer_descritor_of(ptr), errc::pointer_desc_not_found);
+
+        if (desc.location == "[heap]" or desc.location == "[stack]") {
+            return dlpack::device_t{dlpack::device_type_t::kDLCPU, 0};
+        }
 
         return make_unexpected(errc::pointer_device_not_found);
     }

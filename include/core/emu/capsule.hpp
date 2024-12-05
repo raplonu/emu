@@ -90,11 +90,11 @@ namespace emu
          * @param d The held object.
          */
         template<typename DataHolder>
-            requires (not cpts::capsule_owner<DataHolder>)
-                 and (cpts::not_equivalent<DataHolder, capsule>)
-                 and (not std::derived_from<rm_cvref<DataHolder>, capsule>)
-                 and (not std::derived_from<rm_ptr<DataHolder>, interface>)
-                 and (not is_lref<DataHolder>)
+            requires (not cpts::capsule_owner<DataHolder>)                  // Should not hold a capsule.
+                 and (cpts::not_equivalent<DataHolder, capsule>)            // Should not be a capsule. Note: maybe handled by next line.
+                 and (not std::derived_from<rm_cvref<DataHolder>, capsule>) // Should not be derived from capsule.
+                 and (not std::derived_from<rm_ptr<DataHolder>, interface>) // Should not be derived from interface.
+                 and (not is_lref<DataHolder>)                              // Shoule be movable into the impl.
         constexpr explicit capsule(DataHolder&& d)
             : holder( new impl<rm_ref<DataHolder>>( EMU_FWD(d) ) )
         {}

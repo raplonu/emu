@@ -54,6 +54,7 @@ target_sources(emucore PUBLIC FILE_SET HEADERS BASE_DIRS include/core FILES
     include/core/emu/ostream.hpp
     include/core/emu/pointer.hpp
     include/core/emu/utility.hpp
+    include/core/emu/managed_object.hpp
     include/core/emu/scoped.hpp
     include/core/emu/associative_container.hpp
     include/core/emu/range.hpp

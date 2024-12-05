@@ -32,8 +32,11 @@ namespace emu
 
         numeric_dl_data_type_not_supported,
 
+        pointer_desc_not_found,
         pointer_device_not_found,
         pointer_maps_file_not_found,
+
+        not_implemented
     };
 
     /**
@@ -50,6 +53,10 @@ namespace emu
     // Takes a errno value and return a std::error_code
     std::error_code make_errno_code( int e );
 
+    inline std::error_code make_errno_code_and_reset(int& e) {
+        return make_errno_code(std::exchange(e, 0));
+    }
+
     /**
      * @brief Return a unexpected<std::error_code> from a multiple types of error
      *
@@ -65,6 +72,12 @@ namespace emu
     [[noreturn]] void throw_error( std::error_code e );
     [[noreturn]] void throw_error( errc e );
     [[noreturn]] void throw_error( std::errc e );
+
+    /**
+     * @brief This is a helper function that throw an error if the condition is not met.
+     *
+     */
+    extern const std::error_code success;
 
     /**
      * @brief This is a helper type that is used to bypass the optional/expected limitation of not being able to hold a reference.
@@ -93,27 +106,113 @@ namespace detail
 
 } // namespace emu
 
+template <>
+struct std::is_error_code_enum< emu::errc > : std::true_type {};
+
+template<typename Char>
+struct fmt::formatter<emu::detail::pretty_error_code, Char>
+{
+    constexpr auto parse(format_parse_context& ctx) -> format_parse_context::iterator {
+        return ctx.end();
+    }
+
+    auto format(const emu::detail::pretty_error_code& error, format_context& ctx) const -> format_context::iterator {
+        return fmt::format_to(ctx.out(), "{}/{}: {}",
+            error.ec.category().name(),
+            error.ec.value(),
+            error.ec.message()
+        );
+    }
+
+};
+
+#define EMU_TRUE_OR_RETURN_EC(expr, ec)     \
+    do {                                    \
+        if (EMU_UNLIKELY(not (expr))) {     \
+            using ::emu::make_error_code;   \
+            return make_error_code(ec);     \
+        }                                   \
+    } while (false)
+
+#define EMU_TRUE_OR_RETURN_EC_LOG(expr, ec, ...)    \
+    do {                                            \
+        if (EMU_UNLIKELY(not (expr))) {             \
+            EMU_COLD_LOGGER(__VA_ARGS__);           \
+            using ::emu::make_error_code;           \
+            return make_error_code(ec);             \
+        }                                           \
+    } while (false)
+
+#define EMU_RETURN_UN_EC(ec)                                \
+    do {                                                    \
+        using ::emu::make_error_code;                       \
+        return ::emu::make_unexpected(make_error_code(ec)); \
+    } while (false)
+
+#define EMU_RETURN_UN_EC_LOG(ec, ...)                       \
+    do {                                                    \
+        EMU_COLD_LOGGER(__VA_ARGS__);                       \
+        EMU_RETURN_UN_EC(ec);                               \
+    } while (false)
+
+#define EMU_THROW_ERROR(ec)                         \
+    do {                                            \
+        using ::emu::make_error_code;               \
+        ::emu::throw_error(make_error_code(ec));    \
+    } while (false)
+
+#define EMU_THROW_ERROR_LOG(ec, ...)    \
+    do {                                \
+        EMU_COLD_LOGGER(__VA_ARGS__);   \
+        EMU_THROW_ERROR(ec);            \
+    } while (false)
+
+#define EMU_CHECK_ERRC_OR_RETURN(ec)    \
+    do {                                \
+        if (EMU_UNLIKELY(ec)) {         \
+            EMU_RETURN_UN_EC(ec);       \
+        }                               \
+    } while (false)
+
+#define EMU_CHECK_ERRC_OR_RETURN_LOG(ec, ...)       \
+    do {                                            \
+        if (EMU_UNLIKELY(ec)) {                     \
+            EMU_RETURN_UN_EC_LOG(ec, __VA_ARGS__);  \
+        }                                           \
+    } while (false)
+
+#define EMU_CHECK_ERRC_OR_THROW(ec)     \
+    do {                                \
+        if (EMU_UNLIKELY(ec)) {         \
+            EMU_THROW_ERROR(ec);        \
+        }                               \
+    } while (false)
+
+#define EMU_CHECK_ERRC_OR_THROW_LOG(ec, ...)        \
+    do {                                            \
+        if (EMU_UNLIKELY(ec)) {                     \
+            EMU_THROW_ERROR_LOG(ec, __VA_ARGS__);   \
+        }                                           \
+    } while (false)
+
 // #################################
 // # error template handling macro #
 // #################################
 
 // Take into status + success_value, return errc if status is not success_value
-#define EMU_SUCCESS_OR_RETURN_UN_EC(expr, success_value)                \
-    do {                                                                \
-        auto&& status__ = (expr);                                       \
-        if (EMU_UNLIKELY((status__) != (success_value))) {              \
-            using ::emu::make_error_code;                               \
-            return ::emu::make_unexpected(make_error_code(status__));   \
-        }                                                               \
+#define EMU_SUCCESS_OR_RETURN_UN_EC(expr, success_value)    \
+    do {                                                    \
+        auto&& status__ = (expr);                           \
+        if (EMU_UNLIKELY((status__) != (success_value))) {  \
+            EMU_RETURN_UN_EC(status__);                     \
+        }                                                   \
     } while (false)
 
 #define EMU_SUCCESS_OR_RETURN_UN_EC_LOG(expr, success_value, ...)       \
     do {                                                                \
         auto&& status__ = (expr);                                       \
         if (EMU_UNLIKELY((status__) != (success_value))) {              \
-            EMU_COLD_LOGGER(__VA_ARGS__);                               \
-            using ::emu::make_error_code;                               \
-            return ::emu::make_unexpected(make_error_code(status__));   \
+            EMU_RETURN_UN_EC_LOG(status__, __VA_ARGS__);                \
         }                                                               \
     } while (false)
 
@@ -121,8 +220,7 @@ namespace detail
     do {                                                                \
         auto&& status__ = (expr);                                       \
         if (EMU_UNLIKELY((status__) != (success_value))) {              \
-            using ::emu::make_error_code;                               \
-            ::emu::throw_error(make_error_code(status__));              \
+            EMU_THROW_ERROR(status__);                                  \
         }                                                               \
     } while (false)
 
@@ -130,9 +228,7 @@ namespace detail
     do {                                                                \
         auto&& status__ = (expr);                                       \
         if (EMU_UNLIKELY((status__) != (success_value))) {              \
-            EMU_COLD_LOGGER(__VA_ARGS__);                               \
-            using ::emu::make_error_code;                               \
-            ::emu::throw_error(make_error_code(status__));              \
+            EMU_THROW_ERROR_LOG(status__, __VA_ARGS__);                 \
         }                                                               \
     } while (false)
 
@@ -157,38 +253,32 @@ namespace detail
 /// If the expression is false, it will propagate the error `errc`.
 
 
-#define EMU_TRUE_OR_RETURN_UN_EC(expr, errc)                        \
-    do {                                                            \
-        if (EMU_UNLIKELY(not (expr))) {                             \
-            using ::emu::make_error_code;                           \
-            return ::emu::make_unexpected(make_error_code(errc));   \
-        }                                                           \
+#define EMU_TRUE_OR_RETURN_UN_EC(expr, errc)    \
+    do {                                        \
+        if (EMU_UNLIKELY(not (expr))) {         \
+            EMU_RETURN_UN_EC(errc);             \
+        }                                       \
     } while (false)
 
-#define EMU_TRUE_OR_RETURN_UN_EC_LOG(expr, errc, ...)               \
-    do {                                                            \
-        if (EMU_UNLIKELY(not (expr))) {                             \
-            EMU_COLD_LOGGER(__VA_ARGS__);                           \
-            using ::emu::make_error_code;                           \
-            return ::emu::make_unexpected(make_error_code(errc));   \
-        }                                                           \
-    } while (false)
-
-#define EMU_TRUE_OR_THROW(expr, errc)                   \
+#define EMU_TRUE_OR_RETURN_UN_EC_LOG(expr, errc, ...)   \
     do {                                                \
         if (EMU_UNLIKELY(not (expr))) {                 \
-            using ::emu::make_error_code;               \
-            ::emu::throw_error(make_error_code(errc));  \
+            EMU_RETURN_UN_EC_LOG(errc, __VA_ARGS__);    \
         }                                               \
     } while (false)
 
-#define EMU_TRUE_OR_THROW_LOG(expr, errc, ...)          \
-    do {                                                \
-        if (EMU_UNLIKELY(not (expr))) {                 \
-            EMU_COLD_LOGGER(__VA_ARGS__);               \
-            using ::emu::make_error_code;               \
-            ::emu::throw_error(make_error_code(errc));  \
-        }                                               \
+#define EMU_TRUE_OR_THROW(expr, errc)   \
+    do {                                \
+        if (EMU_UNLIKELY(not (expr))) { \
+            EMU_THROW_ERROR(errc);      \
+        }                               \
+    } while (false)
+
+#define EMU_TRUE_OR_THROW_LOG(expr, errc, ...)      \
+    do {                                            \
+        if (EMU_UNLIKELY(not (expr))) {             \
+            EMU_THROW_ERROR_LOG(errc, __VA_ARGS__); \
+        }                                           \
     } while (false)
 
 
@@ -238,34 +328,32 @@ namespace detail
 /// If errno is 0, it will continue execution.
 /// If errno is not 0, it will propagate it.
 
-#define EMU_NO_ERRNO_OR_RETURN_UN_EC()                                                      \
-    do {                                                                                    \
-        if (EMU_UNLIKELY(errno)) {                                                          \
-            return ::emu::make_unexpected(emu::make_errno_code(std::exchange(errno, 0)));   \
-        }                                                                                   \
+#define EMU_NO_ERRNO_OR_RETURN_UN_EC()                                  \
+    do {                                                                \
+        if (EMU_UNLIKELY(errno)) {                                      \
+            EMU_RETURN_UN_EC(emu::make_errno_code_and_reset(errno));    \
+        }                                                               \
     } while(false)
 
-#define EMU_NO_ERRNO_OR_RETURN_UN_EC_LOG(...)                                               \
-    do {                                                                                    \
-        if (EMU_UNLIKELY(errno)) {                                                          \
-            EMU_COLD_LOGGER(__VA_ARGS__);                                                   \
-            return ::emu::make_unexpected(emu::make_errno_code(std::exchange(errno, 0)));   \
-        }                                                                                   \
+#define EMU_NO_ERRNO_OR_RETURN_UN_EC_LOG(...)                                           \
+    do {                                                                                \
+        if (EMU_UNLIKELY(errno)) {                                                      \
+            EMU_RETURN_UN_EC_LOG(emu::make_errno_code_and_reset(errno), __VA_ARGS__);   \
+        }                                                                               \
     } while(false)
 
-#define EMU_NO_ERRNO_OR_THROW()                                                \
-    do {                                                                       \
-        if (EMU_UNLIKELY(errno)) {                                             \
-            ::emu::throw_error(emu::make_errno_code(std::exchange(errno, 0))); \
-        }                                                                      \
+#define EMU_NO_ERRNO_OR_THROW()                                     \
+    do {                                                            \
+        if (EMU_UNLIKELY(errno)) {                                  \
+            EMU_THROW_ERROR(emu::make_errno_code_and_reset(errno)); \
+        }                                                           \
     } while(false)
 
-#define EMU_NO_ERRNO_OR_THROW_LOG(...)                                         \
-    do {                                                                       \
-        if (EMU_UNLIKELY(errno)) {                                             \
-            EMU_COLD_LOGGER(__VA_ARGS__);                                      \
-            ::emu::throw_error(emu::make_errno_code(std::exchange(errno, 0))); \
-        }                                                                      \
+#define EMU_NO_ERRNO_OR_THROW_LOG(...)                                                  \
+    do {                                                                                \
+        if (EMU_UNLIKELY(errno)) {                                                      \
+            EMU_THROW_ERROR_LOG(emu::make_errno_code_and_reset(errno), __VA_ARGS__);    \
+        }                                                                               \
     } while(false)
 
 // ###############################
@@ -276,34 +364,32 @@ namespace detail
 /// If the expression is true, it will continue execution.
 /// If the expression is false, it will propagate the error `errno`.
 
-#define EMU_TRUE_OR_RETURN_UN_EC_ERRNO(expr)                                                \
-    do {                                                                                    \
-        if (EMU_UNLIKELY(not (expr))) {                                                     \
-            return ::emu::make_unexpected(emu::make_errno_code(std::exchange(errno, 0)));   \
-        }                                                                                   \
+#define EMU_TRUE_OR_RETURN_UN_EC_ERRNO(expr)                            \
+    do {                                                                \
+        if (EMU_UNLIKELY(not (expr))) {                                 \
+            EMU_RETURN_UN_EC(emu::make_errno_code_and_reset(errno));    \
+        }                                                               \
     } while (false)
 
-#define EMU_TRUE_OR_RETURN_UN_EC_ERRNO_LOG(expr, ...)                                       \
-    do {                                                                                    \
-        if (EMU_UNLIKELY(not (expr))) {                                                     \
-            EMU_COLD_LOGGER(__VA_ARGS__);                                                   \
-            return ::emu::make_unexpected(emu::make_errno_code(std::exchange(errno, 0)));   \
-        }                                                                                   \
+#define EMU_TRUE_OR_RETURN_UN_EC_ERRNO_LOG(expr, ...)                                   \
+    do {                                                                                \
+        if (EMU_UNLIKELY(not (expr))) {                                                 \
+            EMU_RETURN_UN_EC_LOG(emu::make_errno_code_and_reset(errno), __VA_ARGS__);   \
+        }                                                                               \
     } while (false)
 
-#define EMU_TRUE_OR_THROW_ERRNO(expr)                                           \
-    do {                                                                        \
-        if (EMU_UNLIKELY(not (expr))) {                                         \
-            ::emu::throw_error(emu::make_errno_code(std::exchange(errno, 0)));  \
-        }                                                                       \
+#define EMU_TRUE_OR_THROW_ERRNO(expr)                               \
+    do {                                                            \
+        if (EMU_UNLIKELY(not (expr))) {                             \
+            EMU_THROW_ERROR(emu::make_errno_code_and_reset(errno)); \
+        }                                                           \
     } while (false)
 
-#define EMU_TRUE_OR_THROW_ERRNO_LOG(expr, ...)                                  \
-    do {                                                                        \
-        if (EMU_UNLIKELY(not (expr))) {                                         \
-            EMU_COLD_LOGGER(__VA_ARGS__);                                       \
-            ::emu::throw_error(emu::make_errno_code(std::exchange(errno, 0)));  \
-        }                                                                       \
+#define EMU_TRUE_OR_THROW_ERRNO_LOG(expr, ...)                                          \
+    do {                                                                                \
+        if (EMU_UNLIKELY(not (expr))) {                                                 \
+            EMU_THROW_ERROR_LOG(emu::make_errno_code_and_reset(errno), __VA_ARGS__);    \
+        }                                                                               \
     } while (false)
 
 // #############################
@@ -350,8 +436,7 @@ namespace detail
     do {                                                                        \
         auto&& value__ = (expr);                                                \
         if (EMU_UNLIKELY(not (value__))) {                                      \
-            using ::emu::make_error_code;                                       \
-            return ::emu::make_unexpected(make_error_code(value__.error()));    \
+            EMU_RETURN_UN_EC(value__.error());                                  \
         }                                                                       \
     } while (false)
 
@@ -359,9 +444,7 @@ namespace detail
     do {                                                                        \
         auto&& value__ = (expr);                                                \
         if (EMU_UNLIKELY(not (value__))) {                                      \
-            EMU_COLD_LOGGER(__VA_ARGS__);                                       \
-            using ::emu::make_error_code;                                       \
-            return ::emu::make_unexpected(make_error_code(value__.error()));    \
+            EMU_RETURN_UN_EC_LOG(value__.error(), __VA_ARGS__);                 \
         }                                                                       \
     } while (false)
 
@@ -369,8 +452,7 @@ namespace detail
     do {                                                            \
         auto&& value__ = (expr);                                    \
         if (EMU_UNLIKELY(not (value__))) {                          \
-            using ::emu::make_error_code;                           \
-            ::emu::throw_error(make_error_code(value__.error()));   \
+            EMU_THROW_ERROR(value__.error());                       \
         }                                                           \
     } while (false)
 
@@ -378,9 +460,7 @@ namespace detail
     do {                                                            \
         auto&& value__ = (expr);                                    \
         if (EMU_UNLIKELY(not (value__))) {                          \
-            EMU_COLD_LOGGER(__VA_ARGS__);                           \
-            using ::emu::make_error_code;                           \
-            ::emu::throw_error(make_error_code(value__.error()));   \
+            EMU_THROW_ERROR_LOG(value__.error(), __VA_ARGS__);      \
         }                                                           \
     } while (false)
 
@@ -411,23 +491,3 @@ namespace detail
         EMU_TRUE_OR_THROW_LOG(value__, ::std::move(value__).error(), __VA_ARGS__);       \
         *EMU_FWD(value__);                                              \
     })
-
-template <>
-struct std::is_error_code_enum< emu::errc > : std::true_type {};
-
-template<typename Char>
-struct fmt::formatter<emu::detail::pretty_error_code, Char>
-{
-    constexpr auto parse(format_parse_context& ctx) -> format_parse_context::iterator {
-        return ctx.end();
-    }
-
-    auto format(const emu::detail::pretty_error_code& error, format_context& ctx) const -> format_context::iterator {
-        return fmt::format_to(ctx.out(), "{}/{}: {}",
-            error.ec.category().name(),
-            error.ec.value(),
-            error.ec.message()
-        );
-    }
-
-};

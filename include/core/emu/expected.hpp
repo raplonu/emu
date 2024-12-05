@@ -90,7 +90,7 @@ namespace emu
      * @return E the first error found if any, otherwise the default value of E.
      */
     template<typename... Ts, typename E>
-    E get_first_error(const tl::expected<Ts, E>&... exps) {
+    E get_first_error(const expected<Ts, E>&... exps) {
         E error;
         // If `not exps` test pass (aka has error), then assign error and stop the evaluation
         // using the `or` short-circuit operator.
@@ -99,13 +99,26 @@ namespace emu
     }
 
 
-    // template<typename Fn, typename... Ts, typename E>
-    // auto invoke_when_all(Fn&& fn, tl::expected<Ts, E>&&... expecteds) -> decltype(fn(expecteds.value()...)) {
-    //     if ((expecteds && ...))
-    //         return fn(expecteds.value()...);
-    //     else
-    //         return get_first_error(expecteds...);
-    // }
+    template<typename Fn, typename... Expecteds>
+    auto map_all(Fn&& fn, Expecteds&&... expecteds)
+        -> expected<decltype(fn(EMU_FWD(expecteds).value()...)), decltype(get_first_error(expecteds...))>
+    {
+        if ((expecteds && ...))
+            return fn(EMU_FWD(expecteds).value()...);
+        else
+            return get_first_error(expecteds...);
+    }
+
+
+    template<typename Fn, typename... Expecteds>
+    auto and_then_all(Fn&& fn, Expecteds&&... expecteds)
+        -> decltype(fn(EMU_FWD(expecteds).value()...))
+    {
+        if ((expecteds && ...))
+            return fn(EMU_FWD(expecteds).value()...);
+        else
+            return get_first_error(expecteds...);
+    }
 
 } // namespace emu
 

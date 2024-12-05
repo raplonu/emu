@@ -103,8 +103,8 @@
 #include <fmt/color.h>
 
 #define EMU_LOGGER(...)                                                            \
-    ::fmt::print(stderr, fmt::fg(fmt::color::red), "{}:{}: ", __FILE__, __LINE__); \
-    ::fmt::print(stderr, fmt::fg(fmt::color::red), __VA_ARGS__);                   \
+    ::fmt::print(stderr, ::fmt::fg(::fmt::color::red), "{}:{}: ", __FILE__, __LINE__); \
+    ::fmt::print(stderr, ::fmt::fg(::fmt::color::red), __VA_ARGS__);                   \
     ::fmt::print(stderr, "\n");
 
 #else // ifndef EMU_NO_LOG
