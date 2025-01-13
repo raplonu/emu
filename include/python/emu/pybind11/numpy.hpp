@@ -107,15 +107,15 @@ namespace emu::pybind11::numpy
         return dt.is(py::dtype::from_args(py::type::of(py::str())));
     }
 
-    py::dtype to_dtype(dlpack::data_type_ext_t dtype) {
+    inline py::dtype to_dtype(dlpack::data_type_ext_t dtype) {
         return py::dtype(dlpack_type_to_numpy(dtype));
     }
 
-    py::dtype to_dtype(dlpack::data_type_t dtype) {
-        return py::dtype(dlpack_type_to_numpy(dtype));
+    inline py::dtype to_dtype(dlpack::data_type_t dtype) {
+        return py::dtype(dlpack_type_to_numpy(dlpack::from_data_type(dtype)));
     }
 
-    dlpack::data_type_ext_t from_dtype(py::dtype dtype) {
+    inline dlpack::data_type_ext_t from_dtype(py::dtype dtype) {
         return dlpack::data_type_ext_t{
             .code = code_from_np_types(dtype.num()),
             .bits = dtype.itemsize() * CHAR_BIT,

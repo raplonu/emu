@@ -227,7 +227,7 @@ endif()
 add_library(emupython INTERFACE)
 
 target_sources(emupython INTERFACE FILE_SET HEADERS BASE_DIRS include/python FILES
-    include/python/emu/pybind11/numpy.h
+    include/python/emu/pybind11/numpy.hpp
     include/python/emu/pybind11/cast/container.hpp
     include/python/emu/pybind11/cast/cstring_view.hpp
     include/python/emu/pybind11/cast/detail/capsule.hpp
