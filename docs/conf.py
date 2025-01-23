@@ -1,21 +1,13 @@
-# Configuration file for the Sphinx documentation builder.
-#
-# This file only contains a selection of the most common options. For a full
-# list see the documentation:
-# https://www.sphinx-doc.org/en/master/usage/configuration.html
-
-# -- Path setup --------------------------------------------------------------
-
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-#
 
 import os
 import re
+from typing import TYPE_CHECKING
+
 import subprocess
-import sys
+# import sys
 from pathlib import Path
+
+from sphinx import __display_version__
 
 DIR = Path(__file__).parent.resolve()
 
@@ -40,7 +32,16 @@ release = '0.2.0'
 extensions = [
     'breathe',
     'sphinx.ext.autodoc',
-    'sphinx_rtd_dark_mode'
+    'sphinx_rtd_dark_mode',
+    'sphinx.ext.doctest',
+    'sphinx.ext.todo',
+    'sphinx.ext.autosummary',
+    'sphinx.ext.extlinks',
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.viewcode',
+    'sphinx.ext.inheritance_diagram',
+    'sphinx.ext.coverage',
+    'sphinx.ext.graphviz',
 ]
 
 breathe_projects = {"emu": os.path.abspath('../build/docs/doxygen/xml')}

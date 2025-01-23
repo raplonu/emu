@@ -14,6 +14,11 @@ namespace atomic
 namespace detail
 {
 
+    /**
+     * @brief Implementation of atomic operations for different word sizes.
+     *
+     * @tparam S Size of the word in bytes.
+     */
     template<std::size_t S>
     struct matching_word_impl;
 
@@ -27,10 +32,24 @@ namespace detail
 
 #undef EMU_MATCH_SIZE
 
+    /**
+     * @brief Get the matching word type for a given type.
+     *
+     * @tparam T Type to get the matching word type for.
+     */
     template<typename T>
     using matching_word = typename matching_word_impl<sizeof(T)>::type;
 
 
+    /**
+     * @brief Perform an atomic operation on a given address.
+     *
+     * @tparam Op Operation to perform.
+     * @tparam T Type of the value to perform the operation on.
+     * @param address Address to perform the operation on.
+     * @param val Value to use in the operation.
+     * @return T Result of the operation.
+     */
     template<auto Op, typename T>
     EMU_DEVICE T atomic_op(T * address, T val)
     {

@@ -1,10 +1,12 @@
 #pragma once
 
+#include <emu/config.hpp>
 #include <emu/assert.hpp>
 #include <emu/concepts.hpp>
 #include <emu/functor.hpp>
 
 #include <tl/expected.hpp>
+#include <boost/system/result.hpp>
 
 #include <fmt/format.h>
 
@@ -70,7 +72,6 @@ namespace emu
             }
         };
 
-
     } // namespace spe
 
 
@@ -86,7 +87,7 @@ namespace emu
      *
      * @tparam Ts
      * @tparam E
-     * @param exp
+     * @param exps
      * @return E the first error found if any, otherwise the default value of E.
      */
     template<typename... Ts, typename E>
@@ -118,6 +119,22 @@ namespace emu
             return fn(EMU_FWD(expecteds).value()...);
         else
             return get_first_error(expecteds...);
+    }
+
+    template<typename T, typename E>
+    constexpr expected<T, E> as_expected(T* ptr, E error) noexcept {
+        if (ptr)
+            return *ptr;
+        else
+            return unexpected(error);
+    }
+
+    template<typename T, typename E>
+    constexpr expected<T, E> as_expected(boost::system::result<T, E> res) noexcept {
+        if (res)
+            return res.value();
+        else
+            return unexpected(res.error());
     }
 
 } // namespace emu

@@ -33,7 +33,7 @@ class EmuConan(ConanFile):
 
     def requirements(self):
         self.requires('fmt/11.0.0', transitive_headers=True, transitive_libs=True)
-        self.requires('boost/1.84.0', transitive_headers=True, transitive_libs=True)
+        self.requires('boost/1.86.0', transitive_headers=True, transitive_libs=True)
         self.requires('ms-gsl/4.0.0', transitive_headers=True)
         self.requires('mdspan/0.6.0', transitive_headers=True)
         self.requires('tl-expected/1.1.0', transitive_headers=True)
@@ -50,7 +50,7 @@ class EmuConan(ConanFile):
         self.test_requires('gtest/1.13.0')
 
         if self.options.python:
-            self.test_requires('pybind11/2.13.1')
+            self.test_requires('pybind11/2.13.6')
 
     # Cannot be optional (link to the use of cuda or not).
     python_requires = 'conan_cuda/[>=1 <2]'
