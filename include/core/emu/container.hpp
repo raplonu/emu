@@ -33,7 +33,7 @@ namespace emu
     template<typename T>
     container<T> make_container(size_t size) {
         auto u_ptr = std::make_unique<T[]>(size);
-        return container<T>(u_ptr.get(), size, move(u_ptr));
+        return container<T>(u_ptr.get(), size, std::move(u_ptr));
     }
 
     template<typename T, size_t Extent>

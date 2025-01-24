@@ -19,7 +19,7 @@ namespace detail
     }
 
     void register_device_finder(device_finder_engine finder) {
-        get_device_finders().push_back(move(finder));
+        get_device_finders().push_back(std::move(finder));
     }
 
     // linux memory maps location

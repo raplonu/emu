@@ -304,7 +304,7 @@ namespace detail
 
         [[nodiscard]] detail::scoped_managed_tensor managed_tensor() const {
             auto manager_ptr = std::make_unique<detail::manager>(
-                data_capsule(), extents_.capsule(), strides_.capsule()
+                detail::manager{data_capsule(), extents_.capsule(), strides_.capsule()}
             );
 
             return managed_tensor_t{
@@ -316,7 +316,7 @@ namespace detail
 
         [[nodiscard]] detail::scoped_managed_tensor_versioned managed_tensor_versioned() const {
             auto manager_ptr = std::make_unique<detail::manager>(
-                data_capsule(), extents_.capsule(), strides_.capsule()
+                detail::manager{data_capsule(), extents_.capsule(), strides_.capsule()}
             );
 
             return managed_tensor_versioned_t{
