@@ -1,0 +1,49 @@
+name: Build CMake Project on Ubuntu
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        compiler: [g++, clang++]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y python3-pip
+          if [[ "${{ matrix.compiler }}" == "g++" ]]; then
+            sudo apt install -y g++
+          elif [[ "${{ matrix.compiler }}" == "clang++" ]]; then
+            sudo apt install -y clang
+          fi
+
+      - name: Install CMake and Conan
+        run: |
+          pip install cmake conan
+
+      - name: Configure Conan
+        run: |
+          conan profile detect
+          sed -i '/compiler.cppstd/d' "$(conan profile path default)"
+          conan remote add cosmic ${{ vars.COSMIC_CONAN_URL }}
+          conan remote login cosmic ${{ vars.COSMIC_CONAN_USER }} -p ${{ secrets.CONAN_TOKEN }}
+
+      - name: Configure CMake
+        run: |
+          conan install . --build=missing -c tools.build:skip_test=False -s build_type=Release
+          cmake . --preset=conan-release
+
+      - name: Build
+        run: |
+          cmake --build --preset=conan-release
+
+      - name: Test
+        run: |
+          ctest --preset=conan-release
