@@ -8,7 +8,7 @@ jobs:
       matrix:
         compiler: [g++, clang++]
 
-    runs-on: ubuntu-latest
+    runs-on: albert
 
     steps:
       - name: Checkout repository
