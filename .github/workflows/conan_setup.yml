@@ -1,0 +1,40 @@
+name: Setup dependencies using conan
+
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        compiler: [g++, clang++]
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Restore Conan Cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.conan2
+          key: conan-${{ runner.os }}-${{ hashFiles('conanfile.*') }}
+          restore-keys: conan-${{ runner.os }}-
+
+      - name: Install CMake and Conan
+        run: pip install cmake conan
+
+      - name: Configure Conan
+        run: |
+          conan profile detect
+          sed -i '/compiler.cppstd/d' "$(conan profile path default)"
+          conan remote add cosmic ${{ vars.COSMIC_CONAN_URL }}
+
+      - name: Install Dependencies
+        run: conan install . --build=missing -s build_type=Release
+
+      - name: Save Conan Cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.conan2
+          key: conan-${{ runner.os }}-${{ hashFiles('conanfile.*') }}
+          restore-keys: conan-${{ runner.os }}-

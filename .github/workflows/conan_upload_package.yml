@@ -1,0 +1,38 @@
+name: Upload Conan Package
+
+on:
+  workflow_run:
+    workflows: ["Build and Test with Conan", "Create Conan Package"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      upload:
+        description: 'Upload package?'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+jobs:
+  upload_package:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.event.inputs.upload == 'true'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Restore Conan Cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.conan2
+          key: conan-${{ runner.os }}-${{ hashFiles('conanfile.*') }}
+          restore-keys: conan-${{ runner.os }}-
+
+      - name: Login to Conan
+        run: conan remote login cosmic ${{ vars.COSMIC_CONAN_USER }} -p ${{ secrets.CONAN_TOKEN }}
+
+      - name: Upload Package
+        if: github.ref == 'refs/heads/main' || github.event.inputs.upload == 'true'
+        run: conan upload "*" --all -r=cosmic --confirm
