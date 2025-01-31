@@ -22,8 +22,8 @@ jobs:
 
       - name: Configure Conan
         run: |
-          conan profile detect
-          conan remote add cosmic ${{ vars.COSMIC_CONAN_URL }}
+          conan profile detect --force
+          conan remote add cosmic ${{ vars.COSMIC_CONAN_URL }} --force
 
       - name: Install Dependencies
         run: conan install . --build=missing -s build_type=Release

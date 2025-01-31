@@ -22,6 +22,5 @@ jobs:
       - name: Install CMake and Conan
         run: pip install cmake conan
 
-
       - name: Create Conan Package
         run: conan create . -s build_type=Release
