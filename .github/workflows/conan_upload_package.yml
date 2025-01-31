@@ -38,4 +38,4 @@ jobs:
 
       - name: Upload Package
         if: github.ref == 'refs/heads/main' || github.event.inputs.upload == 'true'
-        run: conan upload "*" --all -r=cosmic --confirm
+        run: conan upload "*" -r=cosmic --confirm --check

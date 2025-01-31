@@ -23,7 +23,6 @@ jobs:
       - name: Configure Conan
         run: |
           conan profile detect
-          sed -i '/compiler.cppstd/d' "$(conan profile path default)"
           conan remote add cosmic ${{ vars.COSMIC_CONAN_URL }}
 
       - name: Install Dependencies
