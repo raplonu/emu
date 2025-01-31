@@ -3,10 +3,7 @@ name: Setup dependencies using conan
 on: [push, pull_request, workflow_dispatch]
 
 jobs:
-  build:
-    strategy:
-      matrix:
-        compiler: [g++, clang++]
+  setup_dependencies:
 
     runs-on: ubuntu-latest
     steps:

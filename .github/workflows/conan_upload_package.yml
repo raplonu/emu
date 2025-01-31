@@ -30,6 +30,9 @@ jobs:
           key: conan-${{ runner.os }}-${{ hashFiles('conanfile.*') }}
           restore-keys: conan-${{ runner.os }}-
 
+      - name: Install CMake and Conan
+        run: pip install cmake conan
+
       - name: Login to Conan
         run: conan remote login cosmic ${{ vars.COSMIC_CONAN_USER }} -p ${{ secrets.CONAN_TOKEN }}
 

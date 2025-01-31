@@ -19,6 +19,9 @@ jobs:
           key: conan-${{ runner.os }}-${{ hashFiles('conanfile.*') }}
           restore-keys: conan-${{ runner.os }}-
 
+      - name: Install CMake and Conan
+        run: pip install cmake conan
+
       - name: Install Dependencies
         run: conan install . -s build_type=Release
 
