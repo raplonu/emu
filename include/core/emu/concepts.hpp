@@ -241,9 +241,10 @@ namespace detail
      */
     template <typename T>
     concept relocatable_owning_range = conditional<
-        // If enable_relocatable_owning_range and is not indenteterminate
-        not boost::logic::indeterminate(spe::enable_relocatable_owning_range<rm_cvref<T>>),
+        // If enable_relocatable_owning_range and is not indeterminate
+        not std::same_as<decltype(spe::enable_relocatable_owning_range<rm_cvref<T>>), const emu::detail::indeterminate_bool>,
         // Then, the type is relocatable if enable_relocatable_owning_range is true
+        // Note: We still needs to cast it to bool because we still need to compile this branch when value is indeterminate.
         bool(spe::enable_relocatable_owning_range<rm_cvref<T>>),
         // otherwise, the type is relocatable if it's not a view nor a lvalue reference
         bool((not std::ranges::view<rm_ref<T>>)

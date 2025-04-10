@@ -1,0 +1,32 @@
+{
+  "name" : "emu",
+  "version-string" : "1.0.0",
+  "builtin-baseline" : "acffd1489131eca26628cd33070f74be10c47531",
+  "dependencies" : [
+    "boost-headers",
+    "boost-config",
+    "boost-preprocessor",
+    "boost-callable-traits",
+    "boost-hana",
+    "boost-system",
+    "mdspan",
+    "ms-gsl",
+    "cuda-api-wrappers",
+    "fmt"
+  ],
+  "overrides": [
+    {
+      "name": "cuda-api-wrappers",
+      "version": "0.7.1"
+    }
+  ],
+  "features" : {
+    "test" : {
+      "description" : "emu test",
+      "dependencies" : [ {
+        "name" : "gtest",
+        "version>=" : "1.16.0"
+      } ]
+    }
+  }
+}

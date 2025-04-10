@@ -14,7 +14,7 @@
 #include <emu/location_policy.hpp>
 #include <emu/cstring_view.hpp>
 
-#include <range/v3/range/conversion.hpp>
+// #include <range/v3/range/conversion.hpp>
 
 #include <cstdint>
 #include <span>
@@ -566,10 +566,16 @@ namespace spe
 
 namespace detail_cpts
 {
+    /**
+     * @brief A continuous container that is not a view.
+     *
+     * A container is an owning range that is a continuous range but not a view.
+     *
+     * @tparam T
+     */
     template<typename T>
-    concept container = requires (const T& t, std::span<typename T::value_type> s) {
+    concept container = (not std::ranges::view<T>) and requires (const T& t, std::span<typename T::value_type> s) {
         { std::span{t} } -> std::same_as<std::span<const typename T::value_type>>;
-        { s | ranges::to<T>() } -> std::same_as<T>;
     };
 
 } // namespace detail_cpts
@@ -605,19 +611,36 @@ namespace detail_cpts
 
         static result<Container> import_(const dlpack::scoped_tensor& t) {
             return copy_adaptor::import_(t).map([&](auto&& span) {
-                return span | ranges::to<Container>();
+                //TODO: replace with std::ranges::to when C++23.
+                Container c;
+
+                if constexpr ( requires { c.reserve(span.size()); } )
+                    c.reserve(span.size());
+
+                std::ranges::copy(span, std::back_inserter(c));
+
+                return c;
             });
         }
 
         static result<Container> import_(dlpack::scoped_tensor&& t) {
             return move_adaptor::import_(t).map([&](auto&& span) {
-
-                // tranform span iterator into "mode_iterator".
+                // tranform span iterator into "move_iterator".
                 auto begin = std::make_move_iterator(span.begin()),
                     end = std::make_move_iterator(span.end());
 
                 // borrow content of scoped_tensor.
-                return std::ranges::subrange(begin, end) | ranges::to<Container>();
+                auto movable_range = std::ranges::subrange(begin, end);
+
+                //TODO: replace with std::ranges::to when C++23.
+                Container c;
+
+                if constexpr ( requires { c.reserve(span.size()); } )
+                    c.reserve(span.size());
+
+                std::ranges::copy(movable_range, std::back_inserter(c));
+
+                return c;
             });
         }
     };

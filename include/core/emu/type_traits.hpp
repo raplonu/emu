@@ -3,8 +3,7 @@
 #include <emu/macro.hpp>
 #include <emu/fwd.hpp>
 
-#include <boost/logic/tribool.hpp>
-
+#include <optional>
 #include <type_traits>
 #include <ranges>
 #include <tuple>
@@ -146,6 +145,28 @@ namespace detail
     template<std::input_iterator It>
     using iterator_cv_value = rm_ref< std::iter_reference_t< It > >;
 
+namespace detail
+{
+
+    /**
+     * @brief A utility type that behaves like the provided type.
+     *
+     * Constexpr value allows to have a different type when specialized. We can use this to detect when a specialization exists.
+     *
+     * @tparam T The type to imitate.
+     */
+    template<typename T>
+    struct indeterminate {
+        constexpr operator T() const {
+            //TODO: Throw an exception instead of returning a default value when constexpr will support it.
+            return T{};
+        }
+    };
+
+    using indeterminate_bool = indeterminate<bool>;
+
+} // namespace detail
+
 namespace spe
 {
 
@@ -171,14 +192,15 @@ namespace spe
     template <typename>
     inline constexpr bool enable_cuda_device_range = false;
 
-
     /**
      * @brief Relocation range use a blacklist for rvalue refenrence and whitelist for lvalue reference
      * approach to determine if a type is a valid source for a relocatable range.
      *
+     * By default, the value is indeterminate, which means that the value won't be used to determine if the type is relocatable or not.
+     *
      */
     template <typename T>
-    inline constexpr boost::logic::tribool enable_relocatable_owning_range = boost::logic::indeterminate;
+    inline constexpr detail::indeterminate_bool enable_relocatable_owning_range;
 
 } // namespace spe
 

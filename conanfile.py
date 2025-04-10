@@ -36,20 +36,15 @@ class EmuConan(ConanFile):
         self.requires('boost/1.86.0', transitive_headers=True, transitive_libs=True)
         self.requires('ms-gsl/4.0.0', transitive_headers=True)
         self.requires('mdspan/0.6.0', transitive_headers=True)
-        self.requires('tl-expected/1.1.0', transitive_headers=True)
-        self.requires('tl-optional/1.1.0', transitive_headers=True)
-        self.requires('half/2.2.0', transitive_headers=True)
-        self.requires('dlpack/1.0', transitive_headers=True)
-        self.requires('range-v3/0.12.0', transitive_headers=True)
-
 
         if self.options.cuda:
-            self.requires('cuda-api-wrappers/0.7.0', transitive_headers=True)
+            self.requires('cuda-api-wrappers/0.7.1', transitive_headers=True)
             # self.requires('matx/0.8.0', transitive_headers=True)
 
         self.test_requires('gtest/1.13.0')
 
         if self.options.python:
+            # Only required for the tests
             self.test_requires('pybind11/2.13.6')
 
     # Cannot be optional (link to the use of cuda or not).
@@ -75,9 +70,9 @@ class EmuConan(ConanFile):
     def generate(self):
         tc = CMakeToolchain(self)
 
-        tc.variables['emu_build_cuda'] = self.options.cuda
-        tc.variables['emu_build_python_test'] = self.options.python
-        tc.variables['emu_boost_namespace'] = self.dependencies['boost'].options.namespace
+        tc.cache_variables['emu_build_cuda'] = self.options.cuda
+        tc.cache_variables['emu_build_python_test'] = self.options.python
+        tc.cache_variables['emu_boost_namespace'] = self.dependencies['boost'].options.namespace
 
         tc.generate()
 

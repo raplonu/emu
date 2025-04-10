@@ -1,17 +1,28 @@
 cmake_minimum_required(VERSION 3.18)
 
+# Have to define this variable to let vcpkg know that we need gtest or not.
+if(BUILD_TESTING)
+    list(APPEND VCPKG_MANIFEST_FEATURES "test")
+endif()
+
+# Note: This is not possible to build python test using vcpkg.
+option(emu_build_python_test "Enable python test module" OFF)
+option(emu_build_cuda "Enable cuda module" OFF)
+
+# other otions:
+
+# Note: This is not possible to change this value using vcpkg.
+set(emu_boost_namespace "boost" CACHE STRING "Custom boost namespace name")
+
+########################################################################
+#
+# Emu Project
+#
+
 project(emu VERSION 1.0.0 LANGUAGES CXX)
 
 # Always generate compile_commands.json. Used by clangd and other tools.
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-option(emu_build_cuda "Enable cuda module" OFF)
-option(emu_build_python_test "Enable python test module" OFF)
-option(emu_boost_namespace "Custom boost namespace name" "boost")
-
-if (emu_build_cuda)
-    enable_language(CUDA)
-endif()
 
 # emu is not pedantic... yet
 # It relies on `statement-expression extension` that is not standard
@@ -87,7 +98,12 @@ target_sources(emucore PUBLIC FILE_SET HEADERS BASE_DIRS include/core FILES
     include/core/emu/macro.hpp
     include/core/emu/math.hpp
     include/core/emu/type_traits.hpp
+    include/core/tl/expected.hpp
+    include/core/tl/optional.hpp
+    include/core/dlpack/dlpack.h
+    include/core/half.hpp
 )
+
 
 target_compile_features(emucore PUBLIC cxx_std_20)
 
@@ -101,22 +117,12 @@ find_package(Boost REQUIRED)
 find_package(fmt REQUIRED)
 find_package(Microsoft.GSL REQUIRED)
 find_package(mdspan REQUIRED)
-find_package(tl-expected REQUIRED)
-find_package(tl-optional REQUIRED)
-find_package(half REQUIRED)
-find_package(dlpack REQUIRED)
-find_package(range-v3 REQUIRED)
 
 target_link_libraries(emucore PUBLIC
     Boost::boost
     fmt::fmt
     Microsoft.GSL::GSL
-    tl::expected
-    tl::optional
     std::mdspan
-    half::half
-    dlpack::dlpack
-    range-v3::range-v3
 )
 
 add_library(emu::core ALIAS emucore)
@@ -131,6 +137,8 @@ install(TARGETS emucore
 #
 
 if (emu_build_cuda)
+    enable_language(CUDA)
+
     add_library(emucuda)
 
     target_sources(emucuda
@@ -204,7 +212,7 @@ if (emu_build_cuda)
     endif()
 
     find_package(CUDAToolkit REQUIRED)
-    find_package(cuda-api-wrappers REQUIRED)
+    find_package(cuda-api-wrappers CONFIG REQUIRED)
     # find_package(matx REQUIRED)
 
     target_link_libraries(emucuda PUBLIC
@@ -213,7 +221,7 @@ if (emu_build_cuda)
         CUDA::cusolver
         CUDA::cudart
         CUDA::cuda_driver
-        cuda-api-wrappers::cuda-api-wrappers
+        cuda-api-wrappers::runtime-and-driver
         # matx::matx
     )
 

@@ -70,6 +70,7 @@ if (emu_build_python_test)
         )
     endif()
 
+    find_package(Python COMPONENTS Interpreter Development)
     find_package(pybind11 REQUIRED)
 
     target_link_libraries(emupythontest PRIVATE

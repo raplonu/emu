@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cuda/runtime_api.hpp>
+#include <cuda/api.hpp>
 
 namespace emu::cuda::stream
 {
