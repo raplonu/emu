@@ -11,10 +11,11 @@ pkgs.stdenv.mkDerivation rec {
   buildInputs = with pkgs; [
     cmake
     ninja
-    fmt
+    fmt_11
     boost
     microsoft-gsl
     mdpsan
+    tl-expected
   ];
 
 

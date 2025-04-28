@@ -31,6 +31,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Keep an eye on `https://wg21.link/P2561` for a possible alternative.
 add_compile_options(-Wno-pedantic)
 
+include(CMakePackageConfigHelpers)
+include(GNUInstallDirs)
+
 ########################################################################
 #
 # Emu Core
@@ -128,6 +131,7 @@ target_link_libraries(emucore PUBLIC
 add_library(emu::core ALIAS emucore)
 
 install(TARGETS emucore
+    EXPORT ${PROJECT_NAME}-targets
     FILE_SET HEADERS
 )
 
@@ -268,6 +272,31 @@ add_library(emu::python ALIAS emupython)
 install(TARGETS emupython
     FILE_SET HEADERS
 )
+
+# Installation help
+configure_package_config_file(
+    "${PROJECT_SOURCE_DIR}/cmake/${PROJECT_NAME}-config.cmake.in"
+    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
+    INSTALL_DESTINATION "share/cmake/${PROJECT_NAME}")
+
+write_basic_package_version_file(
+    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake"
+    COMPATIBILITY SameMajorVersion
+    ARCH_INDEPENDENT)
+
+# install(TARGETS emucore
+#     EXPORT ${PROJECT_NAME}-targets
+#     INCLUDES DESTINATION "${CMAKE_INSTALL_DATADIR}")
+
+install(EXPORT ${PROJECT_NAME}-targets
+    DESTINATION "${CMAKE_INSTALL_DATADIR}/cmake/${PROJECT_NAME}"
+    NAMESPACE emu::
+    FILE "${PROJECT_NAME}-targets.cmake")
+
+install(FILES
+    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake"
+    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
+    DESTINATION "${CMAKE_INSTALL_DATADIR}/cmake/${PROJECT_NAME}")
 
 ########################################################################
 #

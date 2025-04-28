@@ -13,8 +13,8 @@ stdenv.mkDerivation rec {
   src = fetchFromGitHub {
     owner = "kokkos";
     repo = "mdspan";
-    rev = "v${version}";
-    hash = "";
+    rev = "mdspan-${version}";
+    hash = "sha256-bwE+NO/n9XsWOp3GjgLHz3s0JR0CzNDernfLHVqU9Z8=";
   };
 
   nativeBuildInputs = [ cmake pkg-config ];

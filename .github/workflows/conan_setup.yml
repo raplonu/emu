@@ -5,13 +5,15 @@ on: [push, pull_request, workflow_dispatch]
 jobs:
   setup_dependencies:
     runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository (outside container)
+        uses: actions/checkout@v4
+
     container:
       image: conanio/gcc11-ubuntu16.04
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - name: Get Conan Cache Path
         id: conan_cache
         run: echo "CONAN_CACHE_PATH=$(conan config home)" >> $GITHUB_ENV
