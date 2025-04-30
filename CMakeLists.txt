@@ -111,7 +111,6 @@ target_sources(core PUBLIC FILE_SET HEADERS BASE_DIRS include/core FILES
     include/core/half.hpp
 )
 
-
 target_compile_features(core PUBLIC cxx_std_20)
 
 if(build_cuda)
@@ -296,7 +295,7 @@ write_basic_package_version_file(
     "${PROJECT_BINARY_DIR}/emu-config-version.cmake"
     VERSION "${PROJECT_VERSION}"
     COMPATIBILITY SameMajorVersion
-)     INCLUDES DESTINATION "${CMAKE_INSTALL_DATADIR}")
+)
 
 export(TARGETS
     ${INSTALL_TARGETS}
