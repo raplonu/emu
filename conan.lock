@@ -1,0 +1,22 @@
+{
+    "version": "0.5",
+    "requires": [
+        "zlib/1.3.1#f52e03ae3d251dec704634230cd806a2%1708593606.497",
+        "pybind11/2.13.6#7d301b76bc1a308a51b506dd2de145b0%1726323843.134",
+        "ms-gsl/4.0.0#60ed7b1ae7ff8fbfe0bf9a1c1f0443a8%1700512686.639",
+        "mdspan/0.6.0#dca4d128785d9db0586bc3a9e8b14531%1681900734.185",
+        "libbacktrace/cci.20210118#ec1aa63bbc10145c6a299e68e711670c%1676205469.545",
+        "gtest/1.13.0#95e69a512a85be0fff52a1f0ea8b930a%1715096214.407",
+        "fmt/11.0.0#ed272793eb8d2be2faf3739c20a4ef8b%1720016029.095",
+        "cuda-api-wrappers/0.7.1#5f4f28550103019868ce754fb8ab8db2%1735828933.682",
+        "bzip2/1.0.8#457c272f7da34cb9c67456dd217d36c4%1703591832.799",
+        "boost/1.86.0#ce76e7477e466d7d8cbcf738c5d64175%1736197454.755"
+    ],
+    "build_requires": [
+        "b2/5.2.1#91bc73931a0acb655947a81569ed8b80%1718416612.241"
+    ],
+    "python_requires": [
+        "conan_cuda/1.0.0#2741751b4926bf9558d504816378d61f%1720423206.861448"
+    ],
+    "config_requires": []
+}
