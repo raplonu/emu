@@ -1,0 +1,14 @@
+The package emu provides CMake targets:
+
+    find_package(emu CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE emu::emu)
+
+    # Or use one (or several) of the following:
+    find_package(emu CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE emu::core)
+
+    find_package(emu CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE emu::cuda)
+
+    find_package(emu CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE emu::python)

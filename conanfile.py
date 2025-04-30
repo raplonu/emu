@@ -12,7 +12,7 @@ class EmuConan(ConanFile):
 
     settings = 'os', 'compiler', 'build_type', 'arch'
 
-    exports_sources = 'CMakeLists.txt', 'include/*', 'src/*', 'test/*'
+    exports_sources = 'CMakeLists.txt', 'include/*', 'src/*', 'test/*', 'cmake/*'
 
     # Generate the logic between shared and fPic
     implements = ['auto_shared_fpic']
@@ -70,8 +70,8 @@ class EmuConan(ConanFile):
     def generate(self):
         tc = CMakeToolchain(self)
 
-        tc.cache_variables['emu_build_cuda'] = self.options.cuda
-        tc.cache_variables['emu_build_python_test'] = self.options.python
+        tc.cache_variables['build_cuda'] = self.options.cuda
+        tc.cache_variables['build_python_test'] = self.options.python
         tc.cache_variables['emu_boost_namespace'] = self.dependencies['boost'].options.namespace
 
         tc.generate()
@@ -89,18 +89,12 @@ class EmuConan(ConanFile):
         cmake.install()
 
     def package_info(self):
-        self.cpp_info.components['core'].libs = ['emucore']
+        self.cpp_info.components['core'].libs = ['core']
         self.cpp_info.components['core'].requires = [
             'fmt::fmt',
             'boost::boost',
             'ms-gsl::_ms-gsl',
-            'tl-expected::expected',
-            'tl-optional::optional',
             'mdspan::mdspan',
-            'half::half',
-            'dlpack::dlpack',
-            'range-v3::range-v3'
-
         ]
 
         self.cpp_info.components['core'].defines = ['EMU_BOOST_NAMESPACE={}'.format(self.dependencies['boost'].options.namespace)]
@@ -112,9 +106,10 @@ class EmuConan(ConanFile):
         if self.options.cuda:
             # Conan does not provide a cuda 'package'. conan_cuda allows to retrieve
             # cuda lib dir and include dir and append it to emucuda
+            # TODO: investigate why unused.
             cuda_prop = self.python_requires['conan_cuda'].module.properties()
 
-            self.cpp_info.components['cuda'].libs = ['emucuda']
+            self.cpp_info.components['cuda'].libs = ['cuda']
             self.cpp_info.components['cuda'].requires = [
                 'core',
                 'cuda-api-wrappers::cuda-api-wrappers',

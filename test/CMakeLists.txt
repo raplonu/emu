@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.18)
 
 enable_testing()
 
-find_package(GTest REQUIRED)
+find_package(GTest CONFIG REQUIRED)
 include(GoogleTest)
 
 add_executable(emucoretest
@@ -27,14 +27,14 @@ add_executable(emucoretest
 )
 
 target_link_libraries(emucoretest PRIVATE
-    GTest::gtest GTest::gtest_main emucore
+    GTest::gtest GTest::gtest_main core
 )
 
 target_include_directories(emucoretest PRIVATE include)
 
 gtest_discover_tests(emucoretest)
 
-if (emu_build_cuda)
+if (build_cuda)
 
     add_executable(emucudatest
         src/cuda/test.cu
@@ -45,7 +45,7 @@ if (emu_build_cuda)
     )
 
     target_link_libraries(emucudatest PRIVATE
-        GTest::gtest GTest::gtest_main emucuda
+        GTest::gtest GTest::gtest_main cuda
     )
 
     target_include_directories(emucudatest PRIVATE include)
@@ -53,7 +53,7 @@ if (emu_build_cuda)
     gtest_discover_tests(emucudatest)
 endif()
 
-if (emu_build_python_test)
+if (build_python_test)
 
     add_executable(emupythontest
         src/python/main.cpp
@@ -64,7 +64,7 @@ if (emu_build_python_test)
         src/python/cstring_view_test.cpp
     )
 
-    if(emu_build_cuda)
+    if(build_cuda)
         target_sources(emupythontest PRIVATE
             src/python/cuda_span_test.cpp
         )
@@ -74,7 +74,7 @@ if (emu_build_python_test)
     find_package(pybind11 REQUIRED)
 
     target_link_libraries(emupythontest PRIVATE
-        GTest::gtest emupython pybind11::embed
+        GTest::gtest python pybind11::embed
     )
 
     target_include_directories(emupythontest PRIVATE include)

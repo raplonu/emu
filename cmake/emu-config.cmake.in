@@ -1,3 +1,24 @@
 @PACKAGE_INIT@
 
+find_package(Boost CONFIG REQUIRED)
+find_package(fmt CONFIG REQUIRED)
+find_package(Microsoft.GSL CONFIG REQUIRED)
+find_package(mdspan CONFIG REQUIRED)
+
 include("${CMAKE_CURRENT_LIST_DIR}/emu-targets.cmake")
+
+if(NOT TARGET emu::emu)
+    add_library(emu::emu INTERFACE IMPORTED)
+
+    if(TARGET emu::core)
+        set_property(TARGET emu::emu APPEND PROPERTY INTERFACE_LINK_LIBRARIES emu::core)
+    endif()
+    if(TARGET emu::cuda)
+        set_property(TARGET emu::emu APPEND PROPERTY INTERFACE_LINK_LIBRARIES emu::cuda)
+    endif()
+    if(TARGET emu::python)
+        set_property(TARGET emu::emu APPEND PROPERTY INTERFACE_LINK_LIBRARIES emu::python)
+    endif()
+endif()
+
+check_required_components(emu)

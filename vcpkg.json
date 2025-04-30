@@ -11,21 +11,25 @@
     "boost-system",
     "mdspan",
     "ms-gsl",
-    "cuda-api-wrappers",
     "fmt"
   ],
-  "overrides": [
+  "overrides" : [
     {
       "name": "cuda-api-wrappers",
       "version": "0.7.1"
     }
   ],
   "features" : {
-    "test" : {
+    "cuda" : {
+      "description" : "emu cuda support",
+      "dependencies" : [ "cuda-api-wrappers" ]
+    },
+    "tests" : {
       "description" : "emu test",
       "dependencies" : [ {
         "name" : "gtest",
-        "version>=" : "1.16.0"
+        "version>=" : "1.16.0",
+        "host" : true
       } ]
     }
   }

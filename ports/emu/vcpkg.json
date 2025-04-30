@@ -1,0 +1,32 @@
+{
+    "name": "emu",
+    "version": "1.0.0",
+    "description": "Stuff",
+    "homepage": "https://github.com/raplonu/emu",
+    "dependencies": [
+      {
+        "name": "vcpkg-cmake",
+        "host": true
+      },
+      {
+        "name": "vcpkg-cmake-config",
+        "host": true
+      },
+      "boost-headers",
+      "boost-config",
+      "boost-preprocessor",
+      "boost-callable-traits",
+      "boost-hana",
+      "boost-system",
+      "mdspan",
+      "ms-gsl",
+      "fmt"
+    ],
+    "features" : {
+      "cuda" : {
+        "description" : "emu cuda support",
+        "dependencies" : [ "cuda-api-wrappers" ]
+
+      }
+    }
+  }
