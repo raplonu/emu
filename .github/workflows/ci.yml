@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Conan
+        uses: conan-io/setup-conan@v1
+        with:
+          cache_packages: true
+
+      - name: Install CMake (via pip)
+        run: |
+          python3 -m pip install --upgrade pip
+            python3 -m pip install "cmake<4"
+
+      - name: Clone and add cosmic-center-index as Conan local remote
+        run: |
+          git clone https://github.com/raplonu/cosmic-center-index ~/.conan2/cosmic-center-index
+          conan remote add cosmic -t=local-recipes-index ~/.conan2/cosmic-center-index --force
+
+      - name: Cache Conan packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.conan2
+          key: ${{ runner.os }}-conan-${{ hashFiles('**/conanfile.*') }}
+          restore-keys: |
+            ${{ runner.os }}-conan-
+
+      - name: Install dependencies with Conan lockfile
+        run: |
+          conan profile detect --force
+          conan install . \
+            --lockfile=conan.lock \
+            --lockfile-partial \
+            --lockfile-out=conan.lock \
+            --build=missing
+
+      - name: Configure CMake
+        run: cmake --preset conan-release
+
+      - name: Build project
+        run: cmake --build --preset conan-release
+
+      - name: Run tests with CTest
+        run: ctest --preset conan-release --output-on-failure
