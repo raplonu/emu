@@ -57,7 +57,7 @@ namespace emu
     namespace spe
     {
         template<typename T, typename E>
-        struct map< expected<T, E> > {
+        struct transform< expected<T, E> > {
 
             template<typename Fr, typename Fn>
             constexpr auto operator()(Fr&& opt, Fn&& fn) const {

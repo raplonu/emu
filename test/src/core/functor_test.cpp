@@ -14,7 +14,7 @@ namespace
     {
         {
             std::vector vec = {1, 2, 3, 4, 5};
-            auto res = emu::map(vec, [](int i) { return i * 2; });
+            auto res = emu::transform(vec, [](int i) { return i * 2; });
 
             auto expected_result = std::vector{2, 4, 6, 8, 10};
             EXPECT_EQ(res, expected_result);
@@ -23,7 +23,7 @@ namespace
         {
             std::vector vec = {1, 2, 3, 4, 5};
 
-            auto res = emu::map(vec, [](int i) { return i % 2 == 0; });
+            auto res = emu::transform(vec, [](int i) { return i % 2 == 0; });
 
             auto expected_result = std::vector{false, true, false, true, false};
             EXPECT_EQ(res, expected_result);
@@ -38,7 +38,7 @@ namespace
 
             std::optional<int> opt = 42;
 
-            auto res = emu::map(opt, [](int i) { return i * 2; });
+            auto res = emu::transform(opt, [](int i) { return i * 2; });
 
             ASSERT_TRUE(res.has_value());
             EXPECT_EQ(*res, 84); // NOLINT(bugprone-unchecked-optional-access) It is checked.
@@ -47,7 +47,7 @@ namespace
         {
             std::optional<int> opt = std::nullopt;
 
-            auto res = emu::map(opt, [](int i) { return i * 2; });
+            auto res = emu::transform(opt, [](int i) { return i * 2; });
 
             EXPECT_EQ(res, std::nullopt);
         }
@@ -61,7 +61,7 @@ namespace
 
             emu::expected<int, std::string> e = 42;
 
-            auto res = emu::map(e, [](int i) { return i * 2; });
+            auto res = emu::transform(e, [](int i) { return i * 2; });
 
             EXPECT_EQ(*res, 84);
         }
@@ -69,7 +69,7 @@ namespace
         {
             emu::expected<int, std::string> e(emu::unexpect, "error");
 
-            auto res = emu::map(e, [](int i) { return i * 2; });
+            auto res = emu::transform(e, [](int i) { return i * 2; });
 
             EXPECT_EQ(res.error(), "error");
         }

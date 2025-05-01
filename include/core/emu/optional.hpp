@@ -104,7 +104,7 @@ namespace emu
 namespace spe
 {
     template<typename T>
-    struct map< std::optional<T> > {
+    struct transform< std::optional<T> > {
 
         template<typename Fr, typename Fn>
         constexpr auto operator()(Fr&& opt, Fn&& fn)
@@ -118,7 +118,7 @@ namespace spe
     };
 
     template<typename T>
-    struct map< tl::optional<T> > {
+    struct transform< tl::optional<T> > {
 
         template<typename Fr, typename Fn>
         constexpr auto operator()(Fr&& opt, Fn&& fn) const {

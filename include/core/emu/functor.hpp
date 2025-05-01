@@ -16,7 +16,7 @@ namespace spe
 {
 
     template<typename From>
-    struct map {
+    struct transform {
         template<typename Fr, typename Fn>
         constexpr auto operator()(Fr&& from, Fn&& fn) const {
             return std::invoke(EMU_FWD(fn), EMU_FWD(from));
@@ -28,16 +28,16 @@ namespace spe
 namespace detail {
 
     // just used to move the first template type of spe::as From to the method.
-    struct map {
+    struct transform {
         template<typename From, typename Fn> // <- From is declared here.
         constexpr auto operator()(From && from, Fn&& fn) const {
-            return spe::map<std::remove_cvref_t<From>>{}(EMU_FWD(from), EMU_FWD(fn));
+            return spe::transform<std::remove_cvref_t<From>>{}(EMU_FWD(from), EMU_FWD(fn));
         }
     };
 
 } // namespace detail
 
-    constexpr auto map = detail::map{};
+    constexpr auto transform = detail::transform{};
 
 namespace detail {
 
@@ -45,7 +45,7 @@ namespace detail {
     struct as {
         template<typename From>
         constexpr auto operator()(From&& from) const {
-            return emu::map(
+            return emu::transform(
                 EMU_FWD(from),
                 []<typename T>(T&& t) { return static_cast<To>(EMU_FWD(t)); }
             );
@@ -87,14 +87,14 @@ namespace detail
 
 // Specializations for std::vector
 template<typename T, typename Allocator>
-struct emu::spe::map< std::vector<T, Allocator> > {
+struct emu::spe::transform< std::vector<T, Allocator> > {
 
     using source_vector = std::vector<T, Allocator>;
     using allocator_traits = std::allocator_traits<Allocator>;
 
     template<typename Fr, typename Fn>
     constexpr auto operator()(Fr&& vec, Fn&& fn) const {
-        using destination_type = decltype(emu::map(vec[0], fn));
+        using destination_type = decltype(emu::transform(vec[0], fn));
         using destination_allocator = typename allocator_traits::template rebind_alloc<destination_type>;
 
         destination_allocator alloc = allocator_traits::select_on_container_copy_construction(vec.get_allocator());
@@ -107,7 +107,7 @@ struct emu::spe::map< std::vector<T, Allocator> > {
 };
 
 template<typename T, std::size_t N>
-struct emu::spe::map< std::array<T, N>> {
+struct emu::spe::transform< std::array<T, N>> {
 
     template<typename Fr, typename Fn, std::size_t... I>
     constexpr auto apply(Fr&& vec, Fn&& fn, std::index_sequence<I...>) const {
@@ -121,7 +121,7 @@ struct emu::spe::map< std::array<T, N>> {
 };
 
 template<typename... Ts>
-struct emu::spe::map<std::tuple<Ts...>> {
+struct emu::spe::transform<std::tuple<Ts...>> {
 
     template<typename Tuple, typename Fn, std::size_t... I>
     constexpr auto apply(Tuple&& tuple, Fn&& fn, std::index_sequence<I...>) const {
@@ -135,7 +135,7 @@ struct emu::spe::map<std::tuple<Ts...>> {
 };
 
 template<typename T1, typename T2>
-struct emu::spe::map<std::pair<T1, T2>> {
+struct emu::spe::transform<std::pair<T1, T2>> {
 
     template<typename Pair, typename Fn>
     constexpr auto operator()(Pair&& pair, Fn&& fn) const {
@@ -144,7 +144,7 @@ struct emu::spe::map<std::pair<T1, T2>> {
 };
 
 template<typename... Ts>
-struct emu::spe::map<std::variant<Ts...>> {
+struct emu::spe::transform<std::variant<Ts...>> {
 
     template<typename Variant, typename Fn>
     constexpr auto operator()(Variant&& var, Fn&& fn) const {

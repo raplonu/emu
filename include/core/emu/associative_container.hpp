@@ -17,7 +17,7 @@ namespace emu
         class Compare = std::less<>,
         class Allocator = std::allocator<std::pair<const Key, T>>
     >
-    using dict = std::map<Key, T, Compare, Allocator>;
+    using map = std::map<Key, T, Compare, Allocator>;
 
     template<
         class Key,
