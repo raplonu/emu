@@ -8,57 +8,58 @@
 
 - [cmake](https://cmake.org/) >= 3.24
 - [cuda](https://developer.nvidia.com/cuda-toolkit) >= 12.1 (the one with device cuda graph feature)
-- [conan](https://conan.io/) >= 2.0.0
+- [conan](https://conan.io/) >= 2.0.0 or [vcpkg](https://vcpkg.io/) (experimental)
 - [just](https://just.systems/) optional
 
-`emu` requires `cmake` and by default `conan` to install dependencies and build.
+`emu` requires `cmake` and `conan` to install dependencies and build.
 Also, we recommend to use `just` to simplify the build process.
 
-> Note: `conan` requires some configuration to work properly. See our [guide](https://gitlab.obspm.fr/jbernard/conan-packages) or simply run:
+> Note: `conan` requires some configuration to work properly. See our [guide](https://github.com/raplonu/conan-packages) or simply run:
 
 ```bash
-curl -sS https://gitlab.obspm.fr/jbernard/conan-packages/-/raw/main/install.sh | bash
+curl -sS https://raw.githubusercontent.com/raplonu/cosmic-center-index/refs/heads/main/install.sh | bash
 ```
 
 ## Build
 
+For CMake regulars, you can use the following commands to build the project:
+
 ```bash
-# install emu
-conan create . -b missing
-# install emu-python
-conan create python -b missing
+# install dependencies
+conan install . -b missing
+# configure the project
+cmake --preset conan-release
+# build the project
+cmake --build --preset conan-release
 ```
 
-or use `just install`.
+> Note: `missing` is used to build dependencies from source if binary is not available. `editable` is used to build local dependencies register using `conan editable add` command.
 
-This will create `emu` and `emu-python` packages in your local conan cache.
 
-## Dev
+conan offers an alternative way to build the project using `conan build` command. This command will configure and build the project in a single step.
 
 ```bash
-conan editable add .
-conan build . -b "missing"
-# dev python
-conan editable add python
-conan build python -b "missing;editable"
+conan build . -b missing
 ```
 
 or use `just dev`.
 
-| Note: `missing` is used to build dependencies from source if binary is not available. `editable` is used to build local dependencies register using `conan editable add` command.
+## Use editable mode
 
-This will configure and build the project in `build/Release` folder by default and adds `emu` and `emu-python` as editable packages in your local conan cache. Other projects that rely on `emu` will compile and link against the lib and header in the current directory.
+After building the project, you can use `conan editable add` command to add the project as an editable package in your local conan cache. This will allow you to modify the source code and rebuild the project without having to reinstall it.
+
+```bash
+conan editable add .
+```
 
 For incremental build, just run:
 
 ```bash
 cmake --build --preset conan-release
-# cmake doesn't allow to build a specific directory with a preset
-(cd python; cmake --build --preset conan-release)
 ```
 
 or use `just build`.
 
 ## Debug mode
 
-To use project in debug mode add `-s build_type=Debug` to `conan create` or `conan build` commands and `--preset conan-debug` to `cmake --build` commands.
+To use project in debug mode add `-s build_type=Debug` to `conan create|build|install` commands and `--preset conan-debug` to `cmake --build` commands.
