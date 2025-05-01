@@ -7,43 +7,41 @@
     },
     "configurePresets": [
         {
-            "name": "default",
+            "name": "vcpkg-default",
+            "displayName": "'vcpkg-default' config",
+            "description": "'vcpkg-default' configure using 'Ninja Multi-Config' generator",
+            "generator": "Ninja Multi-Config",
+            "binaryDir": "${sourceDir}/build",
             "hidden": false,
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/Release",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
-            }
-        },
-        {
-            "name": "debug",
-            "hidden": false,
-            "inherits": "default",
-            "binaryDir": "${sourceDir}/build/Debug",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug"
             }
         }
     ],
     "buildPresets": [
         {
-            "name": "default",
-            "configurePreset": "default"
+            "name": "vcpkg-release",
+            "configurePreset": "vcpkg-default",
+            "configuration": "Release"
         },
         {
-            "name": "debug",
-            "configurePreset": "debug"
+            "name": "vcpkg-debug",
+            "configurePreset": "vcpkg-default",
+            "configuration": "Debug"
         }
     ],
     "testPresets": [
         {
-            "name": "default",
-            "configurePreset": "default"
+            "name": "vcpkg-release",
+            "configurePreset": "vcpkg-default",
+            "configuration": "Release",
+            "output": {"outputOnFailure": true}
         },
         {
-            "name": "debug",
-            "configurePreset": "debug"
+            "name": "vcpkg-debug",
+            "configurePreset": "vcpkg-default",
+            "configuration": "Debug",
+            "output": {"outputOnFailure": true}
         }
     ]
 }

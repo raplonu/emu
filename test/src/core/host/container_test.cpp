@@ -35,7 +35,7 @@ namespace
     {
 
         {
-            const emu::host::container<int> con;
+            const emu::host::container<int> con{};
 
             EXPECT_EQ(con.data(), nullptr);
             EXPECT_EQ(con.size(), 0);

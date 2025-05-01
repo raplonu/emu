@@ -21,18 +21,18 @@ namespace emu
     {
         using string_view_type = std::basic_string_view<CharT, Traits>;
 
-        using traits_type = string_view_type::traits_type;
-        using value_type = string_view_type::value_type;
-        using pointer = string_view_type::pointer;
-        using const_pointer = string_view_type::const_pointer;
-        using reference = string_view_type::reference;
-        using const_reference = string_view_type::const_reference;
-        using const_iterator = string_view_type::const_iterator;
-        using iterator = string_view_type::iterator;
-        using const_reverse_iterator = string_view_type::const_reverse_iterator;
-        using reverse_iterator = string_view_type::reverse_iterator;
-        using size_type = string_view_type::size_type;
-        using difference_type = string_view_type::difference_type;
+        using traits_type = typename string_view_type::traits_type;
+        using value_type = typename string_view_type::value_type;
+        using pointer = typename string_view_type::pointer;
+        using const_pointer = typename string_view_type::const_pointer;
+        using reference = typename string_view_type::reference;
+        using const_reference = typename string_view_type::const_reference;
+        using const_iterator = typename string_view_type::const_iterator;
+        using iterator = typename string_view_type::iterator;
+        using const_reverse_iterator = typename string_view_type::const_reverse_iterator;
+        using reverse_iterator = typename string_view_type::reverse_iterator;
+        using size_type = typename string_view_type::size_type;
+        using difference_type = typename string_view_type::difference_type;
 
         static constexpr size_type npos = string_view_type::npos;
 
