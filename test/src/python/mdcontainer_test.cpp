@@ -16,22 +16,23 @@ namespace
 
     namespace py = pybind11;
 
-    struct mdcontainer_1d_of_int {
+    template<typename T, std::size_t N, typename LayoutPolicy>
+    struct mdcontainer_of {
 
-        using data_type = int;
+        using data_type = T;
 
-        using view_type = emu::mdcontainer_1d<int>;
-        using const_view_type = emu::mdcontainer_1d<const int>;
+        using view_type = emu::mdcontainer<data_type, emu::dims<N>, LayoutPolicy>;
+        using const_view_type = emu::mdcontainer<const data_type, emu::dims<N>, LayoutPolicy>;
 
-        constexpr static std::size_t rank = 1;
+        constexpr static std::size_t rank = N;
         constexpr static bool support_read_only = true;
 
         static view_type get_view() {
-            return view_type(emu_test::md_helper::get_vector<data_type>(), emu_test::md_helper::buffer_size);
+            return view_type(emu_test::md_helper::get_vector<data_type>(), emu_test::md_helper::get_mapping<rank, LayoutPolicy>());
         }
 
         static const_view_type get_const_view() {
-            return const_view_type(emu_test::md_helper::get_vector<data_type>(), emu_test::md_helper::buffer_size);
+            return const_view_type(emu_test::md_helper::get_vector<data_type>(), emu_test::md_helper::get_mapping<rank, LayoutPolicy>());
         }
 
         static py::dict get_array_interface(py::object obj) {
@@ -40,7 +41,37 @@ namespace
 
     };
 
-    using MDContainerTestsList = testing::Types<mdcontainer_1d_of_int>;
+    using MDContainerTestsList = testing::Types<
+        mdcontainer_of<int, 1, emu::layout_right>,
+        mdcontainer_of<int, 2, emu::layout_right>,
+        mdcontainer_of<int, 3, emu::layout_right>,
+        mdcontainer_of<int, 1, emu::layout_left>,
+        mdcontainer_of<int, 2, emu::layout_left>,
+        mdcontainer_of<int, 3, emu::layout_left>,
+        mdcontainer_of<int, 1, emu::layout_stride>,
+        mdcontainer_of<int, 2, emu::layout_stride>,
+        mdcontainer_of<int, 3, emu::layout_stride>,
+
+        mdcontainer_of<float, 1, emu::layout_right>,
+        mdcontainer_of<float, 2, emu::layout_right>,
+        mdcontainer_of<float, 3, emu::layout_right>,
+        mdcontainer_of<float, 1, emu::layout_left>,
+        mdcontainer_of<float, 2, emu::layout_left>,
+        mdcontainer_of<float, 3, emu::layout_left>,
+        mdcontainer_of<float, 1, emu::layout_stride>,
+        mdcontainer_of<float, 2, emu::layout_stride>,
+        mdcontainer_of<float, 3, emu::layout_stride>,
+
+        mdcontainer_of<std::complex<float>, 1, emu::layout_right>,
+        mdcontainer_of<std::complex<float>, 2, emu::layout_right>,
+        mdcontainer_of<std::complex<float>, 3, emu::layout_right>,
+        mdcontainer_of<std::complex<float>, 1, emu::layout_left>,
+        mdcontainer_of<std::complex<float>, 2, emu::layout_left>,
+        mdcontainer_of<std::complex<float>, 3, emu::layout_left>,
+        mdcontainer_of<std::complex<float>, 1, emu::layout_stride>,
+        mdcontainer_of<std::complex<float>, 2, emu::layout_stride>,
+        mdcontainer_of<std::complex<float>, 3, emu::layout_stride>
+    >;
 
     INSTANTIATE_TYPED_TEST_SUITE_P(MDContainerPythonTests,    // Instance name
                                 PythonViewTest,             // Test case name

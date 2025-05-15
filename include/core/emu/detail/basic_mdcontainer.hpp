@@ -195,9 +195,13 @@ namespace detail
             requires validate_source<Range>
         basic_mdcontainer( Range&& r, const mapping_type& m )
             : mdspan_type( std::ranges::data(r), m )
-            , capsule_base(capsule_from_range(EMU_FWD(r)))
+            , capsule_base([&]{
+                // Check if the range is valid before moving it into the capsule.
+                mdspan_type::check_range_size(r);
+                return capsule_from_range(EMU_FWD(r));
+            }())
         {
-            mdspan_type::check_range_size(r);
+
         }
 
         template< std::ranges::contiguous_range Range, typename DataHolder >

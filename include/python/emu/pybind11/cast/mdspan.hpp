@@ -38,7 +38,10 @@ namespace detail
         }
 
         static pybind11::handle cast(cpp_type value, pybind11::return_value_policy /* policy */, pybind11::handle parent) {
-            return base_caster::to_python(value, parent).inc_ref();
+            // In order to avoid copying data, we declare a dummy parent.
+            // More info here: https://github.com/pybind/pybind11/issues/323#issuecomment-575717041
+            ::pybind11::str dummy_data_owner;
+            return base_caster::to_python(value, dummy_data_owner).inc_ref();
         }
     };
 

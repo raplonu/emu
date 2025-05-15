@@ -27,13 +27,13 @@ namespace
 
             const view_type con{ arr, md_helper::get_extents<rank>() };
 
-            check_view(con, arr, md_helper::get_extents<rank>());
+            check_view(con, arr, md_helper::get_shape<rank>());
         }
         {
             auto arr = md_helper::get_array<data_type>();
             const view_type con( arr, md_helper::get_extents<rank>() );
 
-            check_view(con, arr.data(), md_helper::get_extents<rank>());
+            check_view(con, arr.data(), md_helper::get_shape<rank>());
         }
         {
             //It's not possible to construct a view or a container from a std::array rvalue.
@@ -47,14 +47,14 @@ namespace
 
             view_type con( vec, md_helper::get_extents<rank>() );
 
-            check_view(con, vec.data(), md_helper::get_extents<rank>());
+            check_view(con, vec.data(), md_helper::get_shape<rank>());
         }
         {
             auto vec = md_helper::get_vector<data_type>();
 
             const_view_type con( vec, md_helper::get_extents<rank>() );
 
-            check_view(con, vec.data(), md_helper::get_extents<rank>());
+            check_view(con, vec.data(), md_helper::get_shape<rank>());
         }
     }
 

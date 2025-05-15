@@ -45,7 +45,6 @@ namespace detail
 
         using base::base;
 
-
         // ##########################################
         // # Sized range constructor (non standard) #
         // ##########################################

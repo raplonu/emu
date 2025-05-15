@@ -51,10 +51,14 @@ namespace emu::cast::detail
                     // Requesting may fail for severals reasons including constness incompatibility.
                     auto buffer_info = py::reinterpret_borrow<py::buffer>(handle).request(/* writable = */ not is_const<element_type>);
 
+                    // In the past, I tried to use `buffer_info.format` to check the type.
+                    // But it is not consistent with the numpy format descriptor.
+                    // For now, I'm keeping the previous code for reminding my previous mistake :
                     // Not using `py::format_descriptor` anymore since format are not consistent with buffer_info...
-                    // if (py::format_descriptor<value_type>::format() == buffer_info.format)
-                    if (dtype().is(py::dtype::from_args(py::str(buffer_info.format)))) {
+                    // if (dtype().is(py::dtype::from_args(py::str(buffer_info.format)))) {
 
+                    // Correct code is here:
+                    if (py::format_descriptor<value_type>::format() == buffer_info.format) {
                         return buffer_info;
                     }
                 }
@@ -93,9 +97,6 @@ namespace emu::cast::detail
                 strides.push_back(mapping.stride(i) * sizeof(value_type));
             }
 
-            // In order to avoid copying data, we declare a dummy parent.
-            // More info here: https://github.com/pybind/pybind11/issues/323#issuecomment-575717041
-            // py::str dummy_data_owner;
             auto res = py::array{dtype(), move(shape), move(strides), value.data_handle(), parent};
 
             // Only way I found to force read only from const span.

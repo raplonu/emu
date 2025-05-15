@@ -18,12 +18,13 @@ namespace
 
     namespace py = pybind11;
 
-    struct container_of_int {
+    template<typename T>
+    struct container_of {
 
-        using data_type = int;
+        using data_type = T;
 
-        using view_type = emu::container<int>;
-        using const_view_type = emu::container<const int>;
+        using view_type = emu::container<data_type>;
+        using const_view_type = emu::container<const data_type>;
 
         constexpr static std::size_t rank = 1;
         constexpr static bool support_read_only = true;
@@ -42,7 +43,13 @@ namespace
 
     };
 
-    using ContainerTestsList = testing::Types<container_of_int>;
+    using ContainerTestsList = testing::Types<
+        container_of<int>,
+        container_of<float>,
+        container_of<double>,
+        container_of<std::complex<float>>,
+        container_of<std::complex<double>>
+    >;
 
     INSTANTIATE_TYPED_TEST_SUITE_P(ContainerPythonTests,    // Instance name
                                 PythonViewTest,             // Test case name

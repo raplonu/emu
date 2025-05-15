@@ -17,12 +17,13 @@ namespace
 
     namespace py = pybind11;
 
-    struct span_of_int {
+    template<typename T>
+    struct span_of {
 
-        using data_type = int;
+        using data_type = T;
 
-        using view_type = emu::cuda::device::span<int>;
-        using const_view_type = emu::cuda::device::span<const int>;
+        using view_type = emu::cuda::device::span<data_type>;
+        using const_view_type = emu::cuda::device::span<const data_type>;
 
         constexpr static std::size_t rank = 1;
         constexpr static bool support_read_only = false;
@@ -43,13 +44,18 @@ namespace
             return obj.attr("__cuda_array_interface__").cast<py::dict>();
         }
 
-
     };
 
-    using SpanTestsList = testing::Types<span_of_int>;
+    using SpanTestsList = testing::Types<
+        span_of<int>,
+        span_of<float>,
+        span_of<double>,
+        span_of<std::complex<float>>,
+        span_of<std::complex<double>>
+    >;
 
-    INSTANTIATE_TYPED_TEST_SUITE_P(CudaSpanPythonTests,    // Instance name
-                                PythonViewTest,             // Test case name
-                                SpanTestsList);  // Type list
+    INSTANTIATE_TYPED_TEST_SUITE_P(CudaSpanPythonTests, // Instance name
+                                PythonViewTest,         // Test case name
+                                SpanTestsList);         // Type list
 
 } // namespace

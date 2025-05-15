@@ -8,6 +8,8 @@
 
 #include <emu/pybind11/cast/span.hpp>
 
+#include <complex>
+
 namespace
 {
     REGISTER_TYPED_TEST_SUITE_P(
@@ -17,12 +19,15 @@ namespace
 
     namespace py = pybind11;
 
-    struct span_of_int {
+    template<typename T>
+    struct span_of {
 
-        using data_type = int;
+        using value_type = T;
 
-        using view_type = emu::span<int>;
-        using const_view_type = emu::span<const int>;
+        using data_type = value_type;
+
+        using view_type = emu::span<value_type>;
+        using const_view_type = emu::span<const value_type>;
 
         constexpr static std::size_t rank = 1;
         constexpr static bool support_read_only = true;
@@ -45,7 +50,13 @@ namespace
 
     };
 
-    using SpanTestsList = testing::Types<span_of_int>;
+    using SpanTestsList = testing::Types<
+        span_of<int>,
+        span_of<float>,
+        span_of<double>,
+        span_of<std::complex<float>>,
+        span_of<std::complex<double>>
+    >;
 
     INSTANTIATE_TYPED_TEST_SUITE_P(SpanPythonTests,    // Instance name
                                 PythonViewTest,             // Test case name

@@ -119,14 +119,14 @@ namespace md_helper
     template <typename T>
     std::vector<T> get_vector() {
         std::vector<T> v(buffer_size);
-        std::iota(v.begin(), v.end(), 0);
+        std::iota(v.begin(), v.end(), float{});
         return v;
     }
 
     template <typename T>
     std::array<T, buffer_size> get_array() {
         std::array<T, buffer_size> arr;
-        std::iota(arr.begin(), arr.end(), 0);
+        std::iota(arr.begin(), arr.end(), float{});
         return arr;
     }
 
@@ -138,9 +138,9 @@ namespace md_helper
     }
 
     template<size_t Rank>
-    std::span<const size_t, Rank> get_extents() {
+    std::span<const size_t, Rank> get_shape() {
         if constexpr (Rank == 1) {
-            static constexpr std::array<size_t, 1> extents{buffer_size};
+            static constexpr std::array<size_t, 1> extents{2 * 3 * 4};
             return extents;
         } else if constexpr (Rank == 2) {
             static constexpr std::array<size_t, 2> extents{2, 3 * 4};
@@ -151,6 +151,27 @@ namespace md_helper
         } else {
             static_assert(emu::dependent_false_v<Rank>, "Rank not supported");
         }
+    }
+
+    template<size_t Rank>
+    emu::dextents<std::size_t, Rank> get_extents() {
+        return emu::dextents<std::size_t, Rank>{get_shape<Rank>()};
+    }
+
+    template<size_t Rank, typename LayoutPolicy>
+    auto get_mapping() -> typename LayoutPolicy::template mapping<emu::dims<Rank>> {
+        auto extents = get_extents<Rank>();
+
+        using extents_type = decltype(extents);
+
+        if constexpr (std::same_as<LayoutPolicy, emu::layout_stride>) {
+            //TODO: maybe incorrect stride, need to fix that.
+            // or find a way to test a strided mdspan later.
+            return typename LayoutPolicy::template mapping<extents_type>(extents, get_shape<Rank>());
+        } else {
+            return typename LayoutPolicy::template mapping<extents_type>(extents);
+        }
+
     }
 
 } // namespace md_helper
