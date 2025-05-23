@@ -15,10 +15,19 @@ namespace emu
 namespace spe
 {
 
-    template <typename ElementType, typename Extents, typename LayoutPolicy, typename AccessorPolicy>
-    struct md_converter<mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy>> {
-        static constexpr auto as_md(const mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy>& md) noexcept {
-            return md;
+//     template <typename ElementType, typename Extents, typename LayoutPolicy, typename AccessorPolicy>
+//     struct md_converter<mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy>> {
+//         static constexpr auto as_md(const mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy>& md) noexcept {
+//             return md;
+//         }
+//     };
+
+    template <std::ranges::contiguous_range T>
+    struct md_converter<T> {
+
+        template <typename TT>
+        static constexpr auto convert(TT&& t) noexcept {
+            return mdspan(std::ranges::data(t), std::ranges::size(t));
         }
     };
 

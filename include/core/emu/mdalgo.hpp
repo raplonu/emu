@@ -1,8 +1,9 @@
 #pragma once
 
-#include "type_traits.hpp"
 #include <emu/type_traits.hpp>
 #include <emu/utility.hpp>
+#include <emu/concepts.hpp>
+#include <emu/concepts.hpp>
 
 #include <ranges>
 
@@ -23,8 +24,10 @@ namespace spe
 
     template <typename T>
     struct md_converter {
-        static constexpr auto convert(T&& t) noexcept {
-            static_assert(dependent_false<T>, "No md_converter specialization for this type");
+
+        template <typename TT>
+        static constexpr auto convert(TT&& t) noexcept {
+            static_assert(dependent_false<TT>, "No md_converter specialization for this type");
         }
     };
 
@@ -35,7 +38,11 @@ namespace spe
 
     template <typename T>
     constexpr auto as_md(T&& t) noexcept {
-        return spe::md_converter<rm_cvref<T>>::convert(EMU_FWD(t));
+
+        if constexpr (cpts::any_mdspan<rm_cvref<T>>)
+            return EMU_FWD(t);
+        else
+            return spe::md_converter<rm_cvref<T>>::convert(EMU_FWD(t));
     }
 
     template <typename T>

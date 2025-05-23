@@ -36,6 +36,7 @@ class EmuConan(ConanFile):
         self.requires('boost/1.86.0', transitive_headers=True, transitive_libs=True)
         self.requires('ms-gsl/4.0.0', transitive_headers=True)
         self.requires('mdspan/0.6.0', transitive_headers=True)
+        self.requires('openblas/0.3.27', transitive_headers=True, transitive_libs=True)
 
         if self.options.cuda:
             self.requires('cuda-api-wrappers/0.7.1', transitive_headers=True)
@@ -52,7 +53,7 @@ class EmuConan(ConanFile):
 
     def layout(self):
         cmake_layout(self)
-        self.cpp.source.components['core'].includedirs = ['include/core']
+        self.cpp.source.components['core'].includedirs = ['include/core', 'include/linealg']
         self.cpp.build.components['core'].libdirs = self.cpp.build.libdirs
 
         self.cpp.source.components['python'].includedirs = ['include/python']
@@ -95,6 +96,7 @@ class EmuConan(ConanFile):
             'boost::boost',
             'ms-gsl::_ms-gsl',
             'mdspan::mdspan',
+            'openblas::openblas',
         ]
 
         self.cpp_info.components['core'].defines = ['EMU_BOOST_NAMESPACE={}'.format(self.dependencies['boost'].options.namespace)]

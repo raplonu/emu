@@ -65,7 +65,6 @@ target_sources(emucore
 )
 
 target_sources(emucore PUBLIC FILE_SET HEADERS BASE_DIRS include/core FILES
-    include/core/emu/blas.hpp
     include/core/emu/tuple.hpp
     include/core/emu/capsule.hpp
     include/core/emu/charconv.hpp
@@ -122,6 +121,13 @@ target_sources(emucore PUBLIC FILE_SET HEADERS BASE_DIRS include/core FILES
     include/core/half.hpp
 )
 
+target_sources(emucore PUBLIC FILE_SET HEADERS BASE_DIRS include/linealg FILES
+    include/linealg/emu/blas.hpp
+    include/linealg/emu/blas/blas_type.hpp
+    include/linealg/emu/blas/cblas/context.hpp
+    include/linealg/emu/blas/cblas/function.hpp
+)
+
 target_compile_features(emucore PUBLIC cxx_std_20)
 
 if(build_cuda)
@@ -134,12 +140,14 @@ find_package(Boost CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(Microsoft.GSL CONFIG REQUIRED)
 find_package(mdspan CONFIG REQUIRED)
+find_package(OpenBLAS CONFIG REQUIRED)
 
 target_link_libraries(emucore PUBLIC
     Boost::boost
     fmt::fmt
     Microsoft.GSL::GSL
     std::mdspan
+    OpenBLAS::OpenBLAS
 )
 
 if (NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
@@ -158,10 +166,6 @@ if (build_cuda)
 
     target_sources(emucuda
         PRIVATE
-            src/cuda/cublas/handle.cpp
-            src/cuda/cublas/error.cpp
-            src/cuda/cublas.cpp
-
             src/cuda/cuda/pointer.cpp
             src/cuda/cuda/error.cpp
 
@@ -169,11 +173,15 @@ if (build_cuda)
             # src/cuda/cufft/error.cpp
             # src/cuda/cufft.cpp
 
-            src/cuda/cusolver/handle.cpp
-            src/cuda/cusolver/error.cpp
-            src/cuda/cusolver.cpp
+            # src/cuda/cusolver/handle.cpp
+            # src/cuda/cusolver/error.cpp
+            # src/cuda/cusolver.cpp
 
             src/cuda/thrust/execution_policy.cu
+
+            src/linealg/cublas/context.cpp
+            src/linealg/cublas/error.cpp
+            src/linealg/cublas.cpp
     )
 
     target_sources(emucuda PUBLIC FILE_SET HEADERS BASE_DIRS include/cuda FILES
@@ -189,9 +197,6 @@ if (build_cuda)
         include/cuda/emu/cuda/device/span.hpp
         include/cuda/emu/cuda/allocator.hpp
         include/cuda/emu/cuda/error.hpp
-        include/cuda/emu/cublas/error.hpp
-        include/cuda/emu/cublas/type.hpp
-        include/cuda/emu/cublas/handle.hpp
         include/cuda/emu/utility.cuh
         include/cuda/emu/cufft/error.hpp
         include/cuda/emu/cufft/type.hpp
@@ -203,13 +208,21 @@ if (build_cuda)
         include/cuda/emu/iterator/coordinate.cuh
         include/cuda/emu/iterator/function.cuh
         include/cuda/emu/thrust/execution_policy.cuh
-        include/cuda/emu/cublas.hpp
         include/cuda/emu/cusolver.hpp
         include/cuda/emu/tensor.hpp
         include/cuda/emu/atomic.cuh
         include/cuda/emu/cuda.hpp
         include/cuda/emu/memory.cuh
         include/cuda/emu/test/device_test.hpp
+    )
+
+    target_sources(emucuda PUBLIC FILE_SET HEADERS BASE_DIRS include/linealg FILES
+        include/linealg/emu/blas/cublas.hpp
+        include/linealg/emu/blas/cublas/error.hpp
+        include/linealg/emu/blas/cublas/type.hpp
+        include/linealg/emu/blas/cublas/context.hpp
+        include/linealg/emu/blas/cublas/function.hpp
+
     )
 
     target_compile_options(emucuda PUBLIC

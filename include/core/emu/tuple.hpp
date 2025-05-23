@@ -10,12 +10,12 @@
 #if EMU_CUDACC
 #include <thrust/tuple.h>
 
-template<typename... T>
-struct std::tuple_size<::thrust::tuple<T...>>
-    : std::integral_constant<std::size_t, ::thrust::tuple_size<::thrust::tuple<T...>>::value > {};
+// template<typename... T>
+// struct std::tuple_size<::thrust::tuple<T...>>
+//     : std::integral_constant<std::size_t, ::thrust::tuple_size<::thrust::tuple<T...>>::value > {};
 
-template<std::size_t I, typename... T>
-struct std::tuple_element<I, ::thrust::tuple<T...>> { using type = ::thrust::tuple_element<I, ::thrust::tuple<T...>>::type; };
+// template<std::size_t I, typename... T>
+// struct std::tuple_element<I, ::thrust::tuple<T...>> { using type = ::thrust::tuple_element<I, ::thrust::tuple<T...>>::type; };
 
 namespace thrust
 {

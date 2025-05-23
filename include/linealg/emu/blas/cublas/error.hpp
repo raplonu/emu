@@ -4,10 +4,7 @@
 
 #include <cublas_v2.h>
 
-namespace emu
-{
-
-namespace cublas
+namespace emu::linealg::cublas
 {
 
     /**
@@ -38,6 +35,4 @@ namespace cublas
 
     EMU_GENERATE_ERROR_HANDLER("Cublas", runtime_error, std::runtime_error, status_t, status::success, describe)
 
-} // namespace cublas
-
-} // namespace emu
+} // namespace emu::linealg::cublas

@@ -1,8 +1,8 @@
-#include <emu/cublas/error.hpp>
+#include <emu/blas/cublas/error.hpp>
 
 #include <string>
 
-namespace emu::cublas
+namespace emu::linealg::cublas
 {
 
     std::string describe(status_t error_code) {
@@ -46,4 +46,4 @@ namespace emu::cublas
 
     }
 
-} // namespace emu::cublas
+} // namespace emu::linealg::cublas

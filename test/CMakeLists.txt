@@ -24,6 +24,7 @@ add_executable(emucoretest
     src/core/managed_object_test.cpp
     src/core/mdalgo_test.cpp
     src/core/detail/dlpack_types_test.cpp
+    src/core/cblas_test.cpp
 )
 
 target_link_libraries(emucoretest PRIVATE
