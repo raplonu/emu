@@ -89,7 +89,7 @@ class EmuConan(ConanFile):
         cmake.install()
 
     def package_info(self):
-        self.cpp_info.components['core'].libs = ['core']
+        self.cpp_info.components['core'].libs = ['emucore']
         self.cpp_info.components['core'].requires = [
             'fmt::fmt',
             'boost::boost',
@@ -109,7 +109,7 @@ class EmuConan(ConanFile):
             # TODO: investigate why unused.
             cuda_prop = self.python_requires['conan_cuda'].module.properties()
 
-            self.cpp_info.components['cuda'].libs = ['cuda']
+            self.cpp_info.components['cuda'].libs = ['emucuda']
             self.cpp_info.components['cuda'].requires = [
                 'core',
                 'cuda-api-wrappers::cuda-api-wrappers',

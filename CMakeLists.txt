@@ -5,6 +5,7 @@ option(BUILD_TESTING "Build tests" ON)
 # Note: This is not possible to build python test using vcpkg.
 option(build_python_test "Enable python test module" OFF)
 option(build_cuda "Enable cuda module" OFF)
+option(enable_coverage "Enable coverage" OFF)
 
 if(BUILD_TESTING)
     list(APPEND VCPKG_MANIFEST_FEATURES "tests")
@@ -25,6 +26,16 @@ set(emu_boost_namespace "boost" CACHE STRING "Custom boost namespace name")
 
 project(emu VERSION 1.0.0 LANGUAGES CXX)
 
+if(enable_coverage)
+message(STATUS "Building with coverage enabled")
+
+    include(cmake/CodeCoverage.cmake)
+    append_coverage_compiler_flags()
+
+    # force adds "-lgcov --coverage" to LD flags for cuda stuff
+    # SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage -lgcov")
+endif()
+
 # Always generate compile_commands.json. Used by clangd and other tools.
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -43,9 +54,9 @@ include(GNUInstallDirs)
 # Emu Core
 #
 
-add_library(core)
+add_library(emucore)
 
-target_sources(core
+target_sources(emucore
     PRIVATE
         src/core/error.cpp
         src/core/pointer.cpp
@@ -53,7 +64,7 @@ target_sources(core
         src/core/numeric_type.cpp
 )
 
-target_sources(core PUBLIC FILE_SET HEADERS BASE_DIRS include/core FILES
+target_sources(emucore PUBLIC FILE_SET HEADERS BASE_DIRS include/core FILES
     include/core/emu/blas.hpp
     include/core/emu/tuple.hpp
     include/core/emu/capsule.hpp
@@ -111,20 +122,20 @@ target_sources(core PUBLIC FILE_SET HEADERS BASE_DIRS include/core FILES
     include/core/half.hpp
 )
 
-target_compile_features(core PUBLIC cxx_std_20)
+target_compile_features(emucore PUBLIC cxx_std_20)
 
 if(build_cuda)
-    target_compile_definitions(core PUBLIC EMU_CUDA)
+    target_compile_definitions(emucore PUBLIC EMU_CUDA)
 endif()
 
-target_compile_definitions(core PUBLIC EMU_BOOST_NAMESPACE=${emu_boost_namespace})
+target_compile_definitions(emucore PUBLIC EMU_BOOST_NAMESPACE=${emu_boost_namespace})
 
 find_package(Boost CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(Microsoft.GSL CONFIG REQUIRED)
 find_package(mdspan CONFIG REQUIRED)
 
-target_link_libraries(core PUBLIC
+target_link_libraries(emucore PUBLIC
     Boost::boost
     fmt::fmt
     Microsoft.GSL::GSL
@@ -132,7 +143,7 @@ target_link_libraries(core PUBLIC
 )
 
 if (NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
-    add_library(emu::core ALIAS core)
+    add_library(emu::core ALIAS emucore)
 endif()
 
 ########################################################################
@@ -143,9 +154,9 @@ endif()
 if (build_cuda)
     enable_language(CUDA)
 
-    add_library(cuda)
+    add_library(emucuda)
 
-    target_sources(cuda
+    target_sources(emucuda
         PRIVATE
             src/cuda/cublas/handle.cpp
             src/cuda/cublas/error.cpp
@@ -165,7 +176,7 @@ if (build_cuda)
             src/cuda/thrust/execution_policy.cu
     )
 
-    target_sources(cuda PUBLIC FILE_SET HEADERS BASE_DIRS include/cuda FILES
+    target_sources(emucuda PUBLIC FILE_SET HEADERS BASE_DIRS include/cuda FILES
         include/cuda/emu/config.cuh
         include/cuda/emu/macro.cuh
         include/cuda/emu/thrust.cuh
@@ -201,26 +212,26 @@ if (build_cuda)
         include/cuda/emu/test/device_test.hpp
     )
 
-    target_compile_options(cuda PUBLIC
+    target_compile_options(emucuda PUBLIC
         $<$<COMPILE_LANGUAGE:CUDA>:
             --extended-lambda
             --expt-relaxed-constexpr
         >
     )
     # Only needed for CUDA source file but it's easier to just set it
-    target_compile_definitions(cuda PUBLIC FMT_USE_CONSTEXPR=1)
+    target_compile_definitions(emucuda PUBLIC FMT_USE_CONSTEXPR=1)
 
     # Force the link of emu_cuda_device_pointer symbol in src/cuda/cuda/pointer.cpp
     if(NOT BUILD_SHARED_LIBS)
-        target_link_options(cuda INTERFACE "-Wl,-u,emu_cuda_device_pointer")
+        target_link_options(emucuda INTERFACE "-Wl,-u,emu_cuda_device_pointer")
     endif()
 
     find_package(CUDAToolkit REQUIRED)
     find_package(cuda-api-wrappers CONFIG REQUIRED)
     # find_package(matx REQUIRED)
 
-    target_link_libraries(cuda PUBLIC
-        core
+    target_link_libraries(emucuda PUBLIC
+        emucore
         CUDA::cublas
         CUDA::cusolver
         CUDA::cudart
@@ -230,14 +241,14 @@ if (build_cuda)
     )
 
     if (NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
-        add_library(emu::cuda ALIAS cuda)
+        add_library(emu::cuda ALIAS emucuda)
     endif()
 
 endif()
 
-add_library(python INTERFACE)
+add_library(emupython INTERFACE)
 
-target_sources(python INTERFACE FILE_SET HEADERS BASE_DIRS include/python FILES
+target_sources(emupython INTERFACE FILE_SET HEADERS BASE_DIRS include/python FILES
     include/python/emu/pybind11/numpy.hpp
     include/python/emu/pybind11/cast/container.hpp
     include/python/emu/pybind11/cast/cstring_view.hpp
@@ -258,63 +269,63 @@ target_sources(python INTERFACE FILE_SET HEADERS BASE_DIRS include/python FILES
 )
 
 # We do not link to pybind11 here, we let the consumer do it
-target_link_libraries(python INTERFACE
-    core
+target_link_libraries(emupython INTERFACE
+    emucore
 )
 
 if(build_cuda)
-    target_link_libraries(python INTERFACE cuda)
+    target_link_libraries(emupython INTERFACE emucuda)
 endif()
 
 if (NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
-    add_library(emu::python ALIAS python)
+    add_library(emu::python ALIAS emupython)
 endif()
 
-########################################################################
-#
-# Install
-# What is going on here???
+# ########################################################################
+# #
+# # Install
+# # What is going on here???
 
-set(INSTALL_TARGETS core python)
-if(build_cuda)
-    list(APPEND INSTALL_TARGETS cuda)
-endif()
+# set(INSTALL_TARGETS emucore emupython)
+# if(build_cuda)
+#     list(APPEND INSTALL_TARGETS emucuda)
+# endif()
 
-install(TARGETS ${INSTALL_TARGETS}
-    COMPONENT emu-core
-    EXPORT emu-targets
-    FILE_SET HEADERS
-)
+# install(TARGETS ${INSTALL_TARGETS}
+#     COMPONENT emu-core
+#     EXPORT emu-targets
+#     FILE_SET HEADERS
+# )
 
-configure_package_config_file(
-    "${PROJECT_SOURCE_DIR}/cmake/emu-config.cmake.in"
-    "${PROJECT_BINARY_DIR}/emu-config.cmake"
-    INSTALL_DESTINATION "${CMAKE_INSTALL_DATADIR}/cmake/emu")
+# configure_package_config_file(
+#     "${PROJECT_SOURCE_DIR}/cmake/emu-config.cmake.in"
+#     "${PROJECT_BINARY_DIR}/emu-config.cmake"
+#     INSTALL_DESTINATION "${CMAKE_INSTALL_DATADIR}/cmake/emu")
 
-write_basic_package_version_file(
-    "${PROJECT_BINARY_DIR}/emu-config-version.cmake"
-    VERSION "${PROJECT_VERSION}"
-    COMPATIBILITY SameMajorVersion
-)
+# write_basic_package_version_file(
+#     "${PROJECT_BINARY_DIR}/emu-config-version.cmake"
+#     VERSION "${PROJECT_VERSION}"
+#     COMPATIBILITY SameMajorVersion
+# )
 
-export(TARGETS
-    ${INSTALL_TARGETS}
-    NAMESPACE emu::
-    FILE "${PROJECT_BINARY_DIR}/emu-targets.cmake"
-)
+# export(TARGETS
+#     ${INSTALL_TARGETS}
+#     NAMESPACE emu::
+#     FILE "${PROJECT_BINARY_DIR}/emu-targets.cmake"
+# )
 
-install(FILES
-    "${PROJECT_BINARY_DIR}/emu-config-version.cmake"
-    "${PROJECT_BINARY_DIR}/emu-config.cmake"
-    DESTINATION "${CMAKE_INSTALL_DATADIR}/cmake/emu"
-    COMPONENT emu-core
-)
+# install(FILES
+#     "${PROJECT_BINARY_DIR}/emu-config-version.cmake"
+#     "${PROJECT_BINARY_DIR}/emu-config.cmake"
+#     DESTINATION "${CMAKE_INSTALL_DATADIR}/cmake/emu"
+#     COMPONENT emu-core
+# )
 
-install(EXPORT emu-targets
-    DESTINATION "${CMAKE_INSTALL_DATADIR}/cmake/emu"
-    NAMESPACE emu::
-    COMPONENT emu-core
-)
+# install(EXPORT emu-targets
+#     DESTINATION "${CMAKE_INSTALL_DATADIR}/cmake/emu"
+#     NAMESPACE emu::
+#     COMPONENT emu-core
+# )
 
 ########################################################################
 #

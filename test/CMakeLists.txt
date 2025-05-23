@@ -27,7 +27,7 @@ add_executable(emucoretest
 )
 
 target_link_libraries(emucoretest PRIVATE
-    GTest::gtest GTest::gtest_main core
+    GTest::gtest GTest::gtest_main emucore
 )
 
 target_include_directories(emucoretest PRIVATE include)
@@ -45,7 +45,7 @@ if (build_cuda)
     )
 
     target_link_libraries(emucudatest PRIVATE
-        GTest::gtest GTest::gtest_main cuda
+        GTest::gtest GTest::gtest_main emucuda
     )
 
     target_include_directories(emucudatest PRIVATE include)
@@ -74,7 +74,7 @@ if (build_python_test)
     find_package(pybind11 REQUIRED)
 
     target_link_libraries(emupythontest PRIVATE
-        GTest::gtest python pybind11::embed
+        GTest::gtest emupython pybind11::embed
     )
 
     target_include_directories(emupythontest PRIVATE include)

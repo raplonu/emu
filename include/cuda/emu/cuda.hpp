@@ -122,7 +122,7 @@ namespace detail
 
 namespace cuda::memory
 {
-    inline auto format_as(cuda::memory::type_t type) -> std::string_view
+    inline auto format_as(cuda::memory::type_t type) -> ::std::string_view
     {
         switch (type)
         {
