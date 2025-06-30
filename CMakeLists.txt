@@ -286,16 +286,16 @@ endif()
 # # Install
 # # What is going on here???
 
-# set(INSTALL_TARGETS emucore emupython)
-# if(build_cuda)
-#     list(APPEND INSTALL_TARGETS emucuda)
-# endif()
+set(INSTALL_TARGETS emucore emupython)
+if(build_cuda)
+    list(APPEND INSTALL_TARGETS emucuda)
+endif()
 
-# install(TARGETS ${INSTALL_TARGETS}
-#     COMPONENT emu-core
-#     EXPORT emu-targets
-#     FILE_SET HEADERS
-# )
+install(TARGETS ${INSTALL_TARGETS}
+    COMPONENT emu-core
+    EXPORT emu-targets
+    FILE_SET HEADERS
+)
 
 # configure_package_config_file(
 #     "${PROJECT_SOURCE_DIR}/cmake/emu-config.cmake.in"
