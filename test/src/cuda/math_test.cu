@@ -30,7 +30,7 @@ void generic_round_test(From from_0, To to_0, From from_1, To to_1, From from_2,
     from_v[3] = from_3;
 
     ker<<<1,1>>>(to_v.data().get(), from_v.data().get());
-    ::cuda::device::current::get().synchronize();
+    emu::cuda::device::current().synchronize();
 
     EXPECT_EQ(to_v[0], to_0) << "from_0: " << emu::numeric_name<From> << " to_0: " << emu::numeric_name<To>;
     EXPECT_EQ(to_v[1], to_1) << "from_1: " << emu::numeric_name<From> << " to_1: " << emu::numeric_name<To>;

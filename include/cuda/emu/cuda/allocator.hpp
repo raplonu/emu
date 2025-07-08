@@ -26,11 +26,11 @@ namespace emu::cuda
             using other = allocator<U>;
         };
 
-        ::cuda::device_t device;
+        device_t device;
 
-        allocator() noexcept: device(::cuda::device::current::get()) {}
+        allocator() noexcept: device(device_t::current()) {}
 
-        allocator(::cuda::device_t device) noexcept: device(device) {}
+        allocator(device_t device) noexcept: device(device) {}
 
         template<typename U>
         allocator(const allocator<U>& other) noexcept: device(other.device) {}

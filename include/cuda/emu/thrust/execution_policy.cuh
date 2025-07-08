@@ -34,18 +34,18 @@ namespace detail
         using base_t::base_t;
         using base_t::stream_attachment_type;
 
-        stream_attachment_type on(const ::cuda::stream_t & stream) const
+        stream_attachment_type on(const ::emu::cuda::stream_t & stream) const
         {
-            stream.device().make_current();
+            ::emu::cuda::device_t(stream.device_id()).make_current();
             return base_t::on(stream.handle());
         }
     };
 
     struct par_async_t {
 
-        execute_on_stream_async on(const ::cuda::stream_t & stream) const
+        execute_on_stream_async on(const ::emu::cuda::stream_t & stream) const
         {
-            stream.device().make_current();
+            ::emu::cuda::device_t(stream.device_id()).make_current();
             return execute_on_stream_async(stream.handle());
         }
 

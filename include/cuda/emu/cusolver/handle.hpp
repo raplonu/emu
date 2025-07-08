@@ -5,6 +5,7 @@
 #include <emu/cuda.hpp>
 #include <emu/scoped.hpp>
 #include <emu/cuda/device.hpp>
+#include <emu/cuda/stream.hpp>
 
 namespace emu::cusolver
 {
@@ -26,9 +27,9 @@ namespace detail
             void operator()(id_t id) const { destroy(id); }
         };
 
-        void set_stream(id_t handle, ::cuda::stream::handle_t stream);
+        void set_stream(id_t handle, emu::cuda::stream::handle_t stream);
 
-        ::cuda::stream::handle_t get_stream(id_t handle);
+        emu::cuda::stream::handle_t get_stream(id_t handle);
 
 } // namespace detail
 
@@ -39,9 +40,9 @@ struct handle_t
 {
     handle_t();
 
-    handle_t(handle::id_t id, ::cuda::device::id_t device_id, bool owning);
+    handle_t(handle::id_t id, ::emu::cuda::device::id_t device_id, bool owning);
 
-    handle_t(::cuda::device::id_t device_id);
+    handle_t(::emu::cuda::device::id_t device_id);
 
     constexpr handle_t(handle_t && o) = default;
     handle_t(const handle_t &) = delete;
@@ -50,15 +51,16 @@ struct handle_t
     handle_t& operator=(const handle_t &) = delete;
 
     [[nodiscard]] handle::id_t id() const noexcept { return id_.value; }
+    [[nodiscard]] ::emu::cuda::device::id_t device_id() const noexcept { return device_id_; }
 
     ~handle_t() = default;
 
-    void set_stream(const ::cuda::stream_t & stream) const;
-    [[nodiscard]] ::cuda::stream_t stream() const;
+    void set_stream(const ::emu::cuda::stream_t & stream) const;
+    [[nodiscard]] ::emu::cuda::stream_t stream() const;
 
 private:
     handle::ScopedHandle id_;
-    ::cuda::device::id_t device_id_;
+    ::emu::cuda::device::id_t device_id_;
 };
 
 
@@ -72,9 +74,9 @@ namespace handle
     /**
      * Create cusolver handle_t on current device.
      */
-    handle_t create(const ::cuda::device_t& device);
+    handle_t create(const ::emu::cuda::device_t& device);
 
-    handle_t wrap(id_t id, const ::cuda::device_t& device, bool take_ownership);
+    handle_t wrap(id_t id, const ::emu::cuda::device_t& device, bool take_ownership);
 
 } // namespace handle
 

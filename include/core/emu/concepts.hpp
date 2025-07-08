@@ -62,6 +62,9 @@ namespace cpts
     template<typename T>
     concept truthy = std::convertible_to<T, bool>;
 
+    template <typename T>
+    concept array = std::is_array_v<T>;
+
     // #########################
     // # utility type concepts #
     // #########################

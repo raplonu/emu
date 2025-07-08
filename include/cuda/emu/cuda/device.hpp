@@ -1,47 +1,92 @@
 #pragma once
 
 #include <emu/scoped.hpp>
+#include <emu/cuda/error.hpp>
 
-#include <cuda/api.hpp>
+#include <cuda_runtime_api.h>
 
-#define EMU_CUDA_DEVICE_FOR_THIS_SCOPE(device) \
-    EMU_INVOKE_AT_SCOPE_EXIT([d = ::cuda::device::current::get()]() { ::cuda::device::current::set(d); }); \
-    ::cuda::device::current::set(device)
-
-namespace emu
+namespace emu::cuda
 {
-    inline void make_current(::cuda::device::id_t device_id)
+    struct device_t;
+
+namespace device
+{
+    using id_t = int;
+
+namespace detail
+{
+    inline id_t get_current()
     {
-        ::cuda::device::get(device_id).make_current();
+        id_t device_id;
+        EMU_CUDA_CHECK_THROW_ERROR(cudaGetDevice(&device_id));
+        return device_id;
     }
 
-    template<typename T>
-    T set_and_forward(::cuda::device_t device, T&& t)
+    inline void set_current(id_t device_id)
     {
-        device.make_current();
-        return EMU_FWD(t);
+        EMU_CUDA_CHECK_THROW_ERROR(cudaSetDevice(device_id));
     }
 
-    template<typename T>
-    T set_and_forward(::cuda::device::id_t device_id, T&& t)
+    inline void synchronize(id_t device_id)
     {
-        make_current(device_id);
-        return EMU_FWD(t);
+        EMU_CUDA_CHECK_THROW_ERROR(cudaSetDevice(device_id));
+        EMU_CUDA_CHECK_THROW_ERROR(cudaDeviceSynchronize());
     }
 
-    template<typename F>
-    decltype(auto) set_and_invoke(::cuda::device_t device, F&& f)
+} // namespace detail
+
+} // namespace device
+
+    struct device_t
     {
-        ::cuda::device::current::set(device);
-        return EMU_FWD(f)();
+        device_t(device::id_t id) : id_(id) {}
+
+        device::id_t id() const noexcept { return id_; }
+
+        void make_current() const {
+            device::detail::set_current(id_);
+        }
+
+        bool operator==(const device_t& other) const {
+            return id_ == other.id_;
+        }
+
+        bool operator!=(const device_t& other) const {
+            return !(*this == other);
+        }
+
+        void synchronize() const {
+            device::detail::synchronize(id_);
+        }
+
+    private:
+        device::id_t id_;
+    };
+
+namespace device
+{
+    inline device_t get(device::id_t id)
+    {
+        detail::set_current(id);
+        return device_t(id);
     }
 
-    template<typename F>
-    decltype(auto) set_and_invoke(::cuda::device::id_t device_id, F&& f)
+    inline device_t current()
     {
-        make_current(device_id);
-        return EMU_FWD(f)();
+        return device_t(detail::get_current());
     }
 
+} // namespace device
+
+namespace devices
+{
+    inline std::size_t count()
+    {
+        int count;
+        EMU_CUDA_CHECK_THROW_ERROR(cudaGetDeviceCount(&count));
+        return static_cast<std::size_t>(count);
+    }
 
 }
+
+} // namespace emu::cuda

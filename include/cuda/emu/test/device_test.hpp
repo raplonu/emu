@@ -20,7 +20,10 @@ namespace emu::test
         }
 
         static bool are_cuda_device_available() {
-            return ::cuda::devices().size() > 0;
+            int count;
+            cudaError_t err = cudaGetDeviceCount(&count);
+            if (err != cudaSuccess) { return false; }
+            return count > 0;
         }
     };
 

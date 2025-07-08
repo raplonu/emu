@@ -1,17 +1,103 @@
 #pragma once
 
-#include <cuda/api.hpp>
+#include <emu/scoped.hpp>
+#include <emu/cuda/error.hpp>
+#include <emu/cuda/device.hpp>
 
-namespace emu::cuda::stream
+#include <cuda/stream_ref>
+
+#include <cuda_runtime_api.h>
+
+namespace emu::cuda
 {
-    inline ::cuda::stream_t wrap(
-	    ::cuda::device::id_t       device_id,
-        ::cuda::stream::handle_t   stream_handle,
-        bool                       take_ownership = false) noexcept
+    struct stream_t;
+
+    using ::cuda::stream_ref;
+
+namespace stream
+{
+    using handle_t = cudaStream_t;
+
+namespace detail
+{
+    inline handle_t create()
     {
-        auto pc = ::cuda::device::get(device_id).primary_context(::cuda::do_not_hold_primary_context_refcount_unit);
-        ::cuda::device::primary_context::detail_::increase_refcount(device_id);
-        return ::cuda::stream::wrap(device_id, pc.handle(), stream_handle, take_ownership, ::cuda::do_hold_primary_context_refcount_unit);
+        handle_t handle;
+        EMU_CUDA_CHECK_THROW_ERROR(cudaStreamCreateWithFlags(&handle, cudaStreamNonBlocking));
+        return handle;
     }
 
-} // namespace emu::cuda::stream
+    inline void destroy(handle_t handle)
+    {
+        cudaStreamDestroy(handle);
+    }
+
+    struct Destroyer
+    {
+        void operator()(handle_t handle) const { destroy(handle); }
+    };
+
+    inline void synchronize(handle_t handle)
+    {
+        EMU_CUDA_CHECK_THROW_ERROR(cudaStreamSynchronize(handle));
+    }
+
+    inline device::id_t get_device_id(handle_t handle)
+    {
+        device::id_t device_id;
+        EMU_CUDA_CHECK_THROW_ERROR(cudaStreamGetDevice(handle, &device_id));
+        return device_id;
+    }
+
+} // namespace detail
+
+    using scoped_handle = scoped<handle_t, detail::Destroyer>;
+
+} // namespace stream
+
+    struct stream_t
+    {
+        stream_t() = default;
+
+    // protected:
+        stream_t(stream::handle_t handle, bool owning)
+            : handle_(handle, owning)
+        {}
+
+    public:
+        stream_t(stream_t &&) = default;
+        stream_t(const stream_t &) = delete;
+
+        stream_t& operator=(stream_t &&) = default;
+        stream_t& operator=(const stream_t &) = delete;
+
+        [[nodiscard]] stream::handle_t handle() const noexcept { return handle_.value; }
+        [[nodiscard]] device::id_t device_id() const noexcept { return stream::detail::get_device_id(handle_.value); }
+
+        [[nodiscard]] operator stream_ref() const noexcept {
+            return stream_ref(handle_.value);
+        }
+
+        void synchronize() const {
+            stream::detail::synchronize(handle_.value);
+        }
+
+    private:
+        stream::scoped_handle handle_;
+    };
+
+namespace stream
+{
+    inline stream_t create(const device_t& device) {
+        device::detail::set_current(device.id());
+
+        return stream_t(stream::detail::create(), true);
+    }
+
+    inline stream_t wrap(stream::handle_t handle, bool take_ownership) {
+        return stream_t(handle, take_ownership);
+    }
+
+} // namespace stream
+
+} // namespace emu::cuda

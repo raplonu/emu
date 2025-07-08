@@ -12,7 +12,7 @@ namespace cuda
     }
 
     std::string error_category::message( int ev ) const {
-        return cu::describe(static_cast<cu::status_t>(ev));
+        return cudaGetErrorString(static_cast<cudaError_t>(ev));
     }
 
     std::error_category const& error_category::instance() {
@@ -30,10 +30,6 @@ namespace cuda
         return { static_cast<int>(e), cuda::error_category::instance() };
     }
 
-    std::error_code make_error_code( ::cuda::status::named_t e ) {
-        return { static_cast<int>(e), cuda::error_category::instance() };
-    }
-
     unexpected<std::error_code> make_unexpected( CUresult e ) {
         return unexpected<std::error_code>{ make_error_code(e) };
     }
@@ -42,17 +38,10 @@ namespace cuda
         return unexpected<std::error_code>{ make_error_code(e) };
     }
 
-    unexpected<std::error_code> make_unexpected( ::cuda::status::named_t e ) {
-        return unexpected<std::error_code>{ make_error_code(e) };
-    }
-
     void throw_error( CUresult e ) {
         throw_error( make_error_code( e) );
     }
     void throw_error( cudaError_t e ) {
-        throw_error( make_error_code( e) );
-    }
-    void throw_error( ::cuda::status::named_t e ) {
         throw_error( make_error_code( e) );
     }
 

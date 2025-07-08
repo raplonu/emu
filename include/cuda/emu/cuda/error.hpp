@@ -2,7 +2,8 @@
 
 #include <emu/error.hpp>
 
-#include <cuda/api/error.hpp>
+#include <cuda_runtime_api.h>
+#include <cuda.h>
 
 namespace emu
 {
@@ -23,15 +24,12 @@ namespace cuda
 
     std::error_code make_error_code( CUresult e );
     std::error_code make_error_code( cudaError_t e );
-    std::error_code make_error_code( ::cuda::status::named_t e );
 
     unexpected<std::error_code> make_unexpected( CUresult e );
     unexpected<std::error_code> make_unexpected( cudaError_t e );
-    unexpected<std::error_code> make_unexpected( ::cuda::status::named_t e );
 
     [[noreturn]] void throw_error( CUresult e );
     [[noreturn]] void throw_error( cudaError_t e );
-    [[noreturn]] void throw_error( ::cuda::status::named_t e );
 
 } // namespace emu
 
