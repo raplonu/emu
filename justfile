@@ -19,6 +19,10 @@ build build_type="release":
 test build_type="release":
     ctest --preset conan-{{build_type}}
 
+coverage:
+    mkdir -p build/coverage
+    gcovr -r . --html --html-details -o build/coverage/index.html
+
 # Register emu as editable in conan
 @register:
     conan editable add .

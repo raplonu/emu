@@ -71,6 +71,66 @@ namespace
         EXPECT_EQ(cap.use_count(), 1);
     }
 
+    TEST(Capsule, CopyValue)
+    {
+        // put a random value into capsule
+        const capsule cap(0);
+
+        EXPECT_EQ(cap.use_count(), 1);
+
+        // copy the capsule
+        const capsule cap2 = cap;
+
+        EXPECT_EQ(cap.use_count(), 2);
+        EXPECT_EQ(cap2.use_count(), 2);
+    }
+
+    TEST(Capsule, ManualCopyValue)
+    {
+        // put a random value into capsule
+        const capsule cap(0);
+
+        EXPECT_EQ(cap.use_count(), 1);
+
+        // copy the capsule, do not borrow the holder
+        const capsule cap2(cap.holder, false);
+
+        EXPECT_EQ(cap.use_count(), 2);
+        EXPECT_EQ(cap2.use_count(), 2);
+    }
+
+    TEST(Capsule, ManualMoveValue)
+    {
+        // put a random value into capsule
+        capsule cap(0);
+
+        EXPECT_EQ(cap.use_count(), 1);
+
+        capsule::interface* holder = cap.release();
+
+        // copy the capsule, do not borrow the holder
+        const capsule cap2(holder, true);
+
+        EXPECT_EQ(cap.use_count(), 0);
+        EXPECT_EQ(cap2.use_count(), 1);
+    }
+
+    TEST(Capsule, BorrowNullptr)
+    {
+        // Borrow nullptr should not crash.
+        const capsule cap(nullptr, true);
+
+        EXPECT_EQ(cap.use_count(), 0);
+    }
+
+    TEST(Capsule, NotBorrowNullptr)
+    {
+        // Not borrowing nullptr should not crash.
+        const capsule cap(nullptr, false);
+
+        EXPECT_EQ(cap.use_count(), 0);
+    }
+
     TEST(Capsule, ManagedValue)
     {
         auto managed_value = std::make_shared<int>(0);

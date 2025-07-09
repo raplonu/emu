@@ -27,13 +27,10 @@ set(emu_boost_namespace "boost" CACHE STRING "Custom boost namespace name")
 project(emu VERSION 1.0.0 LANGUAGES CXX)
 
 if(enable_coverage)
-message(STATUS "Building with coverage enabled")
+    message(STATUS "Building with coverage enabled")
 
     include(cmake/CodeCoverage.cmake)
     append_coverage_compiler_flags()
-
-    # force adds "-lgcov --coverage" to LD flags for cuda stuff
-    # SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage -lgcov")
 endif()
 
 # Always generate compile_commands.json. Used by clangd and other tools.

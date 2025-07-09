@@ -174,6 +174,18 @@ namespace emu
             holder = nullptr;
         }
 
+        /**
+         * @brief Releases the held object and returns a pointer to it.
+         *
+         * The user is responsible for managing the lifetime of the returned pointer.
+         * For advanced use cases implying C apis or similar.
+         *
+         * @return Pointer to the held object.
+         */
+        interface* release() noexcept {
+            return std::exchange(holder, nullptr);
+        }
+
         template<typename T, typename... Args>
         decay<T>& emplace(Args&&... args) {
             reset();
