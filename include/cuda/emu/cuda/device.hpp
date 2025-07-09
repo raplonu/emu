@@ -35,12 +35,18 @@ namespace detail
 
 } // namespace detail
 
+    device_t get(device::id_t id);
+
+    device_t current();
+
 } // namespace device
 
     struct device_t
     {
+    protected:
         device_t(device::id_t id) : id_(id) {}
 
+    public:
         device::id_t id() const noexcept { return id_; }
 
         void make_current() const {
@@ -58,6 +64,9 @@ namespace detail
         void synchronize() const {
             device::detail::synchronize(id_);
         }
+
+    friend device_t emu::cuda::device::get(device::id_t id);
+    friend device_t emu::cuda::device::current();
 
     private:
         device::id_t id_;

@@ -24,30 +24,23 @@ namespace
 
     TEST(Pointer, DeviceHeapPointer)
     {
-        emu::cuda::device::get(0).make_current();
+        auto ptr = emu::cuda::memory::device::make_unique<int[]>(emu::cuda::device::get(0), 1);
 
-        {
-            auto ptr = emu::cuda::memory::device::make_unique<int[]>(1);
+        auto device = emu::get_device_of_pointer(ptr.get());
 
-            auto device = emu::get_device_of_pointer(ptr.get());
+        EXPECT_TRUE(device.has_value());
 
-            EXPECT_TRUE(device.has_value());
+        auto device_value = device.value();
 
-            auto device_value = device.value();
-
-            EXPECT_EQ(device_value.device_type, emu::dlpack::device_type_t::kDLCUDA);
-            EXPECT_EQ(device_value.device_id, 0);
-        }
+        EXPECT_EQ(device_value.device_type, emu::dlpack::device_type_t::kDLCUDA);
+        EXPECT_EQ(device_value.device_id, 0);
     }
 
     TEST(Pointer, DeviceHeapPointerMultiDevice)
     {
-
         if (emu::cuda::devices::count() > 1)
         {
-            emu::cuda::device::get(1).make_current();
-
-            auto ptr = emu::cuda::memory::device::make_unique<int[]>(1);
+            auto ptr = emu::cuda::memory::device::make_unique<int[]>(emu::cuda::device::get(1), 1);
 
             auto device = emu::get_device_of_pointer(ptr.get());
 

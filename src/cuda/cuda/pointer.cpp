@@ -16,7 +16,7 @@ namespace emu::cuda
 
         EMU_TRUE_OR_RETURN_NULLOPT(type != memory_type_t::unregistered);
 
-        auto device_id = get_device_of_pointer(v_ptr).id();
+        auto device_id = get_device_of_pointer(v_ptr);
 
         //TODO: check if still needed
         // auto is_managed = cu::memory::pointer::detail_::get_attribute<CU_POINTER_ATTRIBUTE_IS_MANAGED>(v_ptr);

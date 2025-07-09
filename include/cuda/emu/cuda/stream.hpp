@@ -53,13 +53,15 @@ namespace detail
 
     using scoped_handle = scoped<handle_t, detail::Destroyer>;
 
+    stream_t create(const device_t& device);
+
+    stream_t wrap(stream::handle_t handle, bool take_ownership);
+
 } // namespace stream
 
     struct stream_t
     {
-        stream_t() = default;
-
-    // protected:
+    protected:
         stream_t(stream::handle_t handle, bool owning)
             : handle_(handle, owning)
         {}
@@ -81,6 +83,9 @@ namespace detail
         void synchronize() const {
             stream::detail::synchronize(handle_.value);
         }
+
+        friend stream_t stream::create(const device_t& device);
+        friend stream_t stream::wrap(stream::handle_t handle, bool take_ownership);
 
     private:
         stream::scoped_handle handle_;

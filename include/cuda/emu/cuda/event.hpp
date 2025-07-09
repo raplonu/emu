@@ -53,15 +53,20 @@ namespace detail
 
     using scoped_handle = scoped<handle_t, detail::Destroyer>;
 
+    event_t create(const device_t& device);
+
+    event_t wrap(event::handle_t handle, bool take_ownership);
+
 } // namespace event
 
     struct event_t
     {
-    public:
+    protected:
         event_t(event::handle_t handle, bool owning)
-            : handle_(handle, owning)
+        : handle_(handle, owning)
         {}
 
+    public:
         event_t(event_t &&) = default;
         event_t(const event_t &) = delete;
 
@@ -81,6 +86,9 @@ namespace detail
         void wait(const stream_t& stream) const {
             event::detail::wait(handle_.value, stream.handle());
         }
+
+        friend event_t event::create(const device_t& device);
+        friend event_t event::wrap(event::handle_t handle, bool take_ownership);
 
     private:
         event::scoped_handle handle_;

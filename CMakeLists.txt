@@ -227,7 +227,6 @@ if (build_cuda)
     endif()
 
     find_package(CUDAToolkit REQUIRED)
-    find_package(cuda-api-wrappers CONFIG REQUIRED)
     # find_package(matx REQUIRED)
 
     target_link_libraries(emucuda PUBLIC
@@ -236,7 +235,6 @@ if (build_cuda)
         CUDA::cusolver
         CUDA::cudart
         CUDA::cuda_driver
-        cuda-api-wrappers::runtime-and-driver
         # matx::matx
     )
 

@@ -39,7 +39,7 @@ handle_t::handle_t(handle::id_t id, emu::cuda::device::id_t device_id, bool owni
 
 handle_t::handle_t(emu::cuda::device::id_t device_id):
     id_([&]{
-        ::emu::cuda::device_t(device_id).make_current();
+        ::emu::cuda::device::detail::set_current(device_id);
         return handle::detail::create();
     }(), true),
     device_id_(device_id)

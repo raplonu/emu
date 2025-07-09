@@ -95,12 +95,12 @@ cublasPointerMode_t handle_t::pointer_mode() const {
 }
 
 handle_t & handle_t::enable() {
-    ::emu::cuda::device_t(device_id_).make_current();
+    ::emu::cuda::device::detail::set_current(device_id_);
     return *this;
 }
 
 const handle_t & handle_t::enable() const {
-    ::emu::cuda::device_t(device_id_).make_current();
+    ::emu::cuda::device::detail::set_current(device_id_);
     return *this;
 }
 

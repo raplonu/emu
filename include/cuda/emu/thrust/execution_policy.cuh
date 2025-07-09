@@ -36,7 +36,7 @@ namespace detail
 
         stream_attachment_type on(const ::emu::cuda::stream_t & stream) const
         {
-            ::emu::cuda::device_t(stream.device_id()).make_current();
+            ::emu::cuda::device::detail::set_current(stream.device_id());
             return base_t::on(stream.handle());
         }
     };
@@ -45,7 +45,7 @@ namespace detail
 
         execute_on_stream_async on(const ::emu::cuda::stream_t & stream) const
         {
-            ::emu::cuda::device_t(stream.device_id()).make_current();
+            ::emu::cuda::device::detail::set_current(stream.device_id());
             return execute_on_stream_async(stream.handle());
         }
 

@@ -53,12 +53,12 @@ namespace detail
         return static_cast<memory_type_t>(attr.type);
     }
 
-    inline device_t get_device_of_pointer(const void* ptr) {
+    inline device::id_t get_device_of_pointer(const void* ptr) {
         pointer_attribute_t attr = detail::get_pointer_attributes(ptr);
         if (attr.type == cudaMemoryTypeUnregistered) {
             throw std::runtime_error("Pointer is not registered with CUDA memory management.");
         }
-        return device_t(attr.device);
+        return attr.device;
     }
 
     inline optional<void*> get_device_pointer_of_pointer(const void* ptr) {
