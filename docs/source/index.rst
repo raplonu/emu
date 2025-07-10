@@ -7,10 +7,25 @@ Welcome to emu's documentation!
 ===============================
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :caption: INSTALLATION
+   :maxdepth: 1
 
-   core
-   cuda
-   python
-   reference
+   installation
+   changelog
+
+.. toctree::
+   :caption: USAGE
+   :maxdepth: 1
+
+   getting_started
+   error
+   dlpack
+
+.. toctree::
+   :caption: API REFERENCE
+   :maxdepth: 1
+
+   api/reference
+   api/core
+   api/cuda
+   api/python
