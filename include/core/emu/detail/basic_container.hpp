@@ -13,6 +13,19 @@
 namespace emu::detail
 {
 
+    /**
+     * @brief A basic container that combines span-like functionality with lifetime management.
+     *
+     * `basic_container` inherits from `basic_span` to provide a view over a contiguous
+     * sequence of objects, and from `emu::capsule` to manage the lifetime of the
+     * underlying data. This makes it a versatile container that can be used for
+     * both owning and non-owning views of data.
+     *
+     * @tparam ElementType The type of elements in the container.
+     * @tparam Extent The extent of the container, which can be dynamic.
+     * @tparam LocationPolicy A policy defining the location of the data (e.g., host or device).
+     * @tparam ActualType The actual derived container type.
+     */
     template <typename ElementType, size_t Extent, typename LocationPolicy, typename ActualType>
     struct basic_container : basic_span<ElementType, Extent, LocationPolicy, ActualType>, emu::capsule
     {
@@ -39,28 +52,49 @@ namespace emu::detail
         inline static constexpr bool validate_source = location_type::template validate_source<Type>;
 
     public:
+        /**
+         * @brief Inherits constructors from `basic_span`.
+         */
         using span_type::span_type;
 
+
+        /**
+         * @brief Constructs a `basic_container` from an iterator, a count, and a data holder.
+         * @param first An iterator to the beginning of the sequence.
+         * @param count The number of elements in the sequence.
+         * @param dh The data holder for lifetime management.
+         * @param i An integer used to disambiguate the constructor.
+         */
         template <std::contiguous_iterator It, typename DataHolder>
-            explicit(extent != dynamic_extent)
+            explicit (extent != dynamic_extent)
         constexpr basic_container(It first, size_t count, DataHolder&& dh)
             : span_type(first, count)
             , capsule_base(EMU_FWD(dh))
-        {}
+        {};
 
+        /**
+         * @brief Constructs a `basic_container` from a begin and end iterator, and a data holder.
+         * @param first An iterator to the beginning of the sequence.
+         * @param last An iterator to the end of the sequence.
+         * @param dh The data holder for lifetime management.
+         */
         template <std::contiguous_iterator It, std::sized_sentinel_for<It> End, typename DataHolder>
-            requires(not std::is_convertible_v<End, size_t>)
-            explicit(extent != dynamic_extent)
+            requires (not std::is_convertible_v<End, size_t>)
+            explicit (extent != dynamic_extent)
         constexpr basic_container(It first, End last, DataHolder&& dh)
             : span_type(first, last)
             , capsule_base(EMU_FWD(dh))
-        {}
+        {};
 
+        /**
+         * @brief Constructs a `basic_container` from a contiguous range.
+         * @param range The contiguous range.
+         */
         template<cpts::contiguous_sized_range Range>
             requires (cpts::not_derived_from<rm_cvref<Range>, basic_container>)
                  and (validate_source<Range>)
                  and (std::ranges::borrowed_range<Range> or is_const<element_type> or cpts::relocatable_owning_range<Range>)
-            explicit(extent != dynamic_extent)
+            explicit (extent != dynamic_extent)
         constexpr basic_container(Range&& range)
             noexcept( noexcept(span_type(range))
                   and noexcept(capsule_from_range(EMU_FWD(range))))
@@ -68,41 +102,60 @@ namespace emu::detail
             , capsule_base(capsule_from_range(EMU_FWD(range)))
         {}
 
+        /**
+         * @brief Constructs a `basic_container` from a contiguous range and a data holder.
+         * @param range The contiguous range.
+         * @param dh The data holder for lifetime management.
+         */
         template<cpts::contiguous_sized_range Range, typename DataHolder>
             requires (validate_source<Range>)
-            explicit(extent != dynamic_extent)
+            explicit (extent != dynamic_extent)
         constexpr basic_container(Range&& range, DataHolder&& dh)
             : span_type(EMU_FWD(range))
             , capsule_base(EMU_FWD(dh))
         {}
 
-        // explicit(extent != std::dynamic_extent)
+        // explicit (extent != std::dynamic_extent)
         // constexpr basic_container( std::initializer_list<value_type> il ) noexcept
         //     requires validate_source<std::initializer_list<value_type>>
         //          and std::is_const_v<element_type>
         //     : span_type(il.begin(), il.end())
         // {}
 
+        /**
+         * @brief Copy constructor from another `basic_container`.
+         * @param other The other `basic_container` to copy from.
+         */
         template<typename OT, size_t OExtent, typename OActualType, typename DataHolder>
         requires (extent == dynamic_extent
               or OExtent == dynamic_extent
                or extent == OExtent)
-        constexpr explicit(extent != dynamic_extent && OExtent != dynamic_extent)
-        basic_container(const basic_container<OT, OExtent, LocationPolicy, OActualType>& other) noexcept
+        explicit (extent != dynamic_extent && OExtent != dynamic_extent)
+        constexpr basic_container(const basic_container<OT, OExtent, LocationPolicy, OActualType>& other) noexcept
             : span_type(static_cast<const span_type&>(other))
             , capsule_base(other.capsule())
         {}
 
+        /**
+         * @brief Constructs a `basic_container` from a `basic_span` and a data holder.
+         * @param other The `basic_span` to construct from.
+         * @param dh The data holder for lifetime management.
+         */
         template<typename OT, size_t OExtent, typename OActualType, typename DataHolder>
         requires (extent == dynamic_extent
-              or OExtent == dynamic_extent
+               or OExtent == dynamic_extent
                or extent == OExtent)
-        constexpr explicit(extent != dynamic_extent && OExtent != dynamic_extent)
-        basic_container(const basic_span<OT, OExtent, LocationPolicy, OActualType>& other, DataHolder&& dh) noexcept
+        explicit (extent != dynamic_extent && OExtent != dynamic_extent)
+        constexpr basic_container(const basic_span<OT, OExtent, LocationPolicy, OActualType>& other, DataHolder&& dh) noexcept
             : span_type(static_cast<const span_type&>(other))
             , capsule_base(EMU_FWD(dh))
         {}
 
+        /**
+         * @brief Constructs a `basic_container` from a `span_type` and a data holder.
+         * @param s The `span_type` to construct from.
+         * @param dh The data holder for lifetime management.
+         */
         template<typename DataHolder>
         constexpr explicit
         basic_container(span_type s, DataHolder&& dh)
@@ -118,8 +171,20 @@ namespace emu::detail
 
         ~basic_container() noexcept = default;
 
+        /**
+         * @brief Returns a reference to the underlying capsule.
+         * @return A reference to the capsule.
+         */
         emu::capsule&        capsule() &      noexcept { return static_cast<emu::capsule&>(*this); }
+        /**
+         * @brief Returns a const reference to the underlying capsule.
+         * @return A const reference to the capsule.
+         */
         emu::capsule const & capsule() const& noexcept { return static_cast<const emu::capsule&>(*this); }
+        /**
+         * @brief Returns an rvalue reference to the underlying capsule.
+         * @return An rvalue reference to the capsule.
+         */
         emu::capsule&&         capsule() &&     noexcept { return static_cast<emu::capsule&&>(*this); }
 
         // auto use_count() const noexcept { return capsule_.use_count(); }
@@ -142,21 +207,41 @@ namespace emu::detail
         //     return from_span(base::last(count));
         // }
 
+        /**
+         * @brief Creates a subcontainer of this container.
+         * @tparam Offset The offset from the beginning of the container.
+         * @tparam Count The number of elements in the subcontainer.
+         * @return A new container that is a view of a subsection of this container.
+         */
         template< std::size_t Offset,
               std::size_t Count = std::dynamic_extent >
         constexpr auto subcontainer() const noexcept {
             return actual_type::template subspan<Offset, Count>();
         }
 
+        /**
+         * @brief Creates a subcontainer of this container.
+         * @param offset The offset from the beginning of the container.
+         * @param count The number of elements in the subcontainer.
+         * @return A new container that is a view of a subsection of this container.
+         */
         constexpr auto subcontainer( size_type offset,
                  size_type count = std::dynamic_extent ) const noexcept {
             return actual_type::subspan(offset, count);
         }
 
+        /**
+         * @brief Returns a pair consisting of the span and the capsule.
+         * @return A pair containing the span and the capsule.
+         */
         std::pair<span_type, emu::capsule> as_pair() const & noexcept  {
             return {span_type(*this), capsule()};
         }
 
+        /**
+         * @brief Returns a pair consisting of the span and the capsule.
+         * @return A pair containing the span and the capsule.
+         */
         std::pair<span_type, emu::capsule> as_pair() && noexcept {
             return {span_type(*this), std::move(capsule())};
         }
@@ -178,7 +263,7 @@ namespace emu::detail
 
         // using base::size;
         // using base::size_bytes;
-        // using base::empty;
+       // using base::empty;
 
     };
 

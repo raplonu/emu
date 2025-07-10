@@ -209,15 +209,16 @@ namespace literals
 
 } // namespace literals
 
+    /// A view of a null-terminated string of type `char`.
     using cstring_view    = basic_cstring_view< char     >;
+    /// A view of a null-terminated string of type `wchar_t`.
     using cwstring_view   = basic_cstring_view< wchar_t  >;
+    /// A view of a null-terminated string of type `char8_t`.
     using cu8string_view  = basic_cstring_view< char8_t  >;
+    /// A view of a null-terminated string of type `char16_t`.
     using cu16string_view = basic_cstring_view< char16_t >;
+    /// A view of a null-terminated string of type `char32_t`.
     using cu32string_view = basic_cstring_view< char32_t >;
-
-    inline std::string fun(cstring_view csv) {
-        return std::string(csv);
-    }
 
 namespace cpts
 {
