@@ -1,4 +1,6 @@
-Error handling
-==============
+.. _error-handling-guide:
 
-Lallala
+Error Handling Guide
+====================
+
+This page explains the error handling philosophy of the ``emu`` library.

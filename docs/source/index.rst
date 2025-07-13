@@ -27,5 +27,6 @@ Welcome to emu's documentation!
 
    api/reference
    api/core
+   api/error
    api/cuda
    api/python
