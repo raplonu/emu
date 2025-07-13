@@ -39,11 +39,11 @@ namespace detail
             auto memory_range = split_string(*begin++, "-");
             auto it = memory_range.begin();
 
-            EMU_RES_TRUE_OR_THROW(emu::from_chars(*it, start, 16));
+            EMU_UNWRAP_RES_OR_THROW(emu::from_chars(*it, start, 16));
 
             ++it;
 
-            EMU_RES_TRUE_OR_THROW(emu::from_chars(*it, stop, 16));
+            EMU_UNWRAP_RES_OR_THROW(emu::from_chars(*it, stop, 16));
 
         }
 

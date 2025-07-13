@@ -67,7 +67,6 @@ target_sources(emucore PUBLIC FILE_SET HEADERS BASE_DIRS include/core FILES
     include/core/emu/capsule.hpp
     include/core/emu/charconv.hpp
     include/core/emu/assert.hpp
-    include/core/emu/detail/error.hpp
     include/core/emu/detail/basic_container.hpp
     include/core/emu/detail/basic_mdcontainer.hpp
     include/core/emu/detail/basic_mdspan.hpp
@@ -92,7 +91,6 @@ target_sources(emucore PUBLIC FILE_SET HEADERS BASE_DIRS include/core FILES
     include/core/emu/debug.hpp
     include/core/emu/dlpack.hpp
     include/core/emu/error.hpp
-    include/core/emu/owning_reference.hpp
     include/core/emu/hash.hpp
     include/core/emu/mdalgo.hpp
     include/core/emu/mdcontainer.hpp
@@ -156,7 +154,6 @@ if (build_cuda)
     target_sources(emucuda
         PRIVATE
             src/cuda/cublas/handle.cpp
-            src/cuda/cublas/error.cpp
             src/cuda/cublas.cpp
 
             src/cuda/cuda/pointer.cpp

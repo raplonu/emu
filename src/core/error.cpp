@@ -4,9 +4,7 @@
 namespace emu
 {
 
-    const std::error_code success{};
-
-    std::string error_category::message( int ev ) const {
+    std::string_view describe(errc ev) {
         switch (static_cast<errc>(ev)) {
             case errc::success:
                 return "success";
@@ -36,36 +34,17 @@ namespace emu
             case errc::pointer_maps_file_not_found:
                 return "pointer's maps file not found";
 
+            case errc::cuda_pointer_unregistered:
+                return "cuda pointer is unregistered";
+
             case errc::not_implemented:
                 return "not implemented";
         }
         return "unknown";
     }
 
-    const char * error_category::name() const noexcept {
-        return "emu";
-    }
-
-
-    const std::error_category& error_category::instance() {
-        static const error_category instance;
-        return instance;
-    }
-
-    std::error_code make_error_code( errc e ) {
-        return { static_cast<int>(e), error_category::instance() };
-    }
-
-    std::error_code make_errno_code( int e ) {
-        return { e, std::generic_category() };
-    }
-
     unexpected<std::error_code> make_unexpected( std::error_code e ) {
         return unexpected<std::error_code>{ e };
-    }
-
-    unexpected<std::error_code> make_unexpected( errc e ) {
-        return make_unexpected( make_error_code(e) );
     }
 
     unexpected<std::error_code> make_unexpected( std::errc e ) {
@@ -76,16 +55,16 @@ namespace emu
         throw std::system_error( e );
     }
 
-    void throw_error( errc e ) {
-        throw_error( make_error_code(e) );
+    void throw_error( std::error_code e, const std::string& what_arg ) {
+        throw std::system_error( e, what_arg );
     }
 
     void throw_error( std::errc e ) {
         throw_error( std::make_error_code(e) );
     }
 
-    std::error_code get_errno() noexcept {
-        return { errno, std::generic_category() };
+    void throw_error( std::errc e, const std::string& what_arg ) {
+        throw_error( std::make_error_code(e), what_arg );
     }
 
 } // namespace emu

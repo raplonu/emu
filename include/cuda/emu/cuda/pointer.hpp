@@ -42,7 +42,8 @@ namespace detail
 
     inline pointer_attribute_t get_pointer_attributes(const void* ptr) {
         pointer_attribute_t attr;
-        EMU_CUDA_CHECK_THROW_ERROR(cudaPointerGetAttributes(&attr, ptr));
+        EMU_CUDA_CHECK_OR_THROW_WHAT(cudaPointerGetAttributes(&attr, ptr),
+                                     "Failed to get pointer attributes");
         return attr;
     }
 
@@ -56,7 +57,10 @@ namespace detail
     inline device::id_t get_device_of_pointer(const void* ptr) {
         pointer_attribute_t attr = detail::get_pointer_attributes(ptr);
         if (attr.type == cudaMemoryTypeUnregistered) {
-            throw std::runtime_error("Pointer is not registered with CUDA memory management.");
+            throw_error(
+                errc::cuda_pointer_unregistered,
+                "Pointer is not registered with CUDA memory management."
+            );
         }
         return attr.device;
     }

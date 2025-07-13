@@ -89,7 +89,7 @@ namespace
         {
             auto span_result = emu::dlpack::import_from_scoped_tensor<std::span<const int>>(st);
 
-            EXPECT_TRUE(span_result);
+            ASSERT_TRUE(span_result);
 
             const std::span<const int> span2 = span_result.value();
 
@@ -99,7 +99,7 @@ namespace
         {
             auto span_result = emu::dlpack::import_from_scoped_tensor<std::span<int>>(st);
 
-            EXPECT_FALSE(span_result);
+            ASSERT_FALSE(span_result);
 
             EXPECT_EQ(span_result.error(), emu::make_error_code(emu::errc::dlpack_read_only));
         }
@@ -125,7 +125,7 @@ namespace
         {
             auto data_result = emu::dlpack::import_from_scoped_tensor<emu::container<int>>(st);
 
-            EXPECT_TRUE(data_result);
+            ASSERT_TRUE(data_result);
 
             emu::container<int> data2 = data_result.value();
 

@@ -20,7 +20,8 @@ namespace detail
     inline handle_t create()
     {
         handle_t handle;
-        EMU_CUDA_CHECK_THROW_ERROR(cudaEventCreateWithFlags(&handle, cudaEventDisableTiming));
+        EMU_CUDA_CHECK_OR_THROW_WHAT(cudaEventCreateWithFlags(&handle, cudaEventDisableTiming),
+                                     "Failed to create CUDA event");
         return handle;
     }
 
@@ -36,17 +37,20 @@ namespace detail
 
     inline void record(handle_t handle, stream::handle_t stream_handle)
     {
-        EMU_CUDA_CHECK_THROW_ERROR(cudaEventRecord(handle, stream_handle));
+        EMU_CUDA_CHECK_OR_THROW_WHAT(cudaEventRecord(handle, stream_handle),
+                                     "Failed to create CUDA event");
     }
 
     inline void synchronize(handle_t handle)
     {
-        EMU_CUDA_CHECK_THROW_ERROR(cudaEventSynchronize(handle));
+        EMU_CUDA_CHECK_OR_THROW_WHAT(cudaEventSynchronize(handle),
+                                     "Failed to create CUDA event");
     }
 
     inline void wait(handle_t handle, stream::handle_t stream_handle)
     {
-        EMU_CUDA_CHECK_THROW_ERROR(cudaStreamWaitEvent(stream_handle, handle, 0));
+        EMU_CUDA_CHECK_OR_THROW_WHAT(cudaStreamWaitEvent(stream_handle, handle, 0),
+                                     "Failed to create CUDA event");
     }
 
 } // namespace detail

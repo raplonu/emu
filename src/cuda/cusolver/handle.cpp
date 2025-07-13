@@ -7,21 +7,21 @@ namespace handle::detail
 {
     id_t create() {
         id_t id = nullptr;
-        throw_if_error(cusolverDnCreate(&id));
+        EMU_CUSOLVER_CHECK_OR_THROW(cusolverDnCreate(&id));
         return id;
     }
 
     void destroy(id_t id) {
-        throw_if_error(cusolverDnDestroy(id));
+        EMU_CUSOLVER_CHECK_OR_THROW(cusolverDnDestroy(id));
     }
 
     void set_stream(id_t handle, emu::cuda::stream::handle_t stream) {
-            throw_if_error(cusolverDnSetStream(handle, stream));
+            EMU_CUSOLVER_CHECK_OR_THROW(cusolverDnSetStream(handle, stream));
     }
 
     emu::cuda::stream::handle_t get_stream(id_t handle) {
             emu::cuda::stream::handle_t stream = nullptr;
-            throw_if_error(cusolverDnGetStream(handle, &stream));
+            EMU_CUSOLVER_CHECK_OR_THROW(cusolverDnGetStream(handle, &stream));
             return stream;
     }
 

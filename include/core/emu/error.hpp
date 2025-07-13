@@ -2,6 +2,7 @@
 
 #include <emu/fwd.hpp>
 #include <emu/expected.hpp>
+#include <emu/error/generation.hpp>
 
 #include <stdexcept>
 #include <system_error>
@@ -9,14 +10,6 @@
 
 namespace emu
 {
-
-    struct error_category: public std::error_category
-    {
-        [[nodiscard]] std::string message( int ev ) const override;
-        [[nodiscard]] const char * name() const noexcept override;
-
-        static const std::error_category& instance();
-    };
 
     enum class errc
     {
@@ -36,48 +29,40 @@ namespace emu
         pointer_device_not_found,
         pointer_maps_file_not_found,
 
+        cuda_pointer_unregistered,
+
         not_implemented
     };
 
-    /**
-     * @brief Return a std::error_code from a emu::error
-     *
-     * @param e The emu::error
-     * @return The std::error_code
-     */
-    std::error_code make_error_code( errc e );
+    std::string_view describe(errc ev);
 
-    // special case to be used with the error macro below to work with std::error_code.
+    EMU_GENERATE_ERROR_INFRA(
+        error_category,
+        "emu",
+        errc,
+        runtime_error,
+        std::runtime_error,
+        ev
+    ) { return std::string(describe(static_cast<errc>(ev))); }
+
+    /// special case to be used with the error macro below to work with std::error_code.
     inline std::error_code make_error_code( std::error_code e ) { return e; }
-
-    // Takes a errno value and return a std::error_code
-    std::error_code make_errno_code( int e );
-
-    inline std::error_code make_errno_code_and_reset(int& e) {
-        return make_errno_code(std::exchange(e, 0));
-    }
-
     /**
-     * @brief Return a unexpected<std::error_code> from a multiple types of error
-     *
-     * This allow to create result in an error state without knowing the value_type.
-     *
-     * @param e The emu::error
-     * @return The std::error_code
-     */
+    * @brief Return a unexpected<std::error_code> from a multiple types of error
+    *
+    * This allow to create result in an error state without knowing the value_type.
+    *
+    * @param e The emu::error
+    * @return The std::error_code
+    */
     unexpected<std::error_code> make_unexpected( std::error_code e );
-    unexpected<std::error_code> make_unexpected( errc e );
-    unexpected<std::error_code> make_unexpected( std::errc e );
 
     [[noreturn]] void throw_error( std::error_code e );
-    [[noreturn]] void throw_error( errc e );
-    [[noreturn]] void throw_error( std::errc e );
+    [[noreturn]] void throw_error( std::error_code e, const std::string& what_arg );
 
-    /**
-     * @brief This is a helper function that throw an error if the condition is not met.
-     *
-     */
-    extern const std::error_code success;
+    unexpected<std::error_code> make_unexpected( std::errc e );
+    [[noreturn]] void throw_error( std::errc e );
+    [[noreturn]] void throw_error( std::errc e, const std::string& what_arg );
 
     /**
      * @brief This is a helper type that is used to bypass the optional/expected limitation of not being able to hold a reference.
@@ -126,21 +111,11 @@ struct fmt::formatter<emu::detail::pretty_error_code, Char>
 
 };
 
-#define EMU_TRUE_OR_RETURN_EC(expr, ec)     \
-    do {                                    \
-        if (EMU_UNLIKELY(not (expr))) {     \
-            using ::emu::make_error_code;   \
-            return make_error_code(ec);     \
-        }                                   \
-    } while (false)
 
-#define EMU_TRUE_OR_RETURN_EC_LOG(expr, ec, ...)    \
-    do {                                            \
-        if (EMU_UNLIKELY(not (expr))) {             \
-            EMU_COLD_LOGGER(__VA_ARGS__);           \
-            using ::emu::make_error_code;           \
-            return make_error_code(ec);             \
-        }                                           \
+#define EMU_RETURN_EC(ec)             \
+    do {                              \
+        using ::emu::make_error_code; \
+        return make_error_code(ec);   \
     } while (false)
 
 #define EMU_RETURN_UN_EC(ec)                                \
@@ -149,136 +124,81 @@ struct fmt::formatter<emu::detail::pretty_error_code, Char>
         return ::emu::make_unexpected(make_error_code(ec)); \
     } while (false)
 
-#define EMU_RETURN_UN_EC_LOG(ec, ...)                       \
-    do {                                                    \
-        EMU_COLD_LOGGER(__VA_ARGS__);                       \
-        EMU_RETURN_UN_EC(ec);                               \
-    } while (false)
-
-#define EMU_THROW_ERROR(ec)                         \
+#define EMU_THROW(ec)                               \
     do {                                            \
-        using ::emu::make_error_code;               \
-        ::emu::throw_error(make_error_code(ec));    \
+        using ::emu::throw_error;                   \
+        [&] () EMU_NOINLINE { throw_error(ec); }(); \
     } while (false)
 
-#define EMU_THROW_ERROR_LOG(ec, ...)    \
-    do {                                \
-        EMU_COLD_LOGGER(__VA_ARGS__);   \
-        EMU_THROW_ERROR(ec);            \
+#define EMU_THROW_WHAT(ec, what_arg)                          \
+    do {                                                      \
+        using ::emu::throw_error;                             \
+        [&] () EMU_NOINLINE { throw_error(ec, what_arg); }(); \
     } while (false)
 
-#define EMU_CHECK_ERRC_OR_RETURN(ec)    \
-    do {                                \
-        if (EMU_UNLIKELY(ec)) {         \
-            EMU_RETURN_UN_EC(ec);       \
-        }                               \
-    } while (false)
 
-#define EMU_CHECK_ERRC_OR_RETURN_LOG(ec, ...)       \
-    do {                                            \
-        if (EMU_UNLIKELY(ec)) {                     \
-            EMU_RETURN_UN_EC_LOG(ec, __VA_ARGS__);  \
-        }                                           \
-    } while (false)
-
-#define EMU_CHECK_ERRC_OR_THROW(ec)     \
-    do {                                \
-        if (EMU_UNLIKELY(ec)) {         \
-            EMU_THROW_ERROR(ec);        \
-        }                               \
-    } while (false)
-
-#define EMU_CHECK_ERRC_OR_THROW_LOG(ec, ...)        \
-    do {                                            \
-        if (EMU_UNLIKELY(ec)) {                     \
-            EMU_THROW_ERROR_LOG(ec, __VA_ARGS__);   \
-        }                                           \
-    } while (false)
-
-// #################################
-// # error template handling macro #
-// #################################
-
-// Take into status + success_value, return errc if status is not success_value
-#define EMU_SUCCESS_OR_RETURN_UN_EC(expr, success_value)    \
-    do {                                                    \
-        auto&& status__ = (expr);                           \
-        if (EMU_UNLIKELY((status__) != (success_value))) {  \
-            EMU_RETURN_UN_EC(status__);                     \
-        }                                                   \
-    } while (false)
-
-#define EMU_SUCCESS_OR_RETURN_UN_EC_LOG(expr, success_value, ...)       \
-    do {                                                                \
-        auto&& status__ = (expr);                                       \
-        if (EMU_UNLIKELY((status__) != (success_value))) {              \
-            EMU_RETURN_UN_EC_LOG(status__, __VA_ARGS__);                \
-        }                                                               \
-    } while (false)
-
-#define EMU_SUCCESS_OR_THROW(expr, success_value)                       \
-    do {                                                                \
-        auto&& status__ = (expr);                                       \
-        if (EMU_UNLIKELY((status__) != (success_value))) {              \
-            EMU_THROW_ERROR(status__);                                  \
-        }                                                               \
-    } while (false)
-
-#define EMU_SUCCESS_OR_THROW_LOG(expr, success_value, ...)              \
-    do {                                                                \
-        auto&& status__ = (expr);                                       \
-        if (EMU_UNLIKELY((status__) != (success_value))) {              \
-            EMU_THROW_ERROR_LOG(status__, __VA_ARGS__);                 \
-        }                                                               \
-    } while (false)
-
-// ########################
-// # error handling macro #
-// ########################
-
-/// emu provides a set of macro that use the standard error code system and the standard system_error exception.
-/// The first keyword will determine the behavior when there is no error. *_TRUE_* macro will do nothing and continue
-/// execution. *_UNWRAP_* will dereference for assignment or return.
-/// The second keyword will determine what to do with the error. It can be either *_RETURN_UN_EC_* which stand for
-/// "return unexpected error code". It relies on ADL to find the `make_error_code` function in the same
-/// namespace than the errc argument.
-
-
-// #########################
-// # EMU_TRUE_OR_XXX macro #
-// #########################
-
-/// This category of macro will check a truthy expression `expr`.
-/// If the expression is true, it will continue execution.
-/// If the expression is false, it will propagate the error `errc`.
-
-
-#define EMU_TRUE_OR_RETURN_UN_EC(expr, errc)    \
-    do {                                        \
-        if (EMU_UNLIKELY(not (expr))) {         \
-            EMU_RETURN_UN_EC(errc);             \
-        }                                       \
-    } while (false)
-
-#define EMU_TRUE_OR_RETURN_UN_EC_LOG(expr, errc, ...)   \
-    do {                                                \
-        if (EMU_UNLIKELY(not (expr))) {                 \
-            EMU_RETURN_UN_EC_LOG(errc, __VA_ARGS__);    \
-        }                                               \
-    } while (false)
-
-#define EMU_TRUE_OR_THROW(expr, errc)   \
+#define EMU_TRUE_OR_RETURN_EC(expr, ec) \
     do {                                \
         if (EMU_UNLIKELY(not (expr))) { \
-            EMU_THROW_ERROR(errc);      \
+            EMU_RETURN_EC(ec);          \
         }                               \
     } while (false)
 
-#define EMU_TRUE_OR_THROW_LOG(expr, errc, ...)      \
-    do {                                            \
-        if (EMU_UNLIKELY(not (expr))) {             \
-            EMU_THROW_ERROR_LOG(errc, __VA_ARGS__); \
-        }                                           \
+#define EMU_TRUE_OR_RETURN_UN_EC(expr, ec) \
+    do {                                   \
+        if (EMU_UNLIKELY(not (expr))) {    \
+            EMU_RETURN_UN_EC(ec);          \
+        }                                  \
+    } while (false)
+
+#define EMU_TRUE_OR_THROW(expr, ec)     \
+    do {                                \
+        if (EMU_UNLIKELY(not (expr))) { \
+            EMU_THROW(ec);              \
+        }                               \
+    } while (false)
+
+#define EMU_TRUE_OR_THROW_WHAT(expr, ec, WHAT) \
+    do {                                       \
+        if (EMU_UNLIKELY(not (expr))) {        \
+            EMU_THROW_WHAT(ec, WHAT);          \
+        }                                      \
+    } while (false)
+
+
+
+
+
+#define EMU_CHECK_OR_RETURN_EC(expr)  \
+    do {                              \
+        auto&& status__ = (expr);     \
+        if (EMU_UNLIKELY(status__)) { \
+            EMU_RETURN_EC(status__);  \
+        }                             \
+    } while (false)
+
+#define EMU_CHECK_OR_RETURN_UN_EC(expr) \
+    do {                                \
+        auto&& status__ = (expr);       \
+        if (EMU_UNLIKELY(status__)) {   \
+            EMU_RETURN_UN_EC(status__); \
+        }                               \
+    } while (false)
+
+#define EMU_CHECK_OR_THROW(expr)      \
+    do {                              \
+        auto&& status__ = (expr);     \
+        if (EMU_UNLIKELY(status__)) { \
+            EMU_THROW(status__);      \
+        }                             \
+    } while (false)
+
+#define EMU_CHECK_OR_THROW_WHAT(expr, WHAT) \
+    do {                                    \
+        auto&& status__ = (expr);           \
+        if (EMU_UNLIKELY(status__)) {       \
+            EMU_THROW_WHAT(status__, WHAT); \
+        }                                   \
     } while (false)
 
 
@@ -288,181 +208,38 @@ struct fmt::formatter<emu::detail::pretty_error_code, Char>
 
 /// This category of macro will check a dereferenceable expression `expr`.
 /// If the expression is true, it will continue execution and unwrap it.
-/// If the expression is false, it will propagate the error `errc`.
-
-// Take into bool + errc, return errc if bool is false, unwrap expr if true
-#define EMU_UNWRAP_OR_RETURN_UN_EC(expr, errc)                      \
-    ({                                                              \
-        auto&& value__ = (expr);                                    \
-        EMU_TRUE_OR_RETURN_UN_EC(value__, errc);                    \
-        *EMU_FWD(value__);                                          \
-    })
-
-#define EMU_UNWRAP_OR_RETURN_UN_EC_LOG(expr, errc, ...)             \
-    ({                                                              \
-        auto&& value__ = (expr);                                    \
-        EMU_TRUE_OR_RETURN_UN_EC_LOG(value__, errc, __VA_ARGS__);   \
-        *EMU_FWD(value__);                                          \
-    })
-
-#define EMU_UNWRAP_OR_THROW(expr, errc)                             \
-    ({                                                              \
-        auto&& value__ = (expr);                                    \
-        EMU_TRUE_OR_THROW(value__, errc);                           \
-        *EMU_FWD(value__);                                          \
-    })
-
-#define EMU_UNWRAP_OR_THROW_LOG(expr, errc, ...)                    \
-    ({                                                              \
-        auto&& value__ = (expr);                                    \
-        EMU_TRUE_OR_THROW_LOG(value__, errc, __VA_ARGS__);          \
-        *EMU_FWD(value__);                                          \
-    })
+/// If the expression is false, it will propagate the error `ec`.
 
 
-// #############################
-// # EMU_NO_ERRNO_OR_XXX macro #
-// #############################
-
-/// This category of macro will check errno.
-/// If errno is 0, it will continue execution.
-/// If errno is not 0, it will propagate it.
-
-#define EMU_NO_ERRNO_OR_RETURN_UN_EC()                                  \
-    do {                                                                \
-        if (EMU_UNLIKELY(errno)) {                                      \
-            EMU_RETURN_UN_EC(emu::make_errno_code_and_reset(errno));    \
-        }                                                               \
-    } while(false)
-
-#define EMU_NO_ERRNO_OR_RETURN_UN_EC_LOG(...)                                           \
-    do {                                                                                \
-        if (EMU_UNLIKELY(errno)) {                                                      \
-            EMU_RETURN_UN_EC_LOG(emu::make_errno_code_and_reset(errno), __VA_ARGS__);   \
-        }                                                                               \
-    } while(false)
-
-#define EMU_NO_ERRNO_OR_THROW()                                     \
-    do {                                                            \
-        if (EMU_UNLIKELY(errno)) {                                  \
-            EMU_THROW_ERROR(emu::make_errno_code_and_reset(errno)); \
-        }                                                           \
-    } while(false)
-
-#define EMU_NO_ERRNO_OR_THROW_LOG(...)                                                  \
-    do {                                                                                \
-        if (EMU_UNLIKELY(errno)) {                                                      \
-            EMU_THROW_ERROR_LOG(emu::make_errno_code_and_reset(errno), __VA_ARGS__);    \
-        }                                                                               \
-    } while(false)
-
-// ###############################
-// # EMU_TRUE_OR_ERRNO_XXX macro #
-// ###############################
-
-/// This category of macro will check a truthy expression `expr`.
-/// If the expression is true, it will continue execution.
-/// If the expression is false, it will propagate the error `errno`.
-
-#define EMU_TRUE_OR_RETURN_UN_EC_ERRNO(expr)                            \
-    do {                                                                \
-        if (EMU_UNLIKELY(not (expr))) {                                 \
-            EMU_RETURN_UN_EC(emu::make_errno_code_and_reset(errno));    \
-        }                                                               \
-    } while (false)
-
-#define EMU_TRUE_OR_RETURN_UN_EC_ERRNO_LOG(expr, ...)                                   \
-    do {                                                                                \
-        if (EMU_UNLIKELY(not (expr))) {                                                 \
-            EMU_RETURN_UN_EC_LOG(emu::make_errno_code_and_reset(errno), __VA_ARGS__);   \
-        }                                                                               \
-    } while (false)
-
-#define EMU_TRUE_OR_THROW_ERRNO(expr)                               \
-    do {                                                            \
-        if (EMU_UNLIKELY(not (expr))) {                             \
-            EMU_THROW_ERROR(emu::make_errno_code_and_reset(errno)); \
-        }                                                           \
-    } while (false)
-
-#define EMU_TRUE_OR_THROW_ERRNO_LOG(expr, ...)                                          \
-    do {                                                                                \
-        if (EMU_UNLIKELY(not (expr))) {                                                 \
-            EMU_THROW_ERROR_LOG(emu::make_errno_code_and_reset(errno), __VA_ARGS__);    \
-        }                                                                               \
-    } while (false)
-
-// #############################
-// # EMU_ASSIGN_OR_XXX macro #
-// #############################
-
-/// This category of macro will check errno after calling an expression `expr`.
-/// If errno is 0, it will continue execution and assign the value.
-/// If errno is not 0, it will propagate it.
-
-#define EMU_ASSIGN_OR_RETURN_UN_EC(expr)    \
+#define EMU_UNWRAP_OR_RETURN_EC(expr, ec)   \
     ({                                      \
         auto&& value__ = (expr);            \
-        EMU_NO_ERRNO_OR_RETURN_UN_EC();     \
-        EMU_FWD(value__);                   \
+        EMU_TRUE_OR_RETURN_EC(value__, ec); \
+        *EMU_FWD(value__);                  \
     })
 
-#define EMU_ASSIGN_OR_RETURN_UN_EC_LOG(expr, ...)       \
-    ({                                                  \
-        auto&& value__ = (expr);                        \
-        EMU_NO_ERRNO_OR_RETURN_UN_EC_LOG(__VA_ARGS__);  \
-        EMU_FWD(value__);                               \
+#define EMU_UNWRAP_OR_RETURN_UN_EC(expr, ec)   \
+    ({                                         \
+        auto&& value__ = (expr);               \
+        EMU_TRUE_OR_RETURN_UN_EC(value__, ec); \
+        *EMU_FWD(value__);                     \
     })
 
-#define EMU_ASSIGN_OR_THROW_ERRNO(expr)     \
-    ({                                      \
-        auto&& value__ = (expr);            \
-        EMU_NO_ERRNO_OR_THROW();            \
-        EMU_FWD(value__);                   \
+#define EMU_UNWRAP_OR_THROW(expr, ec)   \
+    ({                                  \
+        auto&& value__ = (expr);        \
+        EMU_TRUE_OR_THROW(value__, ec); \
+        *EMU_FWD(value__);              \
     })
 
-#define EMU_ASSIGN_OR_THROW_ERRNO_LOG(expr, ...)    \
-    ({                                              \
-        auto&& value__ = (expr);                    \
-        EMU_NO_ERRNO_OR_THROW_LOG(__VA_ARGS__);     \
-        EMU_FWD(value__);                           \
+#define EMU_UNWRAP_OR_THROW_WHAT(expr, ec, WHAT)   \
+    ({                                             \
+        auto&& value__ = (expr);                   \
+        EMU_TRUE_OR_THROW_WHAT(value__, ec, WHAT); \
+        *EMU_FWD(value__);                         \
     })
 
-// ###############################
-// # EMU_RES_TRUE_OR_XXX macro #
-// ###############################
 
-#define EMU_RES_TRUE_OR_RETURN_UN_EC(expr)                                      \
-    do {                                                                        \
-        auto&& value__ = (expr);                                                \
-        if (EMU_UNLIKELY(not (value__))) {                                      \
-            EMU_RETURN_UN_EC(value__.error());                                  \
-        }                                                                       \
-    } while (false)
-
-#define EMU_RES_TRUE_OR_RETURN_UN_EC_LOG(expr, ...)                             \
-    do {                                                                        \
-        auto&& value__ = (expr);                                                \
-        if (EMU_UNLIKELY(not (value__))) {                                      \
-            EMU_RETURN_UN_EC_LOG(value__.error(), __VA_ARGS__);                 \
-        }                                                                       \
-    } while (false)
-
-#define EMU_RES_TRUE_OR_THROW(expr)                                 \
-    do {                                                            \
-        auto&& value__ = (expr);                                    \
-        if (EMU_UNLIKELY(not (value__))) {                          \
-            EMU_THROW_ERROR(value__.error());                       \
-        }                                                           \
-    } while (false)
-
-#define EMU_RES_TRUE_OR_THROW_LOG(expr, ...)                        \
-    do {                                                            \
-        auto&& value__ = (expr);                                    \
-        if (EMU_UNLIKELY(not (value__))) {                          \
-            EMU_THROW_ERROR_LOG(value__.error(), __VA_ARGS__);      \
-        }                                                           \
-    } while (false)
 
 // ###############################
 // # EMU_UNWRAP_RES_OR_XXX macro #
@@ -471,23 +248,16 @@ struct fmt::formatter<emu::detail::pretty_error_code, Char>
 /// Special category that complete `EMU_UNWRAP` with the ability to
 /// throw an error if the result is an error.
 
-#define EMU_UNWRAP_RES_OR_RETURN_UN_EC_LOG(expr, ...)                                       \
-    ({                                                                                      \
-        auto&& value__ = (expr);                                                            \
-        EMU_TRUE_OR_RETURN_UN_EC_LOG(value__, ::std::move(value__).error(), __VA_ARGS__);   \
-        *EMU_FWD(value__);                                                                  \
+#define EMU_UNWRAP_RES_OR_THROW(expr)                             \
+    ({                                                            \
+        auto&& value__ = (expr);                                  \
+        EMU_TRUE_OR_THROW(value__, ::std::move(value__).error()); \
+        *EMU_FWD(value__);                                        \
     })
 
-#define EMU_UNWRAP_RES_OR_THROW(expr)                                   \
-    ({                                                                  \
-        auto&& value__ = (expr);                                        \
-        EMU_TRUE_OR_THROW(value__, ::std::move(value__).error());       \
-        *EMU_FWD(value__);                                              \
-    })
-
-#define EMU_UNWRAP_RES_OR_THROW_LOG(expr, ...)                          \
-    ({                                                                  \
-        auto&& value__ = (expr);                                        \
-        EMU_TRUE_OR_THROW_LOG(value__, ::std::move(value__).error(), __VA_ARGS__);       \
-        *EMU_FWD(value__);                                              \
+#define EMU_UNWRAP_RES_OR_THROW_WHAT(expr, WHAT)                             \
+    ({                                                                       \
+        auto&& value__ = (expr);                                             \
+        EMU_TRUE_OR_THROW_WHAT(value__, ::std::move(value__).error(), WHAT); \
+        *EMU_FWD(value__);                                                   \
     })

@@ -2,4 +2,4 @@ Dlpack
 ======
 
 For more information on DLPack, see the
-`DLPack specification <https://dmlc.github.io/dlpack>`.
+`DLPack specification <https://dmlc.github.io/dlpack>`_.

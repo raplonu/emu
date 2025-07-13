@@ -23,7 +23,8 @@ namespace detail
     inline handle_t create()
     {
         handle_t handle;
-        EMU_CUDA_CHECK_THROW_ERROR(cudaStreamCreateWithFlags(&handle, cudaStreamNonBlocking));
+        EMU_CHECK_OR_THROW_WHAT(cudaStreamCreateWithFlags(&handle, cudaStreamNonBlocking),
+                                "Failed to create CUDA stream");
         return handle;
     }
 
@@ -39,13 +40,15 @@ namespace detail
 
     inline void synchronize(handle_t handle)
     {
-        EMU_CUDA_CHECK_THROW_ERROR(cudaStreamSynchronize(handle));
+        EMU_CHECK_OR_THROW_WHAT(cudaStreamSynchronize(handle),
+                                "Failed to create CUDA stream");
     }
 
     inline device::id_t get_device_id(handle_t handle)
     {
         device::id_t device_id;
-        EMU_CUDA_CHECK_THROW_ERROR(cudaStreamGetDevice(handle, &device_id));
+        EMU_CHECK_OR_THROW_WHAT(cudaStreamGetDevice(handle, &device_id),
+                                "Failed to create CUDA stream");
         return device_id;
     }
 

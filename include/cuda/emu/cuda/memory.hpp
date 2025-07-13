@@ -25,7 +25,8 @@ namespace detail
     {
         void* ptr;
 
-        EMU_CUDA_CHECK_THROW_ERROR(cudaMalloc(&ptr, size_bytes));
+        EMU_CUDA_CHECK_OR_THROW_WHAT(cudaMalloc(&ptr, size_bytes),
+                                     "Failed to allocate device memory");
         return ptr;
     }
 
@@ -39,7 +40,8 @@ namespace detail
 
     inline void deallocate(void* ptr)
     {
-        EMU_CUDA_CHECK_THROW_ERROR(cudaFree(ptr));
+        EMU_CUDA_CHECK_OR_THROW_WHAT(cudaFree(ptr),
+                                     "Failed to allocate device memory");
     }
 
     struct Deallocator
@@ -88,7 +90,8 @@ namespace detail
     inline void* allocate(::std::size_t size_bytes)
     {
         void* ptr;
-        EMU_CUDA_CHECK_THROW_ERROR(cudaMallocHost(&ptr, size_bytes));
+        EMU_CUDA_CHECK_OR_THROW_WHAT(cudaMallocHost(&ptr, size_bytes),
+                                     "Failed to allocate device memory");
         return ptr;
     }
 
@@ -102,7 +105,8 @@ namespace detail
 
     inline void deallocate(void* ptr)
     {
-        EMU_CUDA_CHECK_THROW_ERROR(cudaFreeHost(ptr));
+        EMU_CUDA_CHECK_OR_THROW_WHAT(cudaFreeHost(ptr),
+                                     "Failed to allocate device memory");
     }
 
     struct Deallocator
@@ -150,7 +154,8 @@ namespace detail
     inline void* allocate(::std::size_t size_bytes)
     {
         void* ptr;
-        EMU_CUDA_CHECK_THROW_ERROR(cudaMallocManaged(&ptr, size_bytes));
+        EMU_CUDA_CHECK_OR_THROW_WHAT(cudaMallocManaged(&ptr, size_bytes),
+                                     "Failed to allocate device memory");
         return ptr;
     }
 
@@ -163,7 +168,8 @@ namespace detail
 
     inline void deallocate(void* ptr)
     {
-        EMU_CUDA_CHECK_THROW_ERROR(cudaFree(ptr));
+        EMU_CUDA_CHECK_OR_THROW_WHAT(cudaFree(ptr),
+                                     "Failed to allocate device memory");
     }
 
     struct Deallocator
