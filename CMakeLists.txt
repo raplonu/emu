@@ -62,7 +62,6 @@ target_sources(emucore
 )
 
 target_sources(emucore PUBLIC FILE_SET HEADERS BASE_DIRS include/core FILES
-    include/core/emu/blas.hpp
     include/core/emu/tuple.hpp
     include/core/emu/capsule.hpp
     include/core/emu/charconv.hpp
@@ -73,7 +72,6 @@ target_sources(emucore PUBLIC FILE_SET HEADERS BASE_DIRS include/core FILES
     include/core/emu/detail/basic_span.hpp
     include/core/emu/detail/dlpack_types.hpp
     include/core/emu/detail/mdspan_types.hpp
-    include/core/emu/functional/misc.hpp
     include/core/emu/storage.hpp
     include/core/emu/optional.hpp
     include/core/emu/ostream.hpp

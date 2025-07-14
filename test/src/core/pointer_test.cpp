@@ -34,4 +34,20 @@ namespace
 
     }
 
+    TEST(Pointer, StackPointerDescriptor)
+    {
+        const int x = 42;
+        auto desc_opt = emu::pointer_descritor_of(reinterpret_cast<const emu::byte*>(&x));
+        ASSERT_TRUE(desc_opt.has_value());
+        auto desc = desc_opt.value();
+        EXPECT_EQ(desc.location, "[stack]");
+
+        // Check that the pointer is within the returned region
+        auto ptr_addr = reinterpret_cast<uintptr_t>(&x);
+        auto region_start = reinterpret_cast<uintptr_t>(desc.base_region.data());
+        auto region_end = region_start + desc.base_region.size();
+        EXPECT_GE(ptr_addr, region_start);
+        EXPECT_LT(ptr_addr, region_end);
+    }
+
 } // namespace

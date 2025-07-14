@@ -3,8 +3,11 @@
 
 #include <emu/utility.hpp>
 #include <emu/cuda.hpp>
+#include <emu/charconv.hpp>
 
 #include <fmt/format.h>
+#include <cuda.h>
+#include <limits>
 
 namespace emu::cuda
 {

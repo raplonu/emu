@@ -88,21 +88,21 @@ namespace detail
         return nullopt;
     }
 
-    optional<std::span<byte>> region_from_location(std::string_view location) {
-        std::ifstream file{detail::maps_path};  // create regular file
+    // optional<std::span<byte>> region_from_location(std::string_view location) {
+    //     std::ifstream file{detail::maps_path};  // create regular file
 
-        EMU_TRUE_OR_RETURN_NULLOPT(file);
+    //     EMU_TRUE_OR_RETURN_NULLOPT(file);
 
-        std::string line;
-        while (std::getline(file, line)) {
-            auto desc = from_line(line);
+    //     std::string line;
+    //     while (std::getline(file, line)) {
+    //         auto desc = from_line(line);
 
-            if (desc.location == location) {
-                return desc.base_region;
-            }
-        }
-        return nullopt;
-    }
+    //         if (desc.location == location) {
+    //             return desc.base_region;
+    //         }
+    //     }
+    //     return nullopt;
+    // }
 
     result<dlpack::device_t> get_device_of_pointer(const byte * ptr) {
         for (auto const& finder : detail::get_device_finders()) {

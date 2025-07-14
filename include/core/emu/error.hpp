@@ -271,7 +271,7 @@ do {                              \
         auto&& status__ = (expr);     \
         if (EMU_UNLIKELY(status__)) { \
             EMU_RETURN_EC(status__);  \
-        }
+        }                           \
     } while (false)
 
 /**
@@ -292,7 +292,7 @@ do {                                \
         auto&& status__ = (expr);       \
         if (EMU_UNLIKELY(status__)) {   \
             EMU_RETURN_UN_EC(status__); \
-        }
+        }                        \
     } while (false)
 
 /**
@@ -312,7 +312,7 @@ do {                                  \
         auto&& status__ = (expr);     \
         if (EMU_UNLIKELY(status__)) { \
             EMU_THROW(status__);      \
-        }
+        }                    \
     } while (false)
 
 /**
@@ -333,7 +333,7 @@ do {                                        \
         auto&& status__ = (expr);           \
         if (EMU_UNLIKELY(status__)) {       \
             EMU_THROW_WHAT(status__, WHAT); \
-        }
+        }            \
     } while (false)
 
 

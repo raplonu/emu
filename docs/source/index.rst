@@ -25,8 +25,8 @@ Welcome to emu's documentation!
    :caption: API REFERENCE
    :maxdepth: 1
 
-   api/reference
    api/core
    api/error
    api/cuda
    api/python
+   api/misc
