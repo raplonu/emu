@@ -155,7 +155,7 @@ namespace
             EXPECT_EQ(tensor.dtype.code, emu::dlpack::data_type_code_t::kDLInt);
             EXPECT_EQ(tensor.shape[0], 9);
             EXPECT_EQ(tensor.strides, nullptr);
-            EXPECT_EQ(static_cast<int*>(tensor.data), data.data());
+            EXPECT_EQ(static_cast<int*>(tensor.data), s.data());
         }
         {
             auto data_result = emu::dlpack::import_from_scoped_tensor<emu::container<int>>(st);
@@ -242,7 +242,7 @@ namespace
 
     TEST(DLPack, StringView)
     {
-        std::string_view sv = "hi mom!";
+        const std::string_view sv = "hi mom!";
 
         emu::dlpack::scoped_tensor st;
 
@@ -289,9 +289,9 @@ namespace
         {
             auto sv_result = emu::dlpack::import_from_scoped_tensor<std::string_view>(st);
 
-            EXPECT_TRUE(sv_result);
+            ASSERT_TRUE(sv_result);
 
-            const std::string_view sv2 = std::move(sv_result).value();
+            const std::string_view sv2 = sv_result.value();
 
             EXPECT_EQ(s.data(), sv2.data());
             EXPECT_EQ(s.size(), sv2.size());
@@ -299,7 +299,7 @@ namespace
         {
             auto s_result = emu::dlpack::import_from_scoped_tensor<std::string>(st);
 
-            EXPECT_TRUE(s_result);
+            ASSERT_TRUE(s_result);
 
             const std::string s2 = std::move(s_result).value();
 

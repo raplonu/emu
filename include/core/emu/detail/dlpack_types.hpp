@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <dlpack/dlpack.h>
 
-#include <fmt/base.h>
+#include <fmt/format.h>
 
 #include <type_traits> // std::underlying_type_t
 #include <string_view>
@@ -64,6 +64,42 @@ namespace emu::dlpack
         };
     }
 
+    inline std::string_view format_as(device_type_t dt) {
+        // this implementation need to be kept in sync with device_type_from_string in dlpack.hpp
+        switch (dt) {
+            case kDLCPU:         return "Cpu";
+            case kDLCUDA:        return "Cuda";
+            case kDLCUDAHost:    return "CudaHost";
+            case kDLOpenCL:      return "OpenCL";
+            case kDLVulkan:      return "Vulkan";
+            case kDLMetal:       return "Metal";
+            case kDLVPI:         return "Vpi";
+            case kDLROCM:        return "Rocm";
+            case kDLROCMHost:    return "RocmHost";
+            case kDLExtDev:      return "ExtDev";
+            case kDLCUDAManaged: return "CudaManaged";
+            case kDLOneAPI:      return "OneApi";
+            case kDLWebGPU:      return "WebGpu";
+            case kDLHexagon:     return "Hexagon";
+            case kDLMAIA:        return "Maia";
+            default:             return "unknow";
+        }
+    }
+
+    inline std::string_view format_as(data_type_code_t dtc) {
+        // this implementation need to be kept in sync with data_type_code_from_string in dlpack.hpp
+        switch (dtc) {
+            case kDLInt:          return "int";
+            case kDLUInt:         return "uint";
+            case kDLFloat:        return "float";
+            case kDLComplex:      return "complex";
+            case kDLBfloat:       return "bfloat";
+            case kDLOpaqueHandle: return "object";
+            case kDLBool:         return "bool";
+            default:              return "unknow";
+        }
+    }
+
     using tensor_t = DLTensor;
 
     using managed_tensor_t = DLManagedTensor;
@@ -110,42 +146,23 @@ namespace dtype
 
 } // namespace emu::dlpack
 
-inline std::string_view format_as(DLDeviceType dt) {
-    // this implementation need to be kept in sync with device_type_from_string in dlpack.hpp
-    switch (dt) {
-        case kDLCPU:         return "Cpu";
-        case kDLCUDA:        return "Cuda";
-        case kDLCUDAHost:    return "CudaHost";
-        case kDLOpenCL:      return "OpenCL";
-        case kDLVulkan:      return "Vulkan";
-        case kDLMetal:       return "Metal";
-        case kDLVPI:         return "Vpi";
-        case kDLROCM:        return "Rocm";
-        case kDLROCMHost:    return "RocmHost";
-        case kDLExtDev:      return "ExtDev";
-        case kDLCUDAManaged: return "CudaManaged";
-        case kDLOneAPI:      return "OneApi";
-        case kDLWebGPU:      return "WebGpu";
-        case kDLHexagon:     return "Hexagon";
-        case kDLMAIA:        return "Maia";
-        default:             return "unknow";
+template<typename Char>
+struct fmt::formatter<emu::dlpack::device_type_t, Char>
+    : fmt::formatter<std::string_view, Char>
+{
+    auto format(const emu::dlpack::device_type_t& value, format_context& ctx) const -> format_context::iterator {
+        return fmt::formatter<std::string_view, Char>::format(emu::dlpack::format_as(value), ctx);
     }
-}
+};
 
-inline std::string_view format_as(DLDataTypeCode dtc) {
-    // this implementation need to be kept in sync with data_type_code_from_string in dlpack.hpp
-    switch (dtc) {
-        case kDLInt:          return "int";
-        case kDLUInt:         return "uint";
-        case kDLFloat:        return "float";
-        case kDLComplex:      return "complex";
-        case kDLBfloat:       return "bfloat";
-        case kDLOpaqueHandle: return "object";
-        case kDLBool:         return "bool";
-        default:              return "unknow";
+template<typename Char>
+struct fmt::formatter<emu::dlpack::data_type_code_t, Char>
+    : fmt::formatter<std::string_view, Char>
+{
+    auto format(const emu::dlpack::data_type_code_t& value, format_context& ctx) const -> format_context::iterator {
+        return fmt::formatter<std::string_view, Char>::format(emu::dlpack::format_as(value), ctx);
     }
-}
-
+};
 
 template<typename Char>
 struct fmt::formatter<emu::dlpack::device_t, Char>

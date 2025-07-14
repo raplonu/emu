@@ -4,8 +4,8 @@
 namespace emu
 {
 
-    std::string_view describe(errc ev) {
-        switch (static_cast<errc>(ev)) {
+    std::string_view describe(errc e) {
+        switch (e) {
             case errc::success:
                 return "success";
 
@@ -33,6 +33,8 @@ namespace emu
                 return "pointer's device not found";
             case errc::pointer_maps_file_not_found:
                 return "pointer's maps file not found";
+            case errc::pointer_parsing_error:
+                return "pointer's parsing error";
 
             case errc::cuda_pointer_unregistered:
                 return "cuda pointer is unregistered";

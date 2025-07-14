@@ -32,7 +32,7 @@ class EmuConan(ConanFile):
     }
 
     def requirements(self):
-        self.requires('fmt/11.0.0', transitive_headers=True, transitive_libs=True)
+        self.requires('fmt/11.2.0', transitive_headers=True, transitive_libs=True)
         self.requires('boost/1.86.0', transitive_headers=True, transitive_libs=True)
         self.requires('ms-gsl/4.0.0', transitive_headers=True)
         self.requires('mdspan/0.6.0', transitive_headers=True)

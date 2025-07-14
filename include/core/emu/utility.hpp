@@ -10,12 +10,12 @@
 #include <type_traits>
 #include <algorithm>
 #include <functional>
-#include <ranges>
+
 #include <utility>
 #include <memory>
 #include <cstddef>
 #include <string_view>
-#include <ranges>
+
 #include <span>
 
 namespace emu
@@ -57,17 +57,7 @@ namespace emu
     //         return t.data_handle();
     // }
 
-    constexpr inline auto split_string(string_view words, string_view delim = " ") {
-        return std::views::split(words, delim) | std::views::transform([](auto sub_str) {
-                // sub_str is not categorized as contiguous range but it is.
-                // We have to use the deref hack to construct the string_view.
-                return string_view(&*sub_str.begin(), std::ranges::distance(sub_str));
-            });
-    }
-
-    constexpr inline auto split_string_no_empty(string_view words, string_view delim = " ") {
-        return split_string(words, delim) | std::views::filter([](auto sv) { return not sv.empty(); });
-    }
+    
 
     /**
     * Calculate the ceil result of a / b

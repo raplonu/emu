@@ -1,6 +1,6 @@
 #include <emu/pointer.hpp>
 #include <emu/utility.hpp>
-#include <emu/charconv.hpp>
+#include <emu/string.hpp>
 
 #include <filesystem>
 #include <list>
@@ -27,6 +27,35 @@ namespace detail
 
 } // namespace detail
 
+    std::filesystem::perms permissions_from_string(std::string_view sv) {
+        using std::filesystem::perms;
+        perms permissions = perms::none;
+
+        if (sv.size() == 4) {
+            if (sv[0] == 'r') permissions |= perms::owner_read;
+            if (sv[1] == 'w') permissions |= perms::owner_write;
+            if (sv[2] == 'x') permissions |= perms::owner_exec;
+            // if (sv[3] == 'p') permissions |= # not supported
+        }
+
+        return permissions;
+    }
+
+    std::pair<std::uintptr_t, std::uintptr_t> memory_range_from_string(std::string_view sv) {
+        auto tokens = split_string(sv, "-");
+        auto begin = tokens.begin();
+
+        std::uintptr_t start = 0, stop = 0;
+
+        EMU_TRUE_OR_THROW(begin != tokens.end(), errc::pointer_parsing_error);
+        EMU_UNWRAP_RES_OR_THROW(emu::from_chars(*begin, start, 16));
+
+        EMU_TRUE_OR_THROW(++begin != tokens.end(), errc::pointer_parsing_error);
+        EMU_UNWRAP_RES_OR_THROW(emu::from_chars(*begin, stop, 16));
+
+        return {start, stop};
+    }
+
     pointer_descriptor from_line(std::string_view line) {
         auto not_empty = [](auto sv) { return not sv.empty(); };
 
@@ -34,31 +63,13 @@ namespace detail
 
         auto begin = tokens.begin();
 
-        std::uintptr_t start = 0, stop = 0;
-        {
-            auto memory_range = split_string(*begin++, "-");
-            auto it = memory_range.begin();
-
-            EMU_UNWRAP_RES_OR_THROW(emu::from_chars(*it, start, 16));
-
-            ++it;
-
-            EMU_UNWRAP_RES_OR_THROW(emu::from_chars(*it, stop, 16));
-
-        }
+        const auto [start, stop] = memory_range_from_string(*begin++);
 
         auto size = stop - start;
 
         auto permissions_str = *begin++;
 
-        std::filesystem::perms permissions = std::filesystem::perms::none;
-
-        if (permissions_str.size() == 4) {
-            if (permissions_str[0] == 'r') permissions |= std::filesystem::perms::owner_read;
-            if (permissions_str[1] == 'w') permissions |= std::filesystem::perms::owner_write;
-            if (permissions_str[2] == 'x') permissions |= std::filesystem::perms::owner_exec;
-            // if (permissions_str[3] == 'p') permissions |= # not supported
-        }
+        const auto permissions = permissions_from_string(permissions_str);
 
         std::advance(begin, 3);
 
@@ -67,7 +78,11 @@ namespace detail
         if (location.empty())
             location = "[anonymous]";
 
-        return pointer_descriptor{.location = std::string(location), .permissions = permissions, .base_region = std::span{reinterpret_cast<byte*>(start), size}};
+        return pointer_descriptor{
+            .location = std::string(location),
+            .permissions = permissions,
+            .base_region = std::span{std::bit_cast<byte*>(start), size}
+        };
     }
 
     optional<pointer_descriptor> pointer_descritor_of(const byte* b_ptr) {

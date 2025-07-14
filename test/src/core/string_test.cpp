@@ -1,127 +1,98 @@
 #include <gtest/gtest.h>
-
-#include <emu/string.h>
-
-using namespace emu;
+#include <emu/string.hpp>
+#include <vector>
+#include <string>
 
 namespace
 {
-    TEST(string_test, empty_str_with_char) {
-        std::string str("");
-        char token = ' ';
-
-        std::vector<emu::string_view> res = split(str, token);
-
-        EXPECT_EQ(res.size(), 1);
-        EXPECT_EQ(res[0].size(), 0);
-        EXPECT_EQ(res[0].data(), str.data());
+    TEST(String, FromChars)
+    {
+        int value = 0;
+        auto result = emu::from_chars("42", value);
+        ASSERT_TRUE(result.has_value());
+        EXPECT_EQ(value, 42);
+        EXPECT_TRUE(result.value().empty());
     }
 
-    TEST(string_test, empty_str_with_str) {
-        std::string str("");
-        std::string token(" ");
-
-        std::vector<emu::string_view> res = split(str, token);
-
-        EXPECT_EQ(res.size(), 1);
-        EXPECT_EQ(res[0].size(), 0);
-        EXPECT_EQ(res[0].data(), str.data());
+    TEST(String, FromCharsWithRemaining)
+    {
+        int value = 0;
+        auto result = emu::from_chars("42 and more", value);
+        ASSERT_TRUE(result.has_value());
+        EXPECT_EQ(value, 42);
+        EXPECT_EQ(result.value(), " and more");
     }
 
-    TEST(string_test, non_empty_str_with_char_no_split) {
-        std::string str("x");
-        char token = ' ';
-
-        std::vector<emu::string_view> res = split(str, token);
-
-        EXPECT_EQ(res.size(), 1);
-        EXPECT_EQ(res[0].size(), 1);
-        EXPECT_EQ(res[0].data(), str.data());
+    TEST(String, FromCharsHex)
+    {
+        int value = 0;
+        auto result = emu::from_chars("2a", value, 16);
+        ASSERT_TRUE(result.has_value());
+        EXPECT_EQ(value, 42);
+        EXPECT_TRUE(result.value().empty());
     }
 
-    TEST(string_test, non_empty_str_with_str_no_split) {
-        std::string str("x");
-        std::string token(" ");
-
-        std::vector<emu::string_view> res = split(str, token);
-
-        EXPECT_EQ(res.size(), 1);
-        EXPECT_EQ(res[0].size(), 1);
-        EXPECT_EQ(res[0].data(), str.data());
+    TEST(String, FromCharsInvalid)
+    {
+        int value = 0;
+        auto result = emu::from_chars("not a number", value);
+        EXPECT_FALSE(result.has_value());
     }
 
-    TEST(string_test, non_empty_str_with_char_empty_split) {
-        std::string str("x");
-        char token = 'x';
-
-        std::vector<emu::string_view> res = split(str, token);
-
-        EXPECT_EQ(res.size(), 2);
-        EXPECT_EQ(res[0].size(), 0);
-        EXPECT_EQ(res[1].size(), 0);
+    TEST(String, SplitString)
+    {
+        const std::string test_str = "this is a test";
+        auto parts = emu::split_string(test_str);
+        const std::vector<std::string_view> expected = {"this", "is", "a", "test"};
+        auto it = parts.begin();
+        for(const auto& exp : expected)
+        {
+            ASSERT_NE(it, parts.end());
+            EXPECT_EQ(*it++, exp);
+        }
+        EXPECT_EQ(it, parts.end());
     }
 
-    TEST(string_test, non_empty_str_with_str_empty_split) {
-        std::string str("x");
-        std::string token("x");
-
-        std::vector<emu::string_view> res = split(str, token);
-
-        EXPECT_EQ(res.size(), 2);
-        EXPECT_EQ(res[0].size(), 0);
-        EXPECT_EQ(res[1].size(), 0);
+    TEST(String, SplitStringWithEmpty)
+    {
+        const std::string test_str = "this  is a test";
+        auto parts = emu::split_string(test_str);
+        const std::vector<std::string_view> expected = {"this", "", "is", "a", "test"};
+        auto it = parts.begin();
+        for(const auto& exp : expected)
+        {
+            ASSERT_NE(it, parts.end());
+            EXPECT_EQ(*it++, exp);
+        }
+        EXPECT_EQ(it, parts.end());
     }
 
-
-    TEST(string_test, non_empty_str_with_char_non_empty_split) {
-        std::string str("axa");
-        char token = 'x';
-
-        std::vector<emu::string_view> res = split(str, token);
-
-        EXPECT_EQ(res.size(), 2);
-        EXPECT_EQ(res[0].size(), 1);
-        EXPECT_EQ(res[0].data(), str.data());
-        EXPECT_EQ(res[1].size(), 1);
-        EXPECT_EQ(res[1].data(), str.data() + 2);
+    TEST(String, SplitStringNoEmpty)
+    {
+        const std::string test_str = "this  is a test";
+        auto parts = emu::split_string_no_empty(test_str);
+        const std::vector<std::string_view> expected = {"this", "is", "a", "test"};
+        auto it = parts.begin();
+        for(const auto& exp : expected)
+        {
+            ASSERT_NE(it, parts.end());
+            EXPECT_EQ(*it++, exp);
+        }
+        EXPECT_EQ(it, parts.end());
     }
 
-    TEST(string_test, non_empty_str_with_str_non_empty_split) {
-        std::string str("axa");
-        std::string token("x");
-
-        std::vector<emu::string_view> res = split(str, token);
-
-        EXPECT_EQ(res.size(), 2);
-        EXPECT_EQ(res[0].size(), 1);
-        EXPECT_EQ(res[0].data(), str.data());
-        EXPECT_EQ(res[1].size(), 1);
-        EXPECT_EQ(res[1].data(), str.data() + 2);
+    TEST(String, SplitStringCustomDelim)
+    {
+        const std::string test_str = "this,is,a,test";
+        auto parts = emu::split_string(test_str, ",");
+        const std::vector<std::string_view> expected = {"this", "is", "a", "test"};
+        auto it = parts.begin();
+        for(const auto& exp : expected)
+        {
+            ASSERT_NE(it, parts.end());
+            EXPECT_EQ(*it++, exp);
+        }
+        EXPECT_EQ(it, parts.end());
     }
 
-    TEST(string_test, non_empty_str_with_long_str_non_empty_split) {
-        std::string str("axxxa");
-        std::string token("xxx");
-
-        std::vector<emu::string_view> res = split(str, token);
-
-        EXPECT_EQ(res.size(), 2);
-        EXPECT_EQ(res[0].size(), 1);
-        EXPECT_EQ(res[0].data(), str.data());
-        EXPECT_EQ(res[1].size(), 1);
-        EXPECT_EQ(res[1].data(), str.data() + 4 );
-    }
-
-    TEST(string_test, split_literal) {
-        std::vector<emu::string_view> res = split("axxxb", "xxx");
-
-        EXPECT_EQ(res.size(), 2);
-        EXPECT_EQ(res[0].size(), 1);
-        EXPECT_EQ(res[0][0], 'a');
-        EXPECT_EQ(res[1].size(), 1);
-        EXPECT_EQ(res[1][0], 'b');
-    }
-
-
-}
-
+} // namespace

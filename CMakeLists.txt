@@ -64,7 +64,7 @@ target_sources(emucore
 target_sources(emucore PUBLIC FILE_SET HEADERS BASE_DIRS include/core FILES
     include/core/emu/tuple.hpp
     include/core/emu/capsule.hpp
-    include/core/emu/charconv.hpp
+    include/core/emu/string.hpp
     include/core/emu/assert.hpp
     include/core/emu/detail/basic_container.hpp
     include/core/emu/detail/basic_mdcontainer.hpp

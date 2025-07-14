@@ -49,7 +49,8 @@ Checks: >
 
 FormatStyle: GNU
 CheckOptions:
-
+  - { key: cppcoreguidelines-avoid-do-while.IgnoreMacros                    , value: true    }
+  - { key: readability-function-cognitive-complexity.IgnoreMacros           , value: true    }
   - { key: llvm-namespace-comment.ShortNamespaceLines                       , value: '0'     }
   - { key: ColumnLimit                                                      , value: 128     }
 

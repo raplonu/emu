@@ -28,13 +28,14 @@ namespace emu
         pointer_desc_not_found,
         pointer_device_not_found,
         pointer_maps_file_not_found,
+        pointer_parsing_error,
 
         cuda_pointer_unregistered,
 
         not_implemented
     };
 
-    std::string_view describe(errc ev);
+    std::string_view describe(errc e);
 
     EMU_GENERATE_ERROR_INFRA(
         error_category,

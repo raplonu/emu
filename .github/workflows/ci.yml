@@ -32,8 +32,8 @@ jobs:
           python3 -m pip install --upgrade pip
           python3 -m pip install "cmake<4"
           if [ "${{ matrix.build_type }}" = "Debug" ]; then
-            sudo apt-get update
-            sudo apt-get install -y gcovr
+            apt-get update
+            apt-get install -y gcovr
           fi
 
       - name: Clone and add cosmic-center-index as Conan local remote
