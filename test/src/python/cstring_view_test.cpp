@@ -32,6 +32,27 @@ namespace {
         }
     }
 
+    TEST(CastCStringView, PythonToCppFailure) {
+        {
+            EXPECT_THROW(
+                py::eval("[]").cast<cstring_view>(),
+                py::cast_error
+            );
+        }
+        {
+            EXPECT_THROW(
+                py::eval("None").cast<cstring_view>(),
+                py::cast_error
+            );
+        }
+        // {
+        //     EXPECT_THROW(
+        //         py::eval("'💩'").cast<cstring_view>(),
+        //         py::cast_error
+        //     );
+        // }
+    }
+
     TEST(CastCStringView, CppToPython) {
         using namespace py::literals;
         {

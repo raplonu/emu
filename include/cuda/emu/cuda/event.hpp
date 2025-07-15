@@ -10,6 +10,7 @@
 namespace emu::cuda
 {
     struct event_t;
+    class event_ref;
 
 namespace event
 {
@@ -20,7 +21,7 @@ namespace detail
     inline handle_t create()
     {
         handle_t handle;
-        EMU_CUDA_CHECK_OR_THROW_WHAT(cudaEventCreateWithFlags(&handle, cudaEventDisableTiming),
+        EMU_CHECK_OR_THROW_WHAT(cudaEventCreateWithFlags(&handle, cudaEventDisableTiming),
                                      "Failed to create CUDA event");
         return handle;
     }
@@ -37,19 +38,19 @@ namespace detail
 
     inline void record(handle_t handle, stream::handle_t stream_handle)
     {
-        EMU_CUDA_CHECK_OR_THROW_WHAT(cudaEventRecord(handle, stream_handle),
+        EMU_CHECK_OR_THROW_WHAT(cudaEventRecord(handle, stream_handle),
                                      "Failed to create CUDA event");
     }
 
     inline void synchronize(handle_t handle)
     {
-        EMU_CUDA_CHECK_OR_THROW_WHAT(cudaEventSynchronize(handle),
+        EMU_CHECK_OR_THROW_WHAT(cudaEventSynchronize(handle),
                                      "Failed to create CUDA event");
     }
 
     inline void wait(handle_t handle, stream::handle_t stream_handle)
     {
-        EMU_CUDA_CHECK_OR_THROW_WHAT(cudaStreamWaitEvent(stream_handle, handle, 0),
+        EMU_CHECK_OR_THROW_WHAT(cudaStreamWaitEvent(stream_handle, handle, 0),
                                      "Failed to create CUDA event");
     }
 
@@ -62,6 +63,38 @@ namespace detail
     event_t wrap(event::handle_t handle, bool take_ownership);
 
 } // namespace event
+
+    struct event_ref
+    {
+        using value_type = event::handle_t;
+
+        constexpr event_ref() noexcept = default;
+
+        constexpr event_ref(value_type handle) noexcept
+            : handle_(handle)
+        {}
+
+        /// Disallow construction from an `int`, e.g., `0`.
+        event_ref(int) = delete;
+
+        /// Disallow construction from `nullptr`.
+        event_ref(nullptr_t) = delete;
+
+        [[nodiscard]] value_type get() const noexcept { return handle_; }
+
+        void wait() const
+        {
+            event::detail::synchronize(handle_);
+        }
+
+        void wait(stream_ref stream) const
+        {
+            event::detail::wait(handle_, stream.get());
+        }
+
+    protected:
+        value_type handle_{};
+    };
 
     struct event_t
     {
@@ -77,13 +110,17 @@ namespace detail
         event_t& operator=(event_t &&) = default;
         event_t& operator=(const event_t &) = delete;
 
-        [[nodiscard]] event::handle_t handle() const noexcept { return handle_.value; }
+        [[nodiscard]] event::handle_t get() const noexcept { return handle_.value; }
+
+        [[nodiscard]] operator event_ref() const noexcept {
+            return event_ref(handle_.value);
+        }
 
         void record(const stream_t& stream) const {
             event::detail::record(handle_.value, stream.handle());
         }
 
-        void synchronize() const {
+        void wait() const {
             event::detail::synchronize(handle_.value);
         }
 

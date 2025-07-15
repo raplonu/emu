@@ -1,0 +1,81 @@
+name: Setup Env
+
+inputs:
+  python_version:
+    required: true
+    type: string
+    default: '3.12'
+  gcc_version:
+    required: false
+    type: string
+    default: '11'
+  conan_cache:
+    required: false
+    type: boolean
+    default: false
+
+outputs:
+  conan-profile-name:
+    description: "Name of the Conan profile used for the build"
+    value: ${{ steps.conan-profile.outputs.conan-profile-name }}
+
+runs:
+  using: 'composite'
+  steps:
+
+    - name: Install GCC ${{ inputs.gcc_version }}
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-${{ inputs.gcc_version }} g++-${{ inputs.gcc_version }}
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${{ inputs.gcc_version }} 100 \
+                                  --slave /usr/bin/g++ g++ /usr/bin/g++-${{ inputs.gcc_version }}
+        g++ --version
+
+    - name: Setup Python ${{ inputs.python_version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python_version }}
+
+    - name: Install Python packages
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install numpy "cmake<4" gcovr
+
+    - name: Set up Conan
+      id: setup-conan
+      uses: conan-io/setup-conan@v1
+
+    - name: Conan cache
+      uses: actions/cache@v3
+      with:
+        path: ${{ steps.setup-conan.outputs.conan-home }}
+        key: ${{ runner.os }}-conan-${{ steps.setup-conan.outputs.conan-version }}
+        restore-keys: |
+          ${{ runner.os }}-conan-
+
+
+    - name: Add local Conan remote
+      shell: bash
+      run: |
+        COSMIC_DIR="${{ steps.setup-conan.outputs.conan-home }}/cosmic-center-index"
+        if [ ! -d "$COSMIC_DIR" ]; then
+          echo "Downloading cosmic-center-index..."
+          curl -L https://github.com/raplonu/cosmic-center-index/archive/refs/heads/main.tar.gz -o /tmp/cosmic.tar.gz
+          mkdir -p "$COSMIC_DIR"
+          tar --strip-components=1 -xzf /tmp/cosmic.tar.gz -C "$COSMIC_DIR"
+          conan remote add cosmic -t=local-recipes-index "$COSMIC_DIR" --force
+        else
+          echo "cosmic-center-index already present, skipping download."
+        fi
+
+    - name: Conan profile detect
+      shell: bash
+      run: |
+        conan profile detect --name gcc-${{ inputs.gcc_version }} --force
+
+    - name: Set Conan profile name output
+      shell: bash
+      id: conan-profile
+      run: echo "conan-profile-name=gcc-${{ inputs.gcc_version }}" >> $GITHUB_OUTPUT

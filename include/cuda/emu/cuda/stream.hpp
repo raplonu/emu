@@ -83,7 +83,7 @@ namespace detail
             return stream_ref(handle_.value);
         }
 
-        void synchronize() const {
+        void wait() const {
             stream::detail::synchronize(handle_.value);
         }
 

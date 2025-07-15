@@ -24,16 +24,3 @@ namespace cusolver
     EMU_GENERATE_ERROR_FUNCTION(cusolver::status_t, cusolver::error_category, cusolver::runtime_error);
 
 } // namespace emu
-
-
-#define EMU_CUSOLVER_CHECK_RETURN_EC(expr) \
-    EMU_CHECK_OR_RETURN_EC(expr)
-
-#define EMU_CUSOLVER_CHECK_RETURN_UN_EC(expr) \
-    EMU_CHECK_OR_RETURN_UN_EC(expr)
-
-#define EMU_CUSOLVER_CHECK_OR_THROW(expr) \
-    EMU_CHECK_OR_THROW(expr)
-
-#define EMU_CUSOLVER_CHECK_OR_THROW_WHAT(expr, WHAT) \
-    EMU_CHECK_OR_THROW_WHAT(expr, WHAT)

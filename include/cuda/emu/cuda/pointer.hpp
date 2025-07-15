@@ -42,7 +42,7 @@ namespace detail
 
     inline pointer_attribute_t get_pointer_attributes(const void* ptr) {
         pointer_attribute_t attr;
-        EMU_CUDA_CHECK_OR_THROW_WHAT(cudaPointerGetAttributes(&attr, ptr),
+        EMU_CHECK_OR_THROW_WHAT(cudaPointerGetAttributes(&attr, ptr),
                                      "Failed to get pointer attributes");
         return attr;
     }

@@ -24,7 +24,7 @@ namespace
 
     TEST(Pointer, DeviceHeapPointer)
     {
-        auto ptr = emu::cuda::memory::device::make_unique<int[]>(emu::cuda::device::get(0), 1);
+        auto ptr = emu::cuda::device::make_unique<int[]>(emu::cuda::device::get(0), 1);
 
         auto device = emu::get_device_of_pointer(ptr.get());
 
@@ -40,7 +40,7 @@ namespace
     {
         if (emu::cuda::devices::count() > 1)
         {
-            auto ptr = emu::cuda::memory::device::make_unique<int[]>(emu::cuda::device::get(1), 1);
+            auto ptr = emu::cuda::device::make_unique<int[]>(emu::cuda::device::get(1), 1);
 
             auto device = emu::get_device_of_pointer(ptr.get());
 
@@ -56,7 +56,7 @@ namespace
 
     TEST(Pointer, DevicePointerDescriptor)
     {
-        auto ptr = emu::cuda::memory::device::make_unique<int[]>(emu::cuda::device::get(0), 1);
+        auto ptr = emu::cuda::device::make_unique<int[]>(emu::cuda::device::get(0), 1);
         auto desc_opt = emu::pointer_descritor_of(reinterpret_cast<const emu::byte*>(ptr.get()));
         ASSERT_TRUE(desc_opt.has_value());
         auto desc = desc_opt.value();

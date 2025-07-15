@@ -150,7 +150,7 @@ namespace detail
         template< class OtherElementType, class OtherExtents,
                   class OtherLayoutPolicy, class OtherAccessor,
                   class OActualType,
-                  class OMapping = OtherLayoutPolicy::template mapping<OtherExtents> >
+                  class OMapping = typename OtherLayoutPolicy::template mapping<OtherExtents> >
         constexpr explicit(
             not std::is_convertible_v<
                 const OMapping&,
@@ -166,7 +166,7 @@ namespace detail
 
         template< class OtherElementType, class OtherExtents,
                   class OtherLayoutPolicy, class OtherAccessor,
-                  class OMapping = OtherLayoutPolicy::template mapping<OtherExtents> >
+                  class OMapping = typename OtherLayoutPolicy::template mapping<OtherExtents> >
         constexpr explicit(
             not std::is_convertible_v<
                 const OMapping&,

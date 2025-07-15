@@ -37,8 +37,8 @@ class EmuConan(ConanFile):
         self.requires('ms-gsl/4.0.0', transitive_headers=True)
         self.requires('mdspan/0.6.0', transitive_headers=True)
 
-        if self.options.cuda:
-            self.requires('cuda-api-wrappers/0.7.1', transitive_headers=True)
+        # if self.options.cuda:
+        #     self.requires('cuda-api-wrappers/0.7.1', transitive_headers=True)
             # self.requires('matx/0.8.0', transitive_headers=True)
 
         self.test_requires('gtest/1.13.0')

@@ -111,7 +111,7 @@ namespace emu::cublas
 
     template<typename T>
     void amax(const handle_t & handle, int n, const T *x, int incx, int *result) {
-        EMU_CUBLAS_CHECK_OR_THROW(CuBLAS<T>::amax(handle.enable().id(), n, x, incx, result));
+        EMU_CHECK_OR_THROW(CuBLAS<T>::amax(handle.enable().id(), n, x, incx, result));
     }
 
     template void amax<float>          (const handle_t & handle, int n, const float           *x, int incx, int *result);
@@ -121,7 +121,7 @@ namespace emu::cublas
 
     template<typename T>
     void amin(const handle_t & handle, int n, const T *x, int incx, int *result) {
-        EMU_CUBLAS_CHECK_OR_THROW(CuBLAS<T>::amin(handle.enable().id(), n, x, incx, result));
+        EMU_CHECK_OR_THROW(CuBLAS<T>::amin(handle.enable().id(), n, x, incx, result));
     }
 
     template void amin<float>          (const handle_t & handle, int n, const float           *x, int incx, int *result);
@@ -131,7 +131,7 @@ namespace emu::cublas
 
     template<typename T>
     void asum(const handle_t & handle, int n, const T *x, int incx, AssociatedT<T> *result) {
-        EMU_CUBLAS_CHECK_OR_THROW(CuBLAS<T>::asum(handle.enable().id(), n, x, incx, result));
+        EMU_CHECK_OR_THROW(CuBLAS<T>::asum(handle.enable().id(), n, x, incx, result));
     }
 
     template void asum<float>          (const handle_t & handle, int n, const float           *x, int incx, float  *result);
@@ -141,7 +141,7 @@ namespace emu::cublas
 
     template<typename T>
     void axpy(const handle_t & handle, int n, const T *alpha, const T *x, int incx, T *y, int incy) {
-        EMU_CUBLAS_CHECK_OR_THROW(CuBLAS<T>::axpy(handle.enable().id(), n, alpha, x, incx, y, incy));
+        EMU_CHECK_OR_THROW(CuBLAS<T>::axpy(handle.enable().id(), n, alpha, x, incx, y, incy));
     }
 
     template void axpy<float>          (const handle_t & handle, int n, const float           *alpha, const float           *x, int incx, float           *y, int incy);
@@ -151,7 +151,7 @@ namespace emu::cublas
 
     template<typename T>
     void scal(const handle_t & handle, int n, const T *alpha, T *x, int incx) {
-        EMU_CUBLAS_CHECK_OR_THROW(CuBLAS<T>::scal(handle.enable().id(), n, alpha, x, incx));
+        EMU_CHECK_OR_THROW(CuBLAS<T>::scal(handle.enable().id(), n, alpha, x, incx));
     }
 
     template void scal<float>          (const handle_t & handle, int n, const float           *alpha, float           *x, int incx);
@@ -162,7 +162,7 @@ namespace emu::cublas
 
     template<typename T>
     void dgmm(const handle_t & handle, SideMode side, int m, int n, const T *A, int lda, const T *x, int incx, T *C, int ldc) {
-        EMU_CUBLAS_CHECK_OR_THROW(CuBLAS<T>::dgmm(handle.enable().id(), convert(side), m,n, A, lda, x, incx, C, ldc));
+        EMU_CHECK_OR_THROW(CuBLAS<T>::dgmm(handle.enable().id(), convert(side), m,n, A, lda, x, incx, C, ldc));
     }
 
     template void dgmm<float>          (const handle_t & handle, SideMode side, int m, int n, const float           *A, int lda, const float           *x, int incx, float           *C, int ldc);
@@ -172,7 +172,7 @@ namespace emu::cublas
 
     template<typename T>
     void gemv(const handle_t & handle, Operation trans, int m, int n, const T *alpha, const T *A, int lda, const T *x, int incx, const T *beta, T *y, int incy) {
-        EMU_CUBLAS_CHECK_OR_THROW(CuBLAS<T>::gemv(handle.enable().id(), convert(trans), m, n, alpha, A, lda, x, incx, beta, y, incy));
+        EMU_CHECK_OR_THROW(CuBLAS<T>::gemv(handle.enable().id(), convert(trans), m, n, alpha, A, lda, x, incx, beta, y, incy));
     }
 
     template void gemv<float>          (const handle_t & handle, Operation trans, int m, int n, const float           *alpha, const float           *A, int lda, const float           *x, int incx, const float           *beta, float           *y, int incy);
@@ -182,7 +182,7 @@ namespace emu::cublas
 
     template<typename T>
     void gemm(const handle_t & handle, Operation transa, Operation transb, int m, int n, int k, const T *alpha, const T *A, int lda, const T *B, int ldb, const T *beta, T *C, int ldc){
-        EMU_CUBLAS_CHECK_OR_THROW(CuBLAS<T>::gemm(handle.enable().id(), convert(transa), convert(transb), m, n, k, alpha, A, lda, B, ldb, beta, C, ldc));
+        EMU_CHECK_OR_THROW(CuBLAS<T>::gemm(handle.enable().id(), convert(transa), convert(transb), m, n, k, alpha, A, lda, B, ldb, beta, C, ldc));
     }
 
     template void gemm<float>          (const handle_t & handle, Operation transa, Operation transb, int m, int n, int k, const float           *alpha, const float           *A, int lda, const float           *B, int ldb,const float           *beta, float           *C, int ldc);
@@ -192,7 +192,7 @@ namespace emu::cublas
 
     template<typename T>
     void syrk(const handle_t & handle, FillMode uplo, Operation trans, int n, int k, const T *alpha, const T *A, int lda, const T *beta, T *C, int ldc){
-        EMU_CUBLAS_CHECK_OR_THROW(CuBLAS<T>::syrk(handle.enable().id(), convert(uplo), convert(trans), n, k, alpha, A, lda, beta, C, ldc));
+        EMU_CHECK_OR_THROW(CuBLAS<T>::syrk(handle.enable().id(), convert(uplo), convert(trans), n, k, alpha, A, lda, beta, C, ldc));
     }
 
     template void syrk<float>          (const handle_t & handle, FillMode uplo, Operation trans, int n, int k, const float           *alpha, const float           *A, int lda, const float           *beta, float           *C, int ldc);
@@ -202,7 +202,7 @@ namespace emu::cublas
 
     template<typename T>
     void trsm(const handle_t & handle, SideMode side, FillMode uplo, Operation trans, DiagonalType diag, int m, int n, const T *alpha, const T *A, int lda, T *B, int ldb){
-        EMU_CUBLAS_CHECK_OR_THROW(CuBLAS<T>::trsm(handle.enable().id(), convert(side), convert(uplo), convert(trans), convert(diag), m, n, alpha, A, lda, B, ldb));
+        EMU_CHECK_OR_THROW(CuBLAS<T>::trsm(handle.enable().id(), convert(side), convert(uplo), convert(trans), convert(diag), m, n, alpha, A, lda, B, ldb));
     }
 
     template void trsm<float>          (const handle_t & handle, SideMode side, FillMode uplo, Operation trans, DiagonalType diag, int m, int n, const float           *alpha, const float           *A, int lda, float           *B, int ldb);
@@ -212,7 +212,7 @@ namespace emu::cublas
 
     template<typename T>
     void getrf_batched(const handle_t & handle, int n, T *A_array[], int lda, int *pivot_array, int *info_array, int batch_size) {
-        EMU_CUBLAS_CHECK_OR_THROW(CuBLAS<T>::getrf_batched(handle.enable().id(), n, A_array, lda, pivot_array,info_array, batch_size));
+        EMU_CHECK_OR_THROW(CuBLAS<T>::getrf_batched(handle.enable().id(), n, A_array, lda, pivot_array,info_array, batch_size));
     }
 
     template void getrf_batched<float>          (const handle_t & handle, int n, float           *a_array[], int lda, int *pivot_array, int *info_array, int batch_size);
@@ -222,7 +222,7 @@ namespace emu::cublas
 
     template<typename T>
     void getri_batched(const handle_t & handle, int n, T *A_array[], int lda, int *pivot_array, T *c_array[], int ldc, int *info_array, int batch_size){
-         EMU_CUBLAS_CHECK_OR_THROW(CuBLAS<T>::getri_batched(handle.enable().id(), n, A_array, lda, pivot_array, c_array, ldc, info_array, batch_size));
+         EMU_CHECK_OR_THROW(CuBLAS<T>::getri_batched(handle.enable().id(), n, A_array, lda, pivot_array, c_array, ldc, info_array, batch_size));
     }
 
     template void getri_batched<float>          (const handle_t & handle, int n, float           *a_array[], int lda, int *pivot_array, float           *c_array[], int ldc, int *info_array, int batch_size);

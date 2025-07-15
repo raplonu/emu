@@ -18,22 +18,22 @@ namespace detail
     inline id_t get_current()
     {
         id_t device_id;
-        EMU_CUDA_CHECK_OR_THROW_WHAT(cudaGetDevice(&device_id),
+        EMU_CHECK_OR_THROW_WHAT(cudaGetDevice(&device_id),
                                      "Failed to get current CUDA device ID");
         return device_id;
     }
 
     inline void set_current(id_t device_id)
     {
-        EMU_CUDA_CHECK_OR_THROW_WHAT(cudaSetDevice(device_id),
+        EMU_CHECK_OR_THROW_WHAT(cudaSetDevice(device_id),
                                      "Failed to set current CUDA device ID");
     }
 
     inline void synchronize(id_t device_id)
     {
-        EMU_CUDA_CHECK_OR_THROW_WHAT(cudaSetDevice(device_id),
+        EMU_CHECK_OR_THROW_WHAT(cudaSetDevice(device_id),
                                      "Failed to set current CUDA device ID");
-        EMU_CUDA_CHECK_OR_THROW_WHAT(cudaDeviceSynchronize(),
+        EMU_CHECK_OR_THROW_WHAT(cudaDeviceSynchronize(),
                                      "Failed to set current CUDA device ID");
     }
 
@@ -47,10 +47,9 @@ namespace detail
 
     struct device_t
     {
-    protected:
-        device_t(device::id_t id) : id_(id) {}
 
-    public:
+        explicit device_t(device::id_t id) : id_(id) {}
+
         device::id_t id() const noexcept { return id_; }
 
         void make_current() const {
@@ -96,7 +95,7 @@ namespace devices
     inline std::size_t count()
     {
         int count;
-        EMU_CUDA_CHECK_OR_THROW_WHAT(cudaGetDeviceCount(&count),
+        EMU_CHECK_OR_THROW_WHAT(cudaGetDeviceCount(&count),
                                      "Failed to get CUDA device count");
         return static_cast<std::size_t>(count);
     }

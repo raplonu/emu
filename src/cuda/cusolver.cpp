@@ -70,7 +70,7 @@ namespace emu::cusolver
 
     template<typename T>
     void potrf_buffer_size(const handle_t & handle, FillMode uplo, int n, T *A, int lda, int *lwork) {
-        EMU_CUSOLVER_CHECK_OR_THROW(CuSolver<T>::potrf_buffer_size(handle.id(), convert(uplo), n, A, lda, lwork));
+        EMU_CHECK_OR_THROW(CuSolver<T>::potrf_buffer_size(handle.id(), convert(uplo), n, A, lda, lwork));
     }
 
     template void potrf_buffer_size<float>          (const handle_t & handle, FillMode uplo, int n, float          *A, int lda, int *lwork);
@@ -80,7 +80,7 @@ namespace emu::cusolver
 
     template<typename T>
     void potrf(const handle_t & handle, FillMode uplo, int n, T *A, int lda, T *workspace, int lwork, int *dev_info) {
-        EMU_CUSOLVER_CHECK_OR_THROW(CuSolver<T>::potrf(handle.id(), convert(uplo), n, A, lda, workspace, lwork, dev_info));
+        EMU_CHECK_OR_THROW(CuSolver<T>::potrf(handle.id(), convert(uplo), n, A, lda, workspace, lwork, dev_info));
     }
 
     template void potrf<float>          (const handle_t & handle, FillMode uplo, int n, float           *A, int lda, float           *workspace, int lwork, int *dev_info);
@@ -90,7 +90,7 @@ namespace emu::cusolver
 
     template<typename T>
     void potrs(const handle_t & handle, FillMode uplo, int n, int nrhs, T *A, int lda, T *B, int ldb, int *dev_info) {
-        EMU_CUSOLVER_CHECK_OR_THROW(CuSolver<T>::potrs(handle.id(), convert(uplo), n, nrhs, A, lda, B, ldb, dev_info));
+        EMU_CHECK_OR_THROW(CuSolver<T>::potrs(handle.id(), convert(uplo), n, nrhs, A, lda, B, ldb, dev_info));
     }
 
     template void potrs<float>          (const handle_t & handle, FillMode uplo, int n, int nrhs, float           *A, int lda, float           *B, int ldb, int *dev_info);
@@ -100,7 +100,7 @@ namespace emu::cusolver
 
     template<typename T>
     void getrf_buffer_size(const handle_t & handle, int m, int n, T *A, int lda, int *lwork ){
-        EMU_CUSOLVER_CHECK_OR_THROW(CuSolver<T>::getrf_buffer_size(handle.id(), m, n, A, lda, lwork));
+        EMU_CHECK_OR_THROW(CuSolver<T>::getrf_buffer_size(handle.id(), m, n, A, lda, lwork));
     }
 
     template void getrf_buffer_size<float>          (const handle_t & handle, int m, int n, float           *A, int lda, int *lwork);
@@ -110,7 +110,7 @@ namespace emu::cusolver
 
     template<typename T>
     void getrf(const handle_t & handle, int m, int n, T *A, int lda, T *workspace, int *dev_ipiv, int *dev_info){
-        EMU_CUSOLVER_CHECK_OR_THROW(CuSolver<T>::getrf(handle.id(), m, n, A, lda, workspace, dev_ipiv, dev_info));
+        EMU_CHECK_OR_THROW(CuSolver<T>::getrf(handle.id(), m, n, A, lda, workspace, dev_ipiv, dev_info));
     }
 
     template void  getrf<float>          (const handle_t & handle, int m, int n, float           *A, int lda, float           *workspace, int *dev_ipiv, int *dev_info);
@@ -120,7 +120,7 @@ namespace emu::cusolver
 
     template<typename T>
     void getrs(const handle_t & handle, Operation uplo,int n, int nrhs, const T *A, int lda, const int *dev_ipiv, T *B, int ldb, int *dev_info){
-        EMU_CUSOLVER_CHECK_OR_THROW(CuSolver<T>::getrs(handle.id(),convert(uplo), n, nrhs, A, lda, dev_ipiv, B, ldb, dev_info));
+        EMU_CHECK_OR_THROW(CuSolver<T>::getrs(handle.id(),convert(uplo), n, nrhs, A, lda, dev_ipiv, B, ldb, dev_info));
     }
 
     template void getrs<float>          (const handle_t & handle, Operation uplo, int n, int nrhs, const float           *A, int lda, const int *dev_ipiv, float           *B, int ldb, int *dev_info);
@@ -132,7 +132,7 @@ namespace emu::cusolver
     template<typename T>
     int gesvd_buffer_size(const handle_t & handle, int m, int n){
         int lwork = 0;
-        EMU_CUSOLVER_CHECK_OR_THROW(CuSolver<T>::gesvd_buffer_size(handle.id(), m, n, &lwork));
+        EMU_CHECK_OR_THROW(CuSolver<T>::gesvd_buffer_size(handle.id(), m, n, &lwork));
         return lwork;
     }
     template int gesvd_buffer_size<float>          (const handle_t & handle, int m, int n);
@@ -142,7 +142,7 @@ namespace emu::cusolver
 
     template<typename T,typename F>
     void gesvd(const handle_t & handle, char jobu, char jobvt, int m, int n, T *A, int lda, F *S, T *U, int ldu, T *VT, int ldvt, T *work, int lwork, F *rwork, int *dev_info){
-            EMU_CUSOLVER_CHECK_OR_THROW(CuSolver<T>::gesvd(handle.id(),jobu, jobvt, m, n, A, lda, S, U, ldu, VT, ldvt, work, lwork, rwork, dev_info));
+            EMU_CHECK_OR_THROW(CuSolver<T>::gesvd(handle.id(),jobu, jobvt, m, n, A, lda, S, U, ldu, VT, ldvt, work, lwork, rwork, dev_info));
     }
 
     template void gesvd<float,float>           (const handle_t & handle, char jobu, char jobvt, int m, int n, float           *A, int lda, float  *S, float           *U, int ldu, float           *VT, int ldvt, float           *work, int lwork, float  *rwork, int *dev_info);

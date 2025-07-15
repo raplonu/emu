@@ -160,7 +160,7 @@ namespace emu
 
     template< class CharT, class Traits >
     constexpr auto operator<=>( basic_cstring_view<CharT, Traits> lhs, basic_cstring_view<CharT, Traits> rhs ) noexcept {
-        using sv_t = basic_cstring_view<CharT, Traits>::string_view_type;
+        using sv_t = typename basic_cstring_view<CharT, Traits>::string_view_type;
         return static_cast<sv_t>(lhs) <=> static_cast<sv_t>(rhs);
     }
 

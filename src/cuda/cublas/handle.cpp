@@ -9,42 +9,42 @@ namespace handle::detail
 {
     id_t create() {
         id_t id = nullptr;
-        EMU_CUBLAS_CHECK_OR_THROW(cublasCreate(&id));
+        EMU_CHECK_OR_THROW(cublasCreate(&id));
         return id;
     }
 
     void destroy(id_t id) {
-        EMU_CUBLAS_CHECK_OR_THROW(cublasDestroy(id));
+        EMU_CHECK_OR_THROW(cublasDestroy(id));
     }
 
     emu::cuda::stream::handle_t get_stream(id_t handle) {
         emu::cuda::stream::handle_t stream = nullptr;
-        EMU_CUBLAS_CHECK_OR_THROW(cublasGetStream(handle, &stream));
+        EMU_CHECK_OR_THROW(cublasGetStream(handle, &stream));
         return stream;
     }
 
     void set_stream(id_t handle, emu::cuda::stream::handle_t stream) {
-        EMU_CUBLAS_CHECK_OR_THROW(cublasSetStream(handle, stream));
+        EMU_CHECK_OR_THROW(cublasSetStream(handle, stream));
     }
 
     cublasMath_t get_math_mode(id_t handle) {
         cublasMath_t mode{};
-        EMU_CUBLAS_CHECK_OR_THROW(cublasGetMathMode(handle, &mode));
+        EMU_CHECK_OR_THROW(cublasGetMathMode(handle, &mode));
         return mode;
     }
 
     void set_math_mode(id_t handle, cublasMath_t mode) {
-        EMU_CUBLAS_CHECK_OR_THROW(cublasSetMathMode(handle, mode));
+        EMU_CHECK_OR_THROW(cublasSetMathMode(handle, mode));
     }
 
     cublasPointerMode_t get_pointer_mode(id_t handle) {
         cublasPointerMode_t mode{};
-        EMU_CUBLAS_CHECK_OR_THROW(cublasGetPointerMode(handle, &mode));
+        EMU_CHECK_OR_THROW(cublasGetPointerMode(handle, &mode));
         return mode;
     }
 
     void set_pointer_mode(id_t handle, cublasPointerMode_t mode) {
-        EMU_CUBLAS_CHECK_OR_THROW(cublasSetPointerMode(handle, mode));
+        EMU_CHECK_OR_THROW(cublasSetPointerMode(handle, mode));
     }
 
 } // namespace handle::detail

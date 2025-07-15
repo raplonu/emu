@@ -207,7 +207,7 @@ namespace emu::cast::detail
             auto i_ptr = reinterpret_cast<std::uintptr_t>(ptr);
 
             cudaPointerAttributes attributes;
-            throw_if_error(cudaPointerGetAttributes(&attributes, ptr));
+            EMU_CHECK_OR_THROW(cudaPointerGetAttributes(&attributes, ptr));
             auto device_id = attributes.device;
 
             auto cupy = py::module_::import("cupy");

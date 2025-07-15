@@ -31,13 +31,14 @@ namespace
         static view_type get_view() {
             // The vector stays alive for the duration of the test.
             static auto device_vec = emu_test::md_helper::get_device_array<data_type>();
-            return view_type(device_vec.get());
+
+            return view_type(device_vec.get(), emu_test::md_helper::buffer_size);
         }
 
         static const_view_type get_const_view() {
             // The vector stays alive for the duration of the test.
             static auto device_vec = emu_test::md_helper::get_device_array<data_type>();
-            return const_view_type(device_vec.get());
+            return const_view_type(device_vec.get(), emu_test::md_helper::buffer_size);
         }
 
         static py::dict get_array_interface(py::object obj) {

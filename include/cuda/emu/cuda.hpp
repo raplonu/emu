@@ -5,6 +5,7 @@
 #include <emu/cuda/stream.hpp>
 #include <emu/cuda/event.hpp>
 #include <emu/cuda/memory.hpp>
+#include <emu/cuda/allocator.hpp>
 
 #include <string_view>
 

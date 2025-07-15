@@ -24,15 +24,3 @@ namespace cuda
     EMU_GENERATE_ERROR_FUNCTION(cuda::status_t, cuda::error_category, cuda::runtime_error);
 
 } // namespace emu
-
-#define EMU_CUDA_CHECK_RETURN_EC(expr) \
-    EMU_CHECK_OR_RETURN_EC(expr)
-
-#define EMU_CUDA_CHECK_RETURN_UN_EC(expr) \
-    EMU_CHECK_OR_RETURN_UN_EC(expr)
-
-#define EMU_CUDA_CHECK_OR_THROW(expr) \
-    EMU_CHECK_OR_THROW(expr)
-
-#define EMU_CUDA_CHECK_OR_THROW_WHAT(expr, WHAT) \
-    EMU_CHECK_OR_THROW_WHAT(expr, WHAT)

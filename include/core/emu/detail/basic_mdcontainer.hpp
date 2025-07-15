@@ -258,7 +258,7 @@ namespace detail
         template< typename OtherElementType, typename OtherExtents,
                   typename OtherLayoutPolicy, typename OtherAccessor,
                   typename OActualType,
-                  typename OMapping = OtherLayoutPolicy::template mapping<OtherExtents> >
+                  typename OMapping = typename OtherLayoutPolicy::template mapping<OtherExtents> >
         constexpr explicit(
             not std::is_convertible_v<
                 const OMapping&,
@@ -276,7 +276,7 @@ namespace detail
         template< typename OtherElementType, typename OtherExtents,
                   typename OtherLayoutPolicy, typename OtherAccessor,
                   typename OActualType, typename DataHolder,
-                  typename OMapping = OtherLayoutPolicy::template mapping<OtherExtents> >
+                  typename OMapping = typename OtherLayoutPolicy::template mapping<OtherExtents> >
         constexpr explicit(
             not std::is_convertible_v<
                 const OMapping&,
@@ -295,7 +295,7 @@ namespace detail
         template< typename OtherElementType, typename OtherExtents,
                   typename OtherLayoutPolicy, typename OtherAccessor,
                   typename DataHolder,
-                  typename OMapping = OtherLayoutPolicy::template mapping<OtherExtents> >
+                  typename OMapping = typename OtherLayoutPolicy::template mapping<OtherExtents> >
         constexpr explicit(
             not std::is_convertible_v<
                 const OMapping&,

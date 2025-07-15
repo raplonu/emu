@@ -1,8 +1,8 @@
 #pragma once
 
-#include <emu/cuda.hpp>
+#include <emu/cuda/memory.hpp>
 
-namespace emu::cuda
+namespace emu::cuda::device
 {
 
     // using std::allocator;
@@ -28,7 +28,7 @@ namespace emu::cuda
 
         device_t device;
 
-        allocator() noexcept: device(device_t::current()) {}
+        allocator() noexcept: device(device::current()) {}
 
         allocator(device_t device) noexcept: device(device) {}
 
@@ -37,12 +37,14 @@ namespace emu::cuda
 
         pointer allocate(size_type n)
         {
-            return cuda::allocate<value_type>(device, n);
+            device.make_current();
+
+            return emu::cuda::device::detail::allocate<value_type>(n);
         }
 
-        void deallocate(pointer p, size_type n)
+        void deallocate(pointer p, size_type )
         {
-            cuda::deallocate(p, n);
+            detail::deallocate(p);
         }
 
         template<typename U>
@@ -59,4 +61,4 @@ namespace emu::cuda
 
     };
 
-} // namespace emu::cuda
+} // namespace emu::cuda::device
