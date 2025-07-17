@@ -1,8 +1,40 @@
 # emu <img align="right" width="10%" src="image/emu.png">
 
+[![Coverage Status](https://coveralls.io/repos/github/raplonu/emu/badge.svg?branch=rc1.0.0)](https://coveralls.io/github/raplonu/emu?branch=rc1.0.0)
+
 `emu` is a library that gather a set of utilities for C++, CUDA and python.
 
-## Requirement
+## Roadmap
+
+- [ ] Replace cuda-api-wrappers
+	- [x] move back from driver to runtime
+	- [x] device_t
+	- [x] stream_t, event_t
+	- [x] allocation: allocator, {host,device,managed}::make_unique (reuse std::unique_ptr and get conversion to std::shared_ptr for free)
+	- [x] memcpy
+	- [ ] update \[md\]span
+
+- blas
+	- [ ] remove cublas deps from emu::cuda
+	- [ ] adds runtime check + exceptions
+	- [ ] Adds all the other functions
+		- [ ] One on each level (axpy, gemv, gemm)
+		- [ ] …
+	- [ ] openblas
+	- [ ] cublas
+	- [ ] other blas ?
+		- [ ] list blas of interest
+		- [ ] check potential challenges to integrate them
+
+
+
+- [ ] misc -> use GEMINI
+	- [ ] proper CI/CD
+	- [ ] more documentation
+	- [ ] more unit tests
+
+
+## Reqirement
 
 `emu` requires a c++20 compiler and the following tools:
 
