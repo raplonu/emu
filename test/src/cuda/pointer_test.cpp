@@ -60,7 +60,7 @@ namespace
         auto desc_opt = emu::pointer_descritor_of(reinterpret_cast<const emu::byte*>(ptr.get()));
         ASSERT_TRUE(desc_opt.has_value());
         auto desc = desc_opt.value();
-        EXPECT_EQ(desc.location, "[anonymous]");
+        EXPECT_TRUE(desc.location.empty());
 
         // Check that the pointer is within the returned region
         auto ptr_addr = reinterpret_cast<uintptr_t>(ptr.get());

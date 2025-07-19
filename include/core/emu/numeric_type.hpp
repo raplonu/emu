@@ -14,28 +14,6 @@ namespace emu
     // TODO: replace by std::float16_t when C++23 is available.
     using half_float::half;
 
-    // enum class data_type_t {
-    //     boolean,
-    //     uint8,
-    //     uint16,
-    //     uint32,
-    //     uint64,
-    //     int8,
-    //     int16,
-    //     int32,
-    //     int64,
-    //     float16,
-    //     float32,
-    //     float64,
-    //     float128,
-    //     complex16,
-    //     complex32,
-    //     complex64,
-    //     complex128,
-    //     complex256,
-    //     bfloat16
-    // };
-
     namespace detail
     {
         template<typename T>

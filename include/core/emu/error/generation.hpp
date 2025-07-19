@@ -92,11 +92,14 @@ struct EXCEPTION_T : EXCEPTION_BASE_T {                                         
             CATEGORY_T::instance().message(static_cast<int>(ec)))),                             \
             code_(ec)                                                                           \
     {}                                                                                          \
-    EXCEPTION_T(ERROR_STATUS_T ec, ::std::string_view what_arg) :                               \
+    template <typename... T>                                                                    \
+    EXCEPTION_T(ERROR_STATUS_T ec, ::fmt::format_string<T...> fmt, T&&... args) :               \
         EXCEPTION_BASE_T(::fmt::format("{} error: {}; {}",                                      \
             CATEGORY_T::instance().name(),                                                      \
-            CATEGORY_T::instance().message(static_cast<int>(ec)), what_arg)),                   \
-            code_(ec)                                                                           \
+            CATEGORY_T::instance().message(static_cast<int>(ec)),                               \
+            fmt::format(fmt, EMU_FWD(args)...)                                                  \
+        )),                                                                                     \
+        code_(ec)                                                                               \
     {}                                                                                          \
     ERROR_STATUS_T code() const { return code_; }                                               \
 private:                                                                                        \
@@ -132,8 +135,9 @@ inline ::emu::unexpected<::std::error_code> make_unexpected(ERROR_STATUS_T e) { 
 [[noreturn]] inline void throw_error(ERROR_STATUS_T e) {                               \
     throw EXCEPTION_T(e);                                                              \
 }                                                                                      \
-[[noreturn]] inline void throw_error(ERROR_STATUS_T e, ::std::string_view what_arg) {  \
-    throw EXCEPTION_T(e, what_arg);                                                    \
+template <typename... T>                                                               \
+[[noreturn]] inline void throw_error(ERROR_STATUS_T e, ::fmt::format_string<T...> fmt, T&&... args) {  \
+    throw EXCEPTION_T(e, fmt, EMU_FWD(args)...);                                                    \
 }
 
 /**

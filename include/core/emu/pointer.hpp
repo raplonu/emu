@@ -43,11 +43,11 @@ namespace emu
 
     /**
      * @brief Retrieves the memory region associated with a given location identifier.
-     * @param location A string view identifying the memory location (e.g., "host").
+     * @param location A string view identifying the memory location (e.g., "[heap]").
      * @return An optional containing a span of bytes for the region if found,
      *         otherwise an empty optional.
      */
-    // optional<std::span<byte>> region_from_location(std::string_view location);
+    optional<std::span<byte>> region_from_location(std::string_view location);
 
     /**
      * @brief Gets the DLPack device type for a given pointer.

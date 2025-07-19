@@ -87,6 +87,11 @@ namespace detail
             stream::detail::synchronize(handle_.value);
         }
 
+        bool ready() const {
+            // Check if the stream is ready for more work
+            return true; // Placeholder, actual implementation may vary
+        }
+
         friend stream_t stream::create(const device_t& device);
         friend stream_t stream::wrap(stream::handle_t handle, bool take_ownership);
 

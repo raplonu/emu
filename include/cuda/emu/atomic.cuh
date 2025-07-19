@@ -74,24 +74,6 @@ namespace detail
 
 } // namespace detail
 
-// #define EMU_ADD_ATOMIC_FUNCTION(FUN_NAME, OP_TYPE, CUDA_OP)                                                 \
-// namespace detail {                                                                                          \
-//     EMU_GENERATE_TRAITS_HAS(HasAtomic##FUN_NAME, T, CUDA_OP(std::declval<T*>(), std::declval<T>()));        \
-//     template<>                                                                                              \
-//     struct AtomicDispatch<OP_TYPE> {                                                                        \
-//         template<typename T>                                                                                \
-//         static EMU_DEVICE EnableIf<    HasAtomic##FUN_NAME<T>, T> call(T * addr, T val) noexcept {          \
-//             return CUDA_OP(addr, val);                                                                      \
-//         }                                                                                                   \
-//         template<typename T>                                                                                \
-//         static EMU_DEVICE EnableIf<not HasAtomic##FUN_NAME<T>, T> call(T * addr, T val) noexcept {          \
-//             return atomic_op(addr, val, OP_TYPE{});                                                         \
-//         }                                                                                                   \
-//     };                                                                                                      \
-// }                                                                                                           \
-// template<typename T>                                                                                        \
-// EMU_DEVICE T FUN_NAME(T * addr, T val) noexcept { detail::AtomicDispatch<OP_TYPE>::call(addr, val); }
-
 #define EMU_ADD_ATOMIC_FUNCTION(FUN_NAME, MATH_OP, CUDA_OP)                \
 template<typename T>                                                       \
 EMU_DEVICE T FUN_NAME(T * addr, T val) noexcept {                          \

@@ -123,11 +123,20 @@ struct fmt::formatter<emu::detail::pretty_error_code, Char>
  * }
  * @endcode
  */
-#define EMU_RETURN_EC(ec)             \
+#define EMU_RETURN_EC(ec)         \
 do {                              \
-        using ::emu::make_error_code; \
-        return make_error_code(ec);   \
-    } while (false)
+    using ::emu::make_error_code; \
+    return make_error_code(ec);   \
+} while (false)
+
+
+#define EMU_RETURN_EC_LOG(ec, ...) \
+do {                               \
+    EMU_COLD_LOGGER(__VA_ARGS__);  \
+    using ::emu::make_error_code;  \
+    return make_error_code(ec);    \
+} while (false)
+
 
 /**
  * @brief Returns a `emu::unexpected<std::error_code>` from a function.
@@ -139,11 +148,18 @@ do {                              \
  * }
  * @endcode
  */
-#define EMU_RETURN_UN_EC(ec)                                \
+#define EMU_RETURN_UN_EC(ec)                            \
 do {                                                    \
-        using ::emu::make_error_code;                       \
-        return ::emu::make_unexpected(make_error_code(ec)); \
-    } while (false)
+    using ::emu::make_error_code;                       \
+    return ::emu::make_unexpected(make_error_code(ec)); \
+} while (false)
+
+#define EMU_RETURN_UN_EC_LOG(ec, ...)                   \
+do {                                                    \
+    EMU_COLD_LOGGER(__VA_ARGS__);                       \
+    using ::emu::make_error_code;                       \
+    return ::emu::make_unexpected(make_error_code(ec)); \
+} while (false)
 
 /**
  * @brief Throws a `std::runtime_error` with a message derived from the error code.
@@ -157,9 +173,9 @@ do {                                                    \
  */
 #define EMU_THROW(ec)                               \
 do {                                            \
-        using ::emu::throw_error;                   \
-        [&] () EMU_NOINLINE { throw_error(ec); }(); \
-    } while (false)
+    using ::emu::throw_error;                   \
+    [&] () EMU_NOINLINE { throw_error(ec); }(); \
+} while (false)
 
 /**
  * @brief Throws a `std::runtime_error` with a custom message.
@@ -172,11 +188,11 @@ do {                                            \
  * }
  * @endcode
  */
-#define EMU_THROW_WHAT(ec, what_arg)                          \
+#define EMU_THROW_WHAT(ec, ...)                          \
 do {                                                      \
-        using ::emu::throw_error;                             \
-        [&] () EMU_NOINLINE { throw_error(ec, what_arg); }(); \
-    } while (false)
+    using ::emu::throw_error;                             \
+    [&] () EMU_NOINLINE { throw_error(ec, __VA_ARGS__); }(); \
+} while (false)
 
 
 /**
@@ -193,10 +209,17 @@ do {                                                      \
  */
 #define EMU_TRUE_OR_RETURN_EC(expr, ec) \
 do {                                \
-        if (EMU_UNLIKELY(not (expr))) { \
-            EMU_RETURN_EC(ec);          \
-        }                               \
-    } while (false)
+    if (EMU_UNLIKELY(not (expr))) { \
+        EMU_RETURN_EC(ec);          \
+    }                               \
+} while (false)
+
+#define EMU_TRUE_OR_RETURN_EC_LOG(expr, ec, ...) \
+do {                                \
+    if (EMU_UNLIKELY(not (expr))) { \
+        EMU_RETURN_EC_LOG(ec, __VA_ARGS__);          \
+    }                               \
+} while (false)
 
 /**
  * @brief Checks if an expression is true, otherwise returns an unexpected error code.
@@ -212,10 +235,17 @@ do {                                \
  */
 #define EMU_TRUE_OR_RETURN_UN_EC(expr, ec) \
 do {                                   \
-        if (EMU_UNLIKELY(not (expr))) {    \
-            EMU_RETURN_UN_EC(ec);          \
-        }                                  \
-    } while (false)
+    if (EMU_UNLIKELY(not (expr))) {    \
+        EMU_RETURN_UN_EC(ec);          \
+    }                                  \
+} while (false)
+
+#define EMU_TRUE_OR_RETURN_UN_EC_LOG(expr, ec, ...) \
+do {                                   \
+    if (EMU_UNLIKELY(not (expr))) {    \
+        EMU_RETURN_UN_EC_LOG(ec, __VA_ARGS__);          \
+    }                                  \
+} while (false)
 
 /**
  * @brief Checks if an expression is true, otherwise throws an exception.
@@ -247,10 +277,10 @@ do {                                \
  * }
  * @endcode
  */
-#define EMU_TRUE_OR_THROW_WHAT(expr, ec, WHAT) \
+#define EMU_TRUE_OR_THROW_WHAT(expr, ec, ...) \
 do {                                       \
     if (EMU_UNLIKELY(not (expr))) {        \
-        EMU_THROW_WHAT(ec, WHAT);          \
+        EMU_THROW_WHAT(ec, __VA_ARGS__);          \
     }                                      \
 } while (false)
 
@@ -269,11 +299,19 @@ do {                                       \
  */
 #define EMU_CHECK_OR_RETURN_EC(expr)  \
 do {                              \
-        auto&& status__ = (expr);     \
-        if (EMU_UNLIKELY(status__)) { \
-            EMU_RETURN_EC(status__);  \
-        }                           \
-    } while (false)
+    auto&& status__ = (expr);     \
+    if (EMU_UNLIKELY(status__)) { \
+        EMU_RETURN_EC(status__);  \
+    }                           \
+} while (false)
+
+#define EMU_CHECK_OR_RETURN_EC_LOG(expr, ...)  \
+do {                              \
+    auto&& status__ = (expr);     \
+    if (EMU_UNLIKELY(status__)) { \
+        EMU_RETURN_EC_LOG(status__, __VA_ARGS__);  \
+    }                           \
+} while (false)
 
 /**
  * @brief Checks the status of an expression, and returns an unexpected error if it's an error.
@@ -290,11 +328,19 @@ do {                              \
  */
 #define EMU_CHECK_OR_RETURN_UN_EC(expr) \
 do {                                \
-        auto&& status__ = (expr);       \
-        if (EMU_UNLIKELY(status__)) {   \
-            EMU_RETURN_UN_EC(status__); \
-        }                        \
-    } while (false)
+    auto&& status__ = (expr);       \
+    if (EMU_UNLIKELY(status__)) {   \
+        EMU_RETURN_UN_EC(status__); \
+    }                        \
+} while (false)
+
+#define EMU_CHECK_OR_RETURN_UN_EC_LOG(expr, ...) \
+do {                                \
+    auto&& status__ = (expr);       \
+    if (EMU_UNLIKELY(status__)) {   \
+        EMU_RETURN_UN_EC_LOG(status__, __VA_ARGS__); \
+    }                               \
+} while (false)
 
 /**
  * @brief Checks the status of an expression, and throws an exception if it's an error.
@@ -329,11 +375,11 @@ do {                                  \
  * }
  * @endcode
  */
-#define EMU_CHECK_OR_THROW_WHAT(expr, WHAT) \
+#define EMU_CHECK_OR_THROW_WHAT(expr, ...) \
 do {                                        \
         auto&& status__ = (expr);           \
         if (EMU_UNLIKELY(status__)) {       \
-            EMU_THROW_WHAT(status__, WHAT); \
+            EMU_THROW_WHAT(status__, __VA_ARGS__); \
         }            \
     } while (false)
 
@@ -367,6 +413,13 @@ do {                                        \
         *EMU_FWD(value__);                  \
     })
 
+#define EMU_UNWRAP_OR_RETURN_EC_LOG(expr, ec, ...)   \
+    ({                                      \
+        auto&& value__ = (expr);            \
+        EMU_TRUE_OR_RETURN_EC_LOG(value__, ec, __VA_ARGS__); \
+        *EMU_FWD(value__);                  \
+    })
+
 /**
  * @brief Unwraps a value from an expression or returns an unexpected error code.
  * @param expr The expression to unwrap. This should be a type that can be dereferenced, like a pointer or an optional.
@@ -384,6 +437,13 @@ do {                                        \
     ({                                         \
         auto&& value__ = (expr);               \
         EMU_TRUE_OR_RETURN_UN_EC(value__, ec); \
+        *EMU_FWD(value__);                     \
+    })
+
+#define EMU_UNWRAP_OR_RETURN_UN_EC_LOG(expr, ec, ...)   \
+    ({                                         \
+        auto&& value__ = (expr);               \
+        EMU_TRUE_OR_RETURN_UN_EC_LOG(value__, ec, __VA_ARGS__); \
         *EMU_FWD(value__);                     \
     })
 
@@ -421,10 +481,10 @@ do {                                        \
  * }
  * @endcode
  */
-#define EMU_UNWRAP_OR_THROW_WHAT(expr, ec, WHAT)   \
+#define EMU_UNWRAP_OR_THROW_WHAT(expr, ec, ...)   \
     ({                                             \
         auto&& value__ = (expr);                   \
-        EMU_TRUE_OR_THROW_WHAT(value__, ec, WHAT); \
+        EMU_TRUE_OR_THROW_WHAT(value__, ec, __VA_ARGS__); \
         *EMU_FWD(value__);                         \
     })
 
@@ -473,9 +533,9 @@ do {                                        \
  * }
  * @endcode
  */
-#define EMU_UNWRAP_RES_OR_THROW_WHAT(expr, WHAT)                             \
+#define EMU_UNWRAP_RES_OR_THROW_WHAT(expr, ...)                             \
     ({                                                                       \
         auto&& value__ = (expr);                                             \
-        EMU_TRUE_OR_THROW_WHAT(value__, ::std::move(value__).error(), WHAT); \
+        EMU_TRUE_OR_THROW_WHAT(value__, ::std::move(value__).error(), __VA_ARGS__); \
         *EMU_FWD(value__);                                                   \
     })

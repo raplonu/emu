@@ -75,9 +75,6 @@ namespace detail
 
         std::string_view location = *begin;
 
-        if (location.empty())
-            location = "[anonymous]";
-
         return pointer_descriptor{
             .location = std::string(location),
             .permissions = permissions,
@@ -103,21 +100,24 @@ namespace detail
         return nullopt;
     }
 
-    // optional<std::span<byte>> region_from_location(std::string_view location) {
-    //     std::ifstream file{detail::maps_path};  // create regular file
+    optional<std::span<byte>> region_from_location(std::string_view location) {
+        // Some region are unamed. It is thus impossible to access the range.
+        if (location.empty()) return nullopt;
 
-    //     EMU_TRUE_OR_RETURN_NULLOPT(file);
+        std::ifstream file{detail::maps_path};  // create regular file
 
-    //     std::string line;
-    //     while (std::getline(file, line)) {
-    //         auto desc = from_line(line);
+        EMU_TRUE_OR_RETURN_NULLOPT(file);
 
-    //         if (desc.location == location) {
-    //             return desc.base_region;
-    //         }
-    //     }
-    //     return nullopt;
-    // }
+        std::string line;
+        while (std::getline(file, line)) {
+            auto desc = from_line(line);
+
+            if (desc.location == location) {
+                return desc.base_region;
+            }
+        }
+        return nullopt;
+    }
 
     result<dlpack::device_t> get_device_of_pointer(const byte * ptr) {
         for (auto const& finder : detail::get_device_finders()) {

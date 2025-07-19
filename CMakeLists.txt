@@ -83,7 +83,6 @@ target_sources(emucore PUBLIC FILE_SET HEADERS BASE_DIRS include/core FILES
     include/core/emu/range.hpp
     include/core/emu/concepts.hpp
     include/core/emu/config.hpp
-    include/core/emu/const_string.hpp
     include/core/emu/container.hpp
     include/core/emu/cstring_view.hpp
     include/core/emu/debug.hpp
@@ -164,14 +163,11 @@ if (build_cuda)
             src/cuda/cusolver/handle.cpp
             src/cuda/cusolver/error.cpp
             src/cuda/cusolver.cpp
-
-            src/cuda/thrust/execution_policy.cu
     )
 
     target_sources(emucuda PUBLIC FILE_SET HEADERS BASE_DIRS include/cuda FILES
         include/cuda/emu/config.cuh
         include/cuda/emu/macro.cuh
-        include/cuda/emu/thrust.cuh
         include/cuda/emu/cuda/stream.hpp
         include/cuda/emu/cuda/device.hpp
         include/cuda/emu/cuda/device/container.hpp
@@ -192,15 +188,11 @@ if (build_cuda)
         include/cuda/emu/cusolver/error.hpp
         include/cuda/emu/cusolver/handle.hpp
         include/cuda/emu/cufft.hpp
-        include/cuda/emu/iterator/coordinate.cuh
-        include/cuda/emu/iterator/function.cuh
-        include/cuda/emu/thrust/execution_policy.cuh
         include/cuda/emu/cublas.hpp
         include/cuda/emu/cusolver.hpp
         include/cuda/emu/tensor.hpp
         include/cuda/emu/atomic.cuh
         include/cuda/emu/cuda.hpp
-        include/cuda/emu/memory.cuh
         include/cuda/emu/test/device_test.hpp
     )
 

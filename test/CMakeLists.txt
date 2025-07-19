@@ -43,8 +43,6 @@ if (build_cuda)
         src/cuda/math_test.cu
         src/cuda/memory_test.cpp
         src/cuda/pointer_test.cpp
-        src/cuda/iterator/coordinate_test.cu
-        src/cuda/iterator/function_test.cu
     )
 
     target_link_libraries(emucudatest PRIVATE

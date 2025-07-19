@@ -98,14 +98,16 @@
 
 #ifndef EMU_LOGGER
 
+#define EMU_NO_LOG
+
 #ifndef EMU_NO_LOG
 
 #include <fmt/color.h>
 
-#define EMU_LOGGER(...)                                                            \
+#define EMU_LOGGER(fmt, ...)                                                           \
     ::fmt::print(stderr, ::fmt::fg(::fmt::color::red), "{}:{}: ", __FILE__, __LINE__); \
-    ::fmt::print(stderr, ::fmt::fg(::fmt::color::red), __VA_ARGS__);                   \
-    ::fmt::print(stderr, "\n");
+    ::fmt::print(stderr, ::fmt::fg(::fmt::color::red), fmt, __VA_ARGS__);              \
+    ::fmt::print(stderr, "\n")
 
 #else // ifndef EMU_NO_LOG
 
@@ -163,6 +165,16 @@
         if (EMU_UNLIKELY(not value__)) return ::emu::unwrap_error(value__); \
         *EMU_FWD(value__);                                                  \
     })
+
+#define EMU_UNWRAP_OR_LOG(maybe, ...)                                                   \
+({                                                                      \
+    auto&& value__ = (maybe);                                           \
+    if (EMU_UNLIKELY(not value__)) {                                    \
+        EMU_COLD_LOGGER(__VA_ARGS__);                                   \
+        return ::emu::unwrap_error(value__);                            \
+    }                                                                   \
+    *EMU_FWD(value__);                                                  \
+})
 
 /// Assign value with dereference if truthy or return nullopt
 #define EMU_UNWRAP_OR_RETURN_FALSE(maybe)             \

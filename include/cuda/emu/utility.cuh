@@ -6,22 +6,6 @@
 
 namespace emu
 {
-    // template <typename T>
-    // EMU_HODE constexpr T ceil    (T a, T b) noexcept { return (a + b - 1) / b; }
-
-    // template<typename T>
-    // EMU_HODE constexpr T next_mul(T a, T b) noexcept { return ( (a - 1) / b + 1) * b; }
-
-    template <typename T>
-    EMU_HODE constexpr T max     (T a, T b) noexcept { return (a < b) ? b : a; }
-
-    template <typename T>
-    EMU_HODE constexpr T min     (T a, T b) noexcept { return (a < b) ? a : b; }
-
-    template <typename T>
-    EMU_HODE constexpr
-    T align(T size) noexcept { return next_mul(size, 32); }
-
     EMU_DEVICE inline bool is_not_last_block() { return EMU_BID < (EMU_SIZE_G - 1); }
 
     /**

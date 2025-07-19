@@ -10,7 +10,7 @@
 namespace emu::cuda
 {
     struct event_t;
-    class event_ref;
+    struct event_ref;
 
 namespace event
 {
