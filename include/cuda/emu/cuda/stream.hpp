@@ -28,6 +28,15 @@ namespace detail
         return handle;
     }
 
+    inline handle_t create(bool synchronizes_with_default_stream)
+    {
+        handle_t handle;
+        auto flags = synchronizes_with_default_stream ? cudaStreamDefault : cudaStreamNonBlocking;
+        EMU_CHECK_OR_THROW_WHAT(cudaStreamCreateWithFlags(&handle, flags),
+                                "Failed to create CUDA stream");
+        return handle;
+    }
+
     inline void destroy(handle_t handle)
     {
         cudaStreamDestroy(handle);
@@ -56,7 +65,7 @@ namespace detail
 
     using scoped_handle = scoped<handle_t, detail::Destroyer>;
 
-    stream_t create(const device_t& device);
+    stream_t create(device_t device, bool synchronizes_with_default_stream);
 
     stream_t wrap(stream::handle_t handle, bool take_ownership);
 
@@ -92,8 +101,8 @@ namespace detail
             return true; // Placeholder, actual implementation may vary
         }
 
-        friend stream_t stream::create(const device_t& device);
-        friend stream_t stream::wrap(stream::handle_t handle, bool take_ownership);
+        friend stream_t stream::create(device_t, bool);
+        friend stream_t stream::wrap(stream::handle_t, bool);
 
     private:
         stream::scoped_handle handle_;
@@ -101,10 +110,11 @@ namespace detail
 
 namespace stream
 {
-    inline stream_t create(const device_t& device) {
-        device::detail::set_current(device.id());
 
-        return stream_t(stream::detail::create(), true);
+    inline stream_t create(device_t device, bool synchronizes_with_default_stream = false) {
+        device.make_current();
+
+        return stream_t(stream::detail::create(synchronizes_with_default_stream), true);
     }
 
     inline stream_t wrap(stream::handle_t handle, bool take_ownership) {
