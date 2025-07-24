@@ -1,5 +1,5 @@
-#include <emu/cufft.h>
-#include <emu/cufft/error.h>
+#include <emu/cufft.hpp>
+#include <emu/cufft/error.hpp>
 
 namespace emu
 {

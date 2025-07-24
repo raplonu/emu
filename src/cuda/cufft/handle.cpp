@@ -8,23 +8,23 @@ namespace handle::detail
 {
     id_t create() {
         id_t id;
-        throw_if_error(cufftCreate(&id));
+        EMU_CHECK_OR_THROW(cufftCreate(&id));
         return id;
     }
 
     void destroy(id_t id) {
-        throw_if_error(cufftDestroy(id));
+        EMU_CHECK_OR_THROW(cufftDestroy(id));
     }
 
-    void set_stream(id_t handle, ::emu::cuda::stream::id_t stream) {
-        throw_if_error(cufftSetStream(handle, stream));
+    void set_stream(id_t handle, ::emu::cuda::stream::handle_t stream) {
+        EMU_CHECK_OR_THROW(cufftSetStream(handle, stream));
     }
 
 } // namespace handle::detail
 
 handle_t::handle_t():
     id_(handle::detail::create(), true),
-    device_id_(::emu::cuda::device_t::current().id())
+    device_id_(::emu::cuda::device::current().id())
 {}
 
 handle_t::handle_t(handle::id_t id, ::emu::cuda::device::id_t device_id, bool owning):
@@ -41,7 +41,7 @@ handle_t::handle_t(::emu::cuda::device::id_t device_id):
 {}
 
 void handle_t::set_stream(const ::emu::cuda::stream_t & stream) {
-    handle::detail::set_stream(id(), stream.id());
+    handle::detail::set_stream(id(), stream.handle());
 }
 
 handle_t & handle_t::enable() {

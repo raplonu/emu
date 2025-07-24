@@ -1,6 +1,6 @@
 #pragma once
 
-#include <emu/error.hpp>
+#include <emu/error/generation.hpp>
 
 #include <cusolverDn.h>
 
@@ -11,10 +11,11 @@ namespace cusolver
 {
     using status_t = cusolverStatus_t;
 
-    const char* describe(status_t error_code);
-
     EMU_GENERATE_ERROR_CATEGORY(error_category, "cusolver", ec) {
-        return describe(static_cast<status_t>(ec));
+        int nth = static_cast<int>(ec);
+
+        // More about this strange convention: https://docs.nvidia.com/cuda/cusolver/index.html#convention-of-info
+        return fmt::format("Error, invalid argument at {}", nth);
     }
 
     EMU_GENERATE_ERROR_EXCEPTION(status_t, runtime_error, std::runtime_error, error_category);

@@ -6,7 +6,7 @@
 #include <emu/scoped.hpp>
 #include <emu/cuda/device.hpp>
 #include <emu/cuda/stream.hpp>
-#include <emu/core/span.hpp>
+#include <emu/span.hpp>
 
 namespace emu::cufft
 {
@@ -29,7 +29,7 @@ namespace detail
         void operator()(id_t id) const { destroy(id); }
     };
 
-    void set_stream(id_t handle, ::emu::cuda::stream::id_t mode);
+    void set_stream(id_t handle, ::emu::cuda::stream::handle_t mode);
 
 } // namespace detail
 

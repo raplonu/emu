@@ -53,64 +53,64 @@ include(GNUInstallDirs)
 
 add_library(emucore)
 
-target_sources(emucore
-    PRIVATE
-        src/core/error.cpp
-        src/core/pointer.cpp
-        src/core/dlpack.cpp
-        src/core/numeric_type.cpp
+target_sources(emucore PRIVATE
+    src/core/numeric_type.cpp
+    src/core/dlpack.cpp
+    src/core/error.cpp
+    src/core/pointer.cpp
 )
 
 target_sources(emucore PUBLIC FILE_SET HEADERS BASE_DIRS include/core FILES
-    include/core/emu/tuple.hpp
-    include/core/emu/capsule.hpp
-    include/core/emu/string.hpp
-    include/core/emu/assert.hpp
+    include/core/emu/associative_container.hpp
+    include/core/emu/config.hpp
+    include/core/emu/detail/basic_span.hpp
+    include/core/emu/detail/mdspan_types.hpp
     include/core/emu/detail/basic_container.hpp
     include/core/emu/detail/basic_mdcontainer.hpp
     include/core/emu/detail/basic_mdspan.hpp
-    include/core/emu/detail/basic_span.hpp
     include/core/emu/detail/dlpack_types.hpp
-    include/core/emu/detail/mdspan_types.hpp
-    include/core/emu/storage.hpp
-    include/core/emu/optional.hpp
-    include/core/emu/ostream.hpp
-    include/core/emu/pointer.hpp
-    include/core/emu/utility.hpp
-    include/core/emu/managed_object.hpp
-    include/core/emu/scoped.hpp
-    include/core/emu/associative_container.hpp
-    include/core/emu/range.hpp
-    include/core/emu/concepts.hpp
-    include/core/emu/config.hpp
-    include/core/emu/container.hpp
-    include/core/emu/cstring_view.hpp
-    include/core/emu/debug.hpp
     include/core/emu/dlpack.hpp
-    include/core/emu/error.hpp
-    include/core/emu/hash.hpp
-    include/core/emu/mdalgo.hpp
-    include/core/emu/mdcontainer.hpp
-    include/core/emu/mdspan.hpp
-    include/core/emu/numeric_type.hpp
-    include/core/emu/span.hpp
-    include/core/emu/info.hpp
-    include/core/emu/type_name.hpp
     include/core/emu/expected.hpp
     include/core/emu/functor.hpp
     include/core/emu/fwd.hpp
-    include/core/emu/host/container.hpp
+    include/core/emu/hash.hpp
     include/core/emu/host/location_policy.hpp
     include/core/emu/host/mdcontainer.hpp
     include/core/emu/host/mdspan.hpp
+    include/core/emu/host/container.hpp
     include/core/emu/host/span.hpp
+    include/core/emu/info.hpp
     include/core/emu/location_policy.hpp
     include/core/emu/macro.hpp
+    include/core/emu/managed_object.hpp
     include/core/emu/math.hpp
+    include/core/emu/mdcontainer.hpp
+    include/core/emu/numeric_type.hpp
+    include/core/emu/optional.hpp
+    include/core/emu/range.hpp
+    include/core/emu/storage.hpp
+    include/core/emu/type_name.hpp
     include/core/emu/type_traits.hpp
+    include/core/emu/ostream.hpp
+    include/core/emu/scoped.hpp
+    include/core/emu/container.hpp
+    include/core/emu/span.hpp
+    include/core/emu/mdalgo.hpp
+    include/core/emu/mdspan.hpp
+    include/core/emu/tuple.hpp
+    include/core/emu/assert.hpp
+    include/core/emu/capsule.hpp
+    include/core/emu/concepts.hpp
+    include/core/emu/cstring_view.hpp
+    include/core/emu/debug.hpp
+    include/core/emu/error.hpp
+    include/core/emu/error/generation.hpp
+    include/core/emu/pointer.hpp
+    include/core/emu/string.hpp
+    include/core/emu/utility.hpp
+    include/core/dlpack/dlpack.h
     include/core/tl/expected.hpp
     include/core/tl/optional.hpp
-    include/core/dlpack/dlpack.h
     include/core/half.hpp
 )
 
@@ -148,52 +148,50 @@ if (build_cuda)
 
     add_library(emucuda)
 
-    target_sources(emucuda
-        PRIVATE
-            src/cuda/cublas/handle.cpp
-            src/cuda/cublas.cpp
-
-            src/cuda/cuda/pointer.cpp
-            src/cuda/cuda/error.cpp
-
-            # src/cuda/cufft/handle.cpp
-            # src/cuda/cufft/error.cpp
-            # src/cuda/cufft.cpp
-
-            src/cuda/cusolver/handle.cpp
-            src/cuda/cusolver/error.cpp
-            src/cuda/cusolver.cpp
+    target_sources(emucuda PRIVATE
+        src/cuda/cuda/error.cpp
+        src/cuda/cuda/pointer.cpp
+        # src/cuda/cufft.cpp
+        # src/cuda/cufft/handle.cpp
+        src/cuda/cusolver/handle.cpp
+        src/cuda/cublas/handle.cpp
+        src/cuda/cublas.cpp
+        src/cuda/cusolver.cpp
     )
 
     target_sources(emucuda PUBLIC FILE_SET HEADERS BASE_DIRS include/cuda FILES
-        include/cuda/emu/config.cuh
-        include/cuda/emu/macro.cuh
-        include/cuda/emu/cuda/stream.hpp
-        include/cuda/emu/cuda/device.hpp
-        include/cuda/emu/cuda/device/container.hpp
-        include/cuda/emu/cuda/device/location_policy.hpp
         include/cuda/emu/cuda/device/mdcontainer.hpp
         include/cuda/emu/cuda/device/mdspan.hpp
+        include/cuda/emu/cuda/device/container.hpp
         include/cuda/emu/cuda/device/span.hpp
+        include/cuda/emu/cuda/device/location_policy.hpp
         include/cuda/emu/cuda/allocator.hpp
+        include/cuda/emu/cuda/device.hpp
         include/cuda/emu/cuda/error.hpp
-        include/cuda/emu/cublas/error.hpp
-        include/cuda/emu/cublas/type.hpp
-        include/cuda/emu/cublas/handle.hpp
-        include/cuda/emu/utility.cuh
+        include/cuda/emu/cuda/event.hpp
+        include/cuda/emu/cuda/memory.hpp
+        include/cuda/emu/cuda/pointer.hpp
+        include/cuda/emu/cuda/stream.hpp
+        include/cuda/emu/cuda/managed/container.hpp
+        include/cuda/emu/cuda/managed/location_policy.hpp
+        include/cuda/emu/cuda/managed/mdcontainer.hpp
+        include/cuda/emu/cuda/managed/mdspan.hpp
+        include/cuda/emu/cuda/managed/span.hpp
+        include/cuda/emu/cufft.hpp
         include/cuda/emu/cufft/error.hpp
         include/cuda/emu/cufft/type.hpp
         include/cuda/emu/cufft/utility.hpp
         include/cuda/emu/cufft/handle.hpp
+        include/cuda/emu/cusolver.hpp
         include/cuda/emu/cusolver/error.hpp
         include/cuda/emu/cusolver/handle.hpp
-        include/cuda/emu/cufft.hpp
-        include/cuda/emu/cublas.hpp
-        include/cuda/emu/cusolver.hpp
         include/cuda/emu/tensor.hpp
-        include/cuda/emu/atomic.cuh
-        include/cuda/emu/cuda.hpp
         include/cuda/emu/test/device_test.hpp
+        include/cuda/emu/cublas.hpp
+        include/cuda/emu/cublas/type.hpp
+        include/cuda/emu/cublas/error.hpp
+        include/cuda/emu/cublas/handle.hpp
+        include/cuda/emu/cuda.hpp
     )
 
     target_compile_options(emucuda PUBLIC
@@ -231,23 +229,24 @@ endif()
 add_library(emupython INTERFACE)
 
 target_sources(emupython INTERFACE FILE_SET HEADERS BASE_DIRS include/python FILES
-    include/python/emu/pybind11/numpy.hpp
-    include/python/emu/pybind11/cast/container.hpp
+    include/python/emu/bind/map.hpp
+    include/python/emu/cast/common.hpp
+    include/python/emu/pybind11.hpp
+    include/python/emu/pybind11/buffer.hpp
     include/python/emu/pybind11/cast/cstring_view.hpp
+    include/python/emu/pybind11/cast/cuda/stream.hpp
     include/python/emu/pybind11/cast/detail/capsule.hpp
     include/python/emu/pybind11/cast/detail/layout_adaptor.hpp
     include/python/emu/pybind11/cast/detail/location_adaptor.hpp
     include/python/emu/pybind11/cast/detail/mdspan_caster.hpp
     include/python/emu/pybind11/cast/mdcontainer.hpp
     include/python/emu/pybind11/cast/mdspan.hpp
+    include/python/emu/pybind11/cast/container.hpp
     include/python/emu/pybind11/cast/span.hpp
-    include/python/emu/pybind11/cast/cuda/stream.hpp
     include/python/emu/pybind11/common.hpp
-    include/python/emu/pybind11/dltensdor.hpp
+    include/python/emu/pybind11/dltensor.hpp
     include/python/emu/pybind11/format.hpp
-    include/python/emu/bind/map.hpp
-    include/python/emu/cast/common.hpp
-    include/python/emu/pybind11.hpp
+    include/python/emu/pybind11/numpy.hpp
 )
 
 # We do not link to pybind11 here, we let the consumer do it

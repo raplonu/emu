@@ -37,10 +37,6 @@ class EmuConan(ConanFile):
         self.requires('ms-gsl/4.0.0', transitive_headers=True)
         self.requires('mdspan/0.6.0', transitive_headers=True)
 
-        # if self.options.cuda:
-        #     self.requires('cuda-api-wrappers/0.7.1', transitive_headers=True)
-            # self.requires('matx/0.8.0', transitive_headers=True)
-
         self.test_requires('gtest/1.13.0')
 
         if self.options.python:
@@ -112,8 +108,6 @@ class EmuConan(ConanFile):
             self.cpp_info.components['cuda'].libs = ['emucuda']
             self.cpp_info.components['cuda'].requires = [
                 'core',
-                'cuda-api-wrappers::cuda-api-wrappers',
-                # 'matx::matx'
             ]
             #TODO: check if FMT_USE_CONSTEXPR is still needed to use {fmt} in .cu files
             self.cpp_info.components['cuda'].defines = ['EMU_CUDA', 'FMT_USE_CONSTEXPR=1']

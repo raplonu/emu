@@ -29,7 +29,7 @@ jobs:
         uses: ./.github/actions/setup-env
         with:
           gcc_version: ${{ matrix.gcc_version }}
-          python-version: "3.12"
+          python_version: "3.12"
           conan_cache: 'true'
 
       - name: Install Conan dependencies

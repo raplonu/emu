@@ -1,4 +1,4 @@
-#include <emu/cufft/error.h>
+#include <emu/cufft/error.hpp>
 
 namespace emu
 {
@@ -6,8 +6,7 @@ namespace emu
 namespace cufft
 {
 
-    std::string describe(status_t error_code) {
-        using namespace std::string_literals;
+    const char* describe(status_t error_code) {
 
         switch (status(error_code))
         {
