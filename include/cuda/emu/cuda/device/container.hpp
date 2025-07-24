@@ -28,8 +28,8 @@ namespace cuda::device
 
     template<typename T>
     container<T> make_container(const device_t& device, size_t size) {
-        auto u_span = cu::memory::device::make_unique_span<T>(device, size);
-        return container<T>(u_span.data(), size, std::move(u_span));
+        auto u_ptr = device::make_unique<T[]>(device, size);
+        return container<T>(u_ptr.get(), size, std::move(u_ptr));
     }
 
     // template<typename T>
