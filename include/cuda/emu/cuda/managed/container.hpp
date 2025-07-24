@@ -27,7 +27,7 @@ namespace cuda::managed
     EMU_DEFINE_CONTAINER_DEDUCTION_GUIDES
 
     template<typename T>
-    container<T> make_container(device_cref device, size_t size) {
+    container<T> make_container(const device_t& device, size_t size) {
         auto u_ptr = managed::make_unique<T[]>(device, size);
         return container<T>(u_ptr.get(), size, std::move(u_ptr));
     }

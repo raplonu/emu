@@ -27,22 +27,4 @@ namespace emu::cuda::device
 
     EMU_DEFINE_MDCONTAINER_ALIAS
 
-    // template<typename T>
-    // container<T> make_container(device_cref device, size_t size) {
-    //     auto u_span = cu::memory::device::make_unique_span<T>(device, size);
-    //     return container<T>(u_span.data(), size, std::move(u_span));
-    // }
-
-    // template<typename T>
-    // container<T> make_container(stream_cref stream, size_t size) {
-    //     region_t region = cu::memory::device::async::allocate(stream, size * sizeof(T));
-
-    //     return container<T>(
-    //         region.as_span<T>(),
-    //         size,
-    //         scoped{[ptr = region.get(), stream_h = stream.handle()]{ cudaFreeAsync(ptr, stream_h); }}
-    //     );
-    // }
-
-
 } // namespace emu::cuda::device

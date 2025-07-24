@@ -27,7 +27,7 @@ namespace cuda::device
     EMU_DEFINE_CONTAINER_DEDUCTION_GUIDES
 
     template<typename T>
-    container<T> make_container(device_cref device, size_t size) {
+    container<T> make_container(const device_t& device, size_t size) {
         auto u_span = cu::memory::device::make_unique_span<T>(device, size);
         return container<T>(u_span.data(), size, std::move(u_span));
     }
