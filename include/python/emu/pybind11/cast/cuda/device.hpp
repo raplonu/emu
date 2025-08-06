@@ -13,7 +13,7 @@ namespace detail
     template<>
     struct type_caster< ::emu::cuda::device_t >
     {
-        PYBIND11_TYPE_CASTER(::emu::cuda::device_t, const_name("cuda::device"));
+        ::emu::cuda::device_t value{::emu::cuda::device::id_t{0}};
 
         bool load(handle src, bool convert) {
             namespace py = pybind11;
@@ -32,6 +32,14 @@ namespace detail
 
             return cuda.attr("Device")(value.id()).inc_ref();
         }
+
+        static constexpr auto name = const_name("cuda::device");
+
+        // Conversion operators for pybind11's automatic type casting
+        operator ::emu::cuda::device_t*() { return &value; }
+        operator ::emu::cuda::device_t&() { return value; }
+
+        template <typename T> using cast_op_type = pybind11::detail::cast_op_type<T>;
     };
 } // namespace detail
 
