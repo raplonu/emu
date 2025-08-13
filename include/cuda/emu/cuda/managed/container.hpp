@@ -2,7 +2,8 @@
 
 #include <emu/type_traits.hpp>
 #include <emu/detail/basic_container.hpp>
-#include <emu/cuda/device/mdcontainer.hpp>
+#include <emu/cuda/managed/location_policy.hpp>
+#include <emu/cuda/managed/mdcontainer.hpp>
 #include <emu/cuda.hpp>
 #include <emu/mdalgo.hpp>
 
@@ -12,9 +13,9 @@ namespace cuda::managed
 {
 
     template <typename ElementType, size_t Extent>
-    struct container : emu::detail::basic_container<ElementType, Extent, cuda::managed_location_policy, container<ElementType, Extent>>
+    struct container : emu::detail::basic_container<ElementType, Extent, emu::cuda::managed_location_policy, container<ElementType, Extent>>
     {
-        using base = emu::detail::basic_container<ElementType, Extent, cuda::managed_location_policy, container>;
+        using base = emu::detail::basic_container<ElementType, Extent, emu::cuda::managed_location_policy, container>;
 
         using base::base;
 
@@ -27,21 +28,10 @@ namespace cuda::managed
     EMU_DEFINE_CONTAINER_DEDUCTION_GUIDES
 
     template<typename T>
-    container<T> make_container(const device_t& device, size_t size) {
+    container<T, std::dynamic_extent> make_container(const device_t& device, size_t size) {
         auto u_ptr = managed::make_unique<T[]>(device, size);
-        return container<T>(u_ptr.get(), size, std::move(u_ptr));
+        return container<T, std::dynamic_extent>(u_ptr.get(), size, std::move(u_ptr));
     }
-
-    // template<typename T>
-    // container<T> make_container(stream_cref stream, size_t size) {
-    //     region_t region = cu::memory::device::async::allocate(stream, size * sizeof(T));
-
-    //     return container<T>(
-    //         region.as_span<T>(),
-    //         size,
-    //         scoped{[ptr = region.get(), stream_h = stream.handle()]{ cudaFreeAsync(ptr, stream_h); }}
-    //     );
-    // }
 
 } // namespace cuda::managed
 
@@ -52,6 +42,5 @@ namespace cuda::managed
             return cuda::managed::mdcontainer<T, extents<size_t, Extent>, layout_right, default_accessor<T> >(s.data(), s.capsule(), emu::exts_flag, s.size());
         }
     };
-
 
 } // namespace emu

@@ -1,19 +1,18 @@
 #pragma once
-
 #include <emu/type_traits.hpp>
 #include <emu/detail/basic_mdspan.hpp>
-#include <emu/cuda/device/location_policy.hpp>
+#include <emu/cuda/managed/location_policy.hpp>
 
-namespace emu::cuda::device
+namespace emu::cuda::managed
 {
 
     template<typename T, typename Extents, typename LayoutPolicy, typename AccessorPolicy>
     struct mdspan : emu::detail::basic_mdspan<
-        T, Extents, LayoutPolicy, AccessorPolicy, cuda::device_location_policy,
+        T, Extents, LayoutPolicy, AccessorPolicy, cuda::managed_location_policy,
         mdspan<T, Extents, LayoutPolicy, AccessorPolicy>
     >
     {
-        using base = emu::detail::basic_mdspan< T, Extents, LayoutPolicy, AccessorPolicy, cuda::device_location_policy, mdspan >;
+        using base = emu::detail::basic_mdspan< T, Extents, LayoutPolicy, AccessorPolicy, cuda::managed_location_policy, mdspan >;
 
         using base::base;
 
@@ -27,4 +26,4 @@ namespace emu::cuda::device
 
     EMU_DEFINE_MDSPAN_ALIAS
 
-} // namespace emu::cuda::device
+} // namespace emu::cuda::managed

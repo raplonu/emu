@@ -12,42 +12,22 @@ namespace emu
 namespace cuda
 {
 
-    struct device_location_policy
+    struct managed_location_policy
     {
         template <typename T>
-        static constexpr bool validate_source = spe::enable_cuda_device_range<rm_cvref<T>>;
+        static constexpr bool validate_source = true; // TODO: Use spe::enable_cuda_managed_range<rm_cvref<T>> when available
 
         static dlpack::device_t device_of(const byte* ptr) noexcept
         {
             auto v_ptr = reinterpret_cast<void*>(const_cast<byte*>(ptr));
 
-            //TODO: Maybe accept managed/unified and array as well.
+            // Assume that the pointer is a managed pointer in release builds
+            EMU_ASSERT_MSG(emu::cuda::get_memory_type(v_ptr) == emu::cuda::memory_type_t::managed_, "Pointer is not a managed pointer");
 
-            // Assume that the pointer is a device pointer in release builds
-            EMU_ASSERT_MSG(emu::cuda::get_memory_type(v_ptr) == emu::cuda::memory_type_t::device_, "Pointer is not a device pointer");
-
-            return {.device_type=dlpack::device_type_t::kDLCUDA, .device_id=emu::cuda::get_device_of_pointer(v_ptr)};
+            return {.device_type=dlpack::device_type_t::kDLCUDAManaged, .device_id=emu::cuda::get_device_of_pointer(v_ptr)};
         }
 
-        // static bool check_device(dlpack::device_t device) noexcept {
-        //     return device.device_type == dlpack::device_type_t::kDLCUDA;
-        // }
-        // static optional<DLDevice> dl_device_of(void* ptr) {
-        //     auto ptr_descriptor = cuda::memory::pointer::wrap(ptr);
-        //     auto type = ptr_descriptor.get_attribute<CU_POINTER_ATTRIBUTE_MEMORY_TYPE>();
-        //     switch (type) {
-        //         case cuda::memory::type_t::host_:
-        //             return {kDLCUDAHost, 0};
-        //         case cuda::memory::type_t::device_:
-        //             return {kDLCUDA, ptr_descriptor.device().id()};
-        //         case cuda::memory::type_t::managed_:
-        //             return {kDLCUDAManaged, ptr_descriptor.device().id()};
-        //         default:
-        //             nullopt;
-        //     }
-        // }
-
-        static constexpr dlpack::device_type_t device_type = dlpack::device_type_t::kDLCUDA;
+        static constexpr dlpack::device_type_t device_type = dlpack::device_type_t::kDLCUDAManaged;
 
     };
 

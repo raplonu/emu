@@ -44,6 +44,10 @@ if (build_cuda)
         src/cuda/memory_test.cpp
         src/cuda/pointer_test.cpp
         src/cuda/mdcontainer_test.cpp
+        src/cuda/host/container_test.cpp
+        src/cuda/host/mdcontainer_test.cpp
+        src/cuda/managed/container_test.cpp
+        src/cuda/managed/mdcontainer_test.cpp
     )
 
     target_link_libraries(emucudatest PRIVATE
