@@ -36,7 +36,7 @@ namespace detail
             return false;
         }
 
-        static pybind11::handle cast(const ::emu::cuda::stream_t& value, pybind11::return_value_policy /* policy */, pybind11::handle) {
+        static handle cast(const ::emu::cuda::stream_t& value, return_value_policy /* policy */, handle) {
             auto cuda = module_::import("cupy").attr("cuda");
 
             // Convert EMU stream_t to CuPy ExternalStream using the stream handle and device ID
@@ -54,7 +54,7 @@ namespace detail
         // Returns reference to the stream, throws cast_error if not available
         operator ::emu::cuda::stream_t&() { if (!value) throw cast_error(); return *value; }
 
-        template <typename T> using cast_op_type = pybind11::detail::cast_op_type<T>;
+        template <typename T> using cast_op_type = detail::cast_op_type<T>;
     };
 } // namespace detail
 

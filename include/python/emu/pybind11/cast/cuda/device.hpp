@@ -16,19 +16,17 @@ namespace detail
         ::emu::cuda::device_t value{::emu::cuda::device::id_t{0}};
 
         bool load(handle src, bool convert) {
-            namespace py = pybind11;
-            auto cuda = py::module_::import("cupy").attr("cuda");
+            auto cuda = module_::import("cupy").attr("cuda");
 
-            if (py::isinstance(src, cuda.attr("Device"))) {
+            if (isinstance(src, cuda.attr("Device"))) {
                 value = ::emu::cuda::device::get(src.attr("id").cast<::emu::cuda::device::id_t>());
                 return !PyErr_Occurred();
             }
             return false;
         }
 
-        static pybind11::handle cast(const ::emu::cuda::device_t& value, pybind11::return_value_policy /* policy */, pybind11::handle) {
-            namespace py = pybind11;
-            auto cuda = py::module_::import("cupy").attr("cuda");
+        static handle cast(const ::emu::cuda::device_t& value, return_value_policy /* policy */, handle) {
+            auto cuda = module_::import("cupy").attr("cuda");
 
             return cuda.attr("Device")(value.id()).inc_ref();
         }
@@ -39,7 +37,7 @@ namespace detail
         operator ::emu::cuda::device_t*() { return &value; }
         operator ::emu::cuda::device_t&() { return value; }
 
-        template <typename T> using cast_op_type = pybind11::detail::cast_op_type<T>;
+        template <typename T> using cast_op_type = detail::cast_op_type<T>;
     };
 } // namespace detail
 
