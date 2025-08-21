@@ -78,7 +78,7 @@ namespace detail
         event_ref(int) = delete;
 
         /// Disallow construction from `nullptr`.
-        event_ref(nullptr_t) = delete;
+        event_ref(std::nullptr_t) = delete;
 
         [[nodiscard]] value_type get() const noexcept { return handle_; }
 
@@ -117,7 +117,7 @@ namespace detail
         }
 
         void record(const stream_t& stream) const {
-            event::detail::record(handle_.value, stream.handle());
+            event::detail::record(handle_.value, stream.get());
         }
 
         void wait() const {
@@ -125,7 +125,7 @@ namespace detail
         }
 
         void wait(const stream_t& stream) const {
-            event::detail::wait(handle_.value, stream.handle());
+            event::detail::wait(handle_.value, stream.get());
         }
 
         friend event_t event::create(const device_t& device);

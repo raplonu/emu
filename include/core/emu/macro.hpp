@@ -2,23 +2,23 @@
 
 #include <emu/config.hpp>
 
-#include <boost/preprocessor/cat.hpp>
-#include <boost/preprocessor/stringize.hpp>
+// #include <boost/preprocessor/cat.hpp>
+// #include <boost/preprocessor/stringize.hpp>
 
 #include <gsl/assert>
 
-/// Specify noinline attribute regardless of compiler.
-/// gcc allow cold path attribute.
-/// See https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#Common-Function-Attributes
-#if EMU_GCC or EMU_CUDACC
+// /// Specify noinline attribute regardless of compiler.
+// /// gcc allow cold path attribute.
+// /// See https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#Common-Function-Attributes
+// #if EMU_GCC or EMU_CUDACC
 
 #define EMU_NOINLINE __attribute__((__noinline__,cold))
 
-#else // compiler is neither gcc nor nvcc.
+// #else // compiler is neither gcc nor nvcc.
 
-#define EMU_NOINLINE BOOST_NOINLINE
+// #define EMU_NOINLINE BOOST_NOINLINE
 
-#endif
+// #endif
 
 #define EMU_FORCEINLINE BOOST_FORCEINLINE
 
@@ -77,13 +77,15 @@
 
 #define EMU_COMMA ,
 
-#define EMU_CONCAT(a, b)             BOOST_PP_CAT(a, b)
-#define EMU_CONCAT_2(a, b)          BOOST_PP_CAT(a, b)
-#define EMU_CONCAT_3(a, b, c)       BOOST_PP_CAT(a, EMU_CONCAT_2(b, c))
-#define EMU_CONCAT_4(a, b, c, d)    BOOST_PP_CAT(a, EMU_CONCAT_3(b, c, d))
-#define EMU_CONCAT_5(a, b, c, d, e) BOOST_PP_CAT(a, EMU_CONCAT_4(b, c, d, e))
+#define EMU_CAT_IMPL(a, b) a##b
 
-#define EMU_UNIQUE_NAME(base) EMU_CONCAT(base, __COUNTER__)
+#define EMU_CAT(a, b)            EMU_CAT_IMPL(a, b)
+#define EMU_CAT_2(a, b)          EMU_CAT(a, b)
+#define EMU_CAT_3(a, b, c)       EMU_CAT(a, EMU_CAT_2(b, c))
+#define EMU_CAT_4(a, b, c, d)    EMU_CAT(a, EMU_CAT_3(b, c, d))
+#define EMU_CAT_5(a, b, c, d, e) EMU_CAT(a, EMU_CAT_4(b, c, d, e))
+
+#define EMU_UNIQUE_NAME(base) EMU_CAT(base, __COUNTER__)
 
 
 // #################

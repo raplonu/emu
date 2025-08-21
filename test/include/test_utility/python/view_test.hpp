@@ -24,7 +24,7 @@ namespace
             auto view = TestFixture::get_view();
 
             // c++ to python
-            auto obj = py::cast(view);
+            py::object obj = py::cast(view);
 
             {
                 auto data = TestFixture::get_array_interface(obj)["data"].template cast<py::tuple>();
@@ -49,7 +49,7 @@ namespace
             auto cview = TestFixture::get_const_view();
 
             // c++ to python
-            auto obj = py::cast(cview);
+            py::object obj = py::cast(cview);
 
             {
                 auto data = TestFixture::get_array_interface(obj)["data"].template cast<py::tuple>();

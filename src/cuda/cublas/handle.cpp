@@ -68,7 +68,7 @@ handle_t::handle_t(::emu::cuda::device::id_t device_id):
 {}
 
 void handle_t::set_stream(const ::emu::cuda::stream_t & stream) const {
-    handle::detail::set_stream(id(), stream.handle());
+    handle::detail::set_stream(id(), stream.get());
 }
 
 ::emu::cuda::stream_t handle_t::stream() const {

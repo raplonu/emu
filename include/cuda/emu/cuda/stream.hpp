@@ -85,7 +85,7 @@ namespace detail
         stream_t& operator=(stream_t &&) = default;
         stream_t& operator=(const stream_t &) = delete;
 
-        [[nodiscard]] stream::handle_t handle() const noexcept { return handle_.value; }
+        [[nodiscard]] stream::handle_t get() const noexcept { return handle_.value; }
         [[nodiscard]] device::id_t device_id() const noexcept { return stream::detail::get_device_id(handle_.value); }
 
         [[nodiscard]] operator stream_ref() const noexcept {
@@ -115,6 +115,10 @@ namespace stream
         device.make_current();
 
         return stream_t(stream::detail::create(synchronizes_with_default_stream), true);
+    }
+
+    inline stream_t create(bool synchronizes_with_default_stream = false) {
+        return create(device::current(), synchronizes_with_default_stream);
     }
 
     inline stream_t wrap(stream::handle_t handle, bool take_ownership) {

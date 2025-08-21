@@ -10,18 +10,16 @@ install *args:
 dev *args:
     just register
     conan build . -b missing {{args}}
-    @# copy compile_commands.json from either debug of release folder
-    @-cp build/*/compile_commands.json build/
+
+configure *args:
+    conan install . -b missing -c tools.cmake.cmaketoolchain:generator=Ninja Multi-Config {{args}}
+    cmake --preset conan-default
 
 build build_type="release":
     cmake --build --preset "conan-{{build_type}}"
 
 test build_type="release":
     ctest --preset conan-{{build_type}}
-
-coverage:
-    mkdir -p build/coverage
-    gcovr -r . --html --html-details -o build/coverage/index.html
 
 # Register emu as editable in conan
 @register:

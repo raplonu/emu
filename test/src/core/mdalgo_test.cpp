@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
-//TODO: removes NOLINT when rank is implemented.
-#include <emu/mdalgo.hpp> // NOLINT
+// #include <emu/mdalgo.hpp> // NOLINT
+#include <emu/config.hpp>
 
 #include <vector>
 #include <array>

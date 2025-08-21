@@ -195,7 +195,7 @@ namespace detail
     protected:
 
         template<typename Range>
-        constexpr void check_range_size( Range&& r ) const
+        constexpr void check_range_size( [[maybe_unused]] Range&& r ) const
         {
             if constexpr (std::ranges::sized_range<Range>) {
                 EMU_ASSERT_MSG( std::ranges::size(r) == base::size(), "input range and mdspan size mismatch" );

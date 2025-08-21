@@ -15,7 +15,8 @@ namespace
     REGISTER_TYPED_TEST_SUITE_P(
         PythonViewTest,  // The first argument is the test case name.
         // The rest of the arguments are the test names.
-        CppToPythonToCppView);
+        CppToPythonToCppView
+    );
 
     namespace py = pybind11;
 
@@ -44,7 +45,7 @@ namespace
             return const_view_type(vec);
         }
 
-        static py::dict get_array_interface(py::object obj) {
+        static py::dict get_array_interface(const py::object& obj) {
             return obj.attr("__array_interface__").cast<py::dict>();
         }
 

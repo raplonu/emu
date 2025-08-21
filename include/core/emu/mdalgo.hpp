@@ -23,7 +23,7 @@ namespace spe
 
     template <typename T>
     struct md_converter {
-        static constexpr auto convert(T&& t) noexcept {
+        static constexpr auto convert(T&& /* t */) noexcept {
             static_assert(dependent_false<T>, "No md_converter specialization for this type");
         }
     };

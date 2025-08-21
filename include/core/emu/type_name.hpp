@@ -1,6 +1,5 @@
 #pragma once
 
-#include <boost/core/demangle.hpp>
 #include <half.hpp>
 
 #include <fmt/format.h>
@@ -16,6 +15,27 @@ namespace emu
     struct type_name_t
     {};
 
+namespace detail
+{
+
+    /**
+     * @brief Demangle a type name.
+     *
+     * @param type_name The type name to demangle.
+     * @return std::string The demangled type name.
+     */
+    std::string demangle(const char* type_name);
+
+    /**
+     * @brief Demangle a type info.
+     *
+     * @param type_info The type info to demangle.
+     * @return std::string The demangled type name.
+     */
+    std::string demangle(const std::type_info& type_info);
+
+} // namespace detail
+
     /**
      * @brief Generic type to string utility.
      *
@@ -26,7 +46,7 @@ namespace emu
 
     template<typename T>
     auto format_as(type_name_t<T>) {
-        return boost::core::demangle(typeid(T).name());
+        return detail::demangle(typeid(T));
     }
 
     template <typename T>

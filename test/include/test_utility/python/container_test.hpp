@@ -24,7 +24,7 @@ namespace
             auto container = TestFixture::get_view();
 
             // c++ to python
-            auto obj = py::cast(container);
+            py::object obj = py::cast(container);
 
             {
                 py::array arr = obj;
@@ -46,7 +46,7 @@ namespace
             auto ccontainer = TestFixture::get_const_view();
 
             // c++ to python
-            auto obj = py::cast(ccontainer);
+            py::object obj = py::cast(ccontainer);
 
             {
                 py::array arr = obj;

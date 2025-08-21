@@ -57,13 +57,13 @@ TEST(CudaMemoryTest, SyncCopy)
 
     constexpr std::size_t n = 1024;
 
-    auto host_src = emu::cuda::host::make_unique<int[]>(n);
+    auto host_src = emu::cuda::host::make_unique<int[]>(device, n);
     std::iota(host_src.get(), host_src.get() + n, 0);
 
-    auto device_mem = emu::cuda::device::make_unique<int[]>(n);
+    auto device_mem = emu::cuda::device::make_unique<int[]>(device, n);
     emu::cuda::copy_n(host_src.get(), n, device_mem.get());
 
-    auto host_dst = emu::cuda::host::make_unique<int[]>(n);
+    auto host_dst = emu::cuda::host::make_unique<int[]>(device, n);
     emu::cuda::copy_n(device_mem.get(), n, host_dst.get());
 
     for(std::size_t i = 0; i < n; ++i)

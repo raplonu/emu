@@ -93,6 +93,16 @@ jobs:
       - name: Run tests with CTest
         run: ctest --preset ${CONAN_BUILD_TYPE} --output-on-failure
 
+      - name: Export to conan cache (and test package)
+        run: |
+          conan export-pkg . \
+            --options="python=True" \
+            --lockfile=conan.lock \
+            --lockfile-partial \
+            --lockfile-out=conan.lock \
+            --profile ${{ steps.setup-env.outputs.conan-profile-name }} \
+            -s build_type=${BUILD_TYPE}
+
 
       - name: Generate coverage report (Cobertura XML)
         run: |

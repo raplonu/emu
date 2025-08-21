@@ -61,7 +61,7 @@ namespace emu_test
     }
 
     template < emu::cpts::span Span >
-    void expect_rank(const Span &s, std::size_t expected_rank) {
+    void expect_rank(const Span & /* s */, std::size_t expected_rank) {
         EXPECT_EQ(1, expected_rank);
     }
 

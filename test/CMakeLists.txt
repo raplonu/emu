@@ -1,6 +1,12 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.25)
 
-enable_testing()
+project(emutesting VERSION 0.1)
+
+if(PROJECT_IS_TOP_LEVEL)
+    message(STATUS "Configuring emu unit tests on installed library")
+    include(CTest)
+    find_package(emu CONFIG REQUIRED)
+endif()
 
 find_package(GTest CONFIG REQUIRED)
 include(GoogleTest)
@@ -9,7 +15,6 @@ add_executable(emucoretest
     src/core/concepts_test.cpp
     src/core/capsule_test.cpp
     src/core/cstring_view_test.cpp
-    src/core/const_string_test.cpp
     src/core/container_test.cpp
     src/core/host/container_test.cpp
     src/core/mdcontainer_test.cpp
@@ -25,18 +30,17 @@ add_executable(emucoretest
     src/core/mdalgo_test.cpp
     src/core/detail/dlpack_types_test.cpp
     src/core/string_test.cpp
-    src/core/string_test.cpp
 )
 
 target_link_libraries(emucoretest PRIVATE
-    GTest::gtest GTest::gtest_main emucore
+    GTest::gtest GTest::gtest_main emu::core
 )
 
 target_include_directories(emucoretest PRIVATE include)
 
 gtest_discover_tests(emucoretest)
 
-if (build_cuda)
+if (emu_build_cuda)
 
     add_executable(emucudatest
         src/cuda/test.cu
@@ -46,7 +50,7 @@ if (build_cuda)
     )
 
     target_link_libraries(emucudatest PRIVATE
-        GTest::gtest GTest::gtest_main emucuda
+        GTest::gtest GTest::gtest_main emu::cuda
     )
 
     target_include_directories(emucudatest PRIVATE include)
@@ -54,20 +58,22 @@ if (build_cuda)
     gtest_discover_tests(emucudatest)
 endif()
 
-if (build_python_test)
+if (emu_build_python_test)
 
     add_executable(emupythontest
         src/python/main.cpp
-        src/python/span_test.cpp
-        src/python/container_test.cpp
-        src/python/mdspan_test.cpp
-        src/python/mdcontainer_test.cpp
-        src/python/cstring_view_test.cpp
+        src/python/pybind11/cast/span_test.cpp
+        src/python/pybind11/cast/container_test.cpp
+        src/python/pybind11/cast/mdspan_test.cpp
+        src/python/pybind11/cast/mdcontainer_test.cpp
+        src/python/pybind11/cast/cstring_view_test.cpp
+        src/python/pybind11/format_test.cpp
     )
 
-    if(build_cuda)
+    if(emu_build_cuda)
         target_sources(emupythontest PRIVATE
-            src/python/cuda_span_test.cpp
+            src/python/pybind11/cast/cuda_span_test.cpp
+            src/python/pybind11/cast/cuda/stream_test.cpp
         )
     endif()
 
@@ -75,7 +81,7 @@ if (build_python_test)
     find_package(pybind11 REQUIRED)
 
     target_link_libraries(emupythontest PRIVATE
-        GTest::gtest emupython pybind11::embed
+        GTest::gtest emu::python pybind11::embed
     )
 
     target_include_directories(emupythontest PRIVATE include)

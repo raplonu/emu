@@ -95,7 +95,7 @@ struct fmt::formatter<emu::detail::unkown_type_printer<T>> {
         return ctx.begin();
     }
 
-    auto format(const emu::detail::unkown_type_printer<T> &p, format_context &ctx) const -> format_context::iterator {
+    auto format(const emu::detail::unkown_type_printer<T> & /* p */, format_context &ctx) const -> format_context::iterator {
         return fmt::format_to(ctx.out(), "unkown type {}", emu::type_name<T>);
     }
 };

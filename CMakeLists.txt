@@ -1,23 +1,4 @@
-cmake_minimum_required(VERSION 3.18)
-
-# Forced to define this variable here to let vcpkg know that we need gtest or not.
-option(BUILD_TESTING "Build tests" ON)
-# Note: This is not possible to build python test using vcpkg.
-option(build_python_test "Enable python test module" OFF)
-option(build_cuda "Enable cuda module" OFF)
-option(enable_coverage "Enable coverage" OFF)
-
-if(BUILD_TESTING)
-    list(APPEND VCPKG_MANIFEST_FEATURES "tests")
-endif()
-if(build_cuda)
-    list(APPEND VCPKG_MANIFEST_FEATURES "cuda")
-endif()
-
-# other otions:
-
-# Note: This is not possible to change this value using vcpkg.
-set(emu_boost_namespace "boost" CACHE STRING "Custom boost namespace name")
+cmake_minimum_required(VERSION 3.25)
 
 ########################################################################
 #
@@ -26,25 +7,28 @@ set(emu_boost_namespace "boost" CACHE STRING "Custom boost namespace name")
 
 project(emu VERSION 1.0.0 LANGUAGES CXX)
 
-if(enable_coverage)
-    message(STATUS "Building with coverage enabled")
+option(
+    emu_build_python_test
+    "Enable python test module. Default: OFF. Values: { ON, OFF }."
+    OFF
+)
+option(
+    emu_build_cuda
+    "Enable cuda module. Default: OFF. Values: { ON, OFF }."
+    OFF
+)
+option(
+    emu_install_config_file_package
+    "Install config file package. Default: OFF. Values: { ON, OFF }."
+    ON
+)
 
-    include(cmake/CodeCoverage.cmake)
-    append_coverage_compiler_flags()
-endif()
-
-# Always generate compile_commands.json. Used by clangd and other tools.
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-# emu is not pedantic... yet
-# It relies on `statement-expression extension` that is not standard
-# See: https://gcc.gnu.org/onlinedocs/gcc/Statement-Exprs.html
-#
-# Keep an eye on `https://wg21.link/P2561` for a possible alternative.
-add_compile_options(-Wno-pedantic)
-
-include(CMakePackageConfigHelpers)
-include(GNUInstallDirs)
+# other otions:
+set(
+    emu_boost_namespace
+    "boost" CACHE STRING
+    "Custom boost namespace name"
+)
 
 ########################################################################
 #
@@ -52,71 +36,77 @@ include(GNUInstallDirs)
 #
 
 add_library(emucore)
+add_library(emu::core ALIAS emucore)
 
 target_sources(emucore PRIVATE
     src/core/numeric_type.cpp
     src/core/dlpack.cpp
     src/core/error.cpp
     src/core/pointer.cpp
+    src/core/type_name.cpp
 )
 
-target_sources(emucore PUBLIC FILE_SET HEADERS BASE_DIRS include/core FILES
-    include/core/emu/associative_container.hpp
-    include/core/emu/config.hpp
-    include/core/emu/detail/basic_span.hpp
-    include/core/emu/detail/mdspan_types.hpp
-    include/core/emu/detail/basic_container.hpp
-    include/core/emu/detail/basic_mdcontainer.hpp
-    include/core/emu/detail/basic_mdspan.hpp
-    include/core/emu/detail/dlpack_types.hpp
-    include/core/emu/dlpack.hpp
-    include/core/emu/expected.hpp
-    include/core/emu/functor.hpp
-    include/core/emu/fwd.hpp
-    include/core/emu/hash.hpp
-    include/core/emu/host/location_policy.hpp
-    include/core/emu/host/mdcontainer.hpp
-    include/core/emu/host/mdspan.hpp
-    include/core/emu/host/container.hpp
-    include/core/emu/host/span.hpp
-    include/core/emu/info.hpp
-    include/core/emu/location_policy.hpp
-    include/core/emu/macro.hpp
-    include/core/emu/managed_object.hpp
-    include/core/emu/math.hpp
-    include/core/emu/mdcontainer.hpp
-    include/core/emu/numeric_type.hpp
-    include/core/emu/optional.hpp
-    include/core/emu/range.hpp
-    include/core/emu/storage.hpp
-    include/core/emu/type_name.hpp
-    include/core/emu/type_traits.hpp
-    include/core/emu/ostream.hpp
-    include/core/emu/scoped.hpp
-    include/core/emu/container.hpp
-    include/core/emu/span.hpp
-    include/core/emu/mdalgo.hpp
-    include/core/emu/mdspan.hpp
-    include/core/emu/tuple.hpp
-    include/core/emu/assert.hpp
-    include/core/emu/capsule.hpp
-    include/core/emu/concepts.hpp
-    include/core/emu/cstring_view.hpp
-    include/core/emu/debug.hpp
-    include/core/emu/error.hpp
-    include/core/emu/error/generation.hpp
-    include/core/emu/pointer.hpp
-    include/core/emu/string.hpp
-    include/core/emu/utility.hpp
-    include/core/dlpack/dlpack.h
-    include/core/tl/expected.hpp
-    include/core/tl/optional.hpp
-    include/core/half.hpp
+target_sources(emucore PUBLIC FILE_SET HEADERS
+    BASE_DIRS
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core
+    FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/associative_container.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/config.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/detail/basic_span.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/detail/mdspan_types.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/detail/basic_container.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/detail/basic_mdcontainer.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/detail/basic_mdspan.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/detail/dlpack_types.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/dlpack.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/expected.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/functor.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/fwd.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/hash.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/host/location_policy.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/host/mdcontainer.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/host/mdspan.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/host/container.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/host/span.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/info.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/location_policy.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/macro.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/managed_object.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/math.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/mdcontainer.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/numeric_type.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/optional.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/range.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/storage.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/type_name.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/type_traits.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/ostream.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/scoped.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/container.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/span.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/mdalgo.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/mdspan.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/tuple.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/assert.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/capsule.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/concepts.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/cstring_view.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/debug.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/error.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/error/generation.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/pointer.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/string.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/utility.hpp
+)
+
+set_target_properties(
+    emucore
+    PROPERTIES VERIFY_INTERFACE_HEADER_SETS ON EXPORT_NAME core
 )
 
 target_compile_features(emucore PUBLIC cxx_std_20)
 
-if(build_cuda)
+if(emu_build_cuda)
     target_compile_definitions(emucore PUBLIC EMU_CUDA)
 endif()
 
@@ -126,27 +116,32 @@ find_package(Boost CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(Microsoft.GSL CONFIG REQUIRED)
 find_package(mdspan CONFIG REQUIRED)
+find_package(half CONFIG REQUIRED)
+find_package(tl-expected CONFIG REQUIRED)
+find_package(tl-optional CONFIG REQUIRED)
+find_package(dlpack CONFIG REQUIRED)
 
 target_link_libraries(emucore PUBLIC
     Boost::boost
     fmt::fmt
     Microsoft.GSL::GSL
     std::mdspan
+    half::half
+    tl::expected
+    tl::optional
+    dlpack::dlpack
 )
-
-if (NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
-    add_library(emu::core ALIAS emucore)
-endif()
 
 ########################################################################
 #
 # Emu CUDA
 #
 
-if (build_cuda)
+if (emu_build_cuda)
     enable_language(CUDA)
 
     add_library(emucuda)
+    add_library(emu::cuda ALIAS emucuda)
 
     target_sources(emucuda PRIVATE
         src/cuda/cuda/error.cpp
@@ -159,39 +154,47 @@ if (build_cuda)
         src/cuda/cusolver.cpp
     )
 
-    target_sources(emucuda PUBLIC FILE_SET HEADERS BASE_DIRS include/cuda FILES
-        include/cuda/emu/cuda/device/mdcontainer.hpp
-        include/cuda/emu/cuda/device/mdspan.hpp
-        include/cuda/emu/cuda/device/container.hpp
-        include/cuda/emu/cuda/device/span.hpp
-        include/cuda/emu/cuda/device/location_policy.hpp
-        include/cuda/emu/cuda/allocator.hpp
-        include/cuda/emu/cuda/device.hpp
-        include/cuda/emu/cuda/error.hpp
-        include/cuda/emu/cuda/event.hpp
-        include/cuda/emu/cuda/memory.hpp
-        include/cuda/emu/cuda/pointer.hpp
-        include/cuda/emu/cuda/stream.hpp
-        include/cuda/emu/cuda/managed/container.hpp
-        include/cuda/emu/cuda/managed/location_policy.hpp
-        include/cuda/emu/cuda/managed/mdcontainer.hpp
-        include/cuda/emu/cuda/managed/mdspan.hpp
-        include/cuda/emu/cuda/managed/span.hpp
-        include/cuda/emu/cufft.hpp
-        include/cuda/emu/cufft/error.hpp
-        include/cuda/emu/cufft/type.hpp
-        include/cuda/emu/cufft/utility.hpp
-        include/cuda/emu/cufft/handle.hpp
-        include/cuda/emu/cusolver.hpp
-        include/cuda/emu/cusolver/error.hpp
-        include/cuda/emu/cusolver/handle.hpp
-        include/cuda/emu/tensor.hpp
-        include/cuda/emu/test/device_test.hpp
-        include/cuda/emu/cublas.hpp
-        include/cuda/emu/cublas/type.hpp
-        include/cuda/emu/cublas/error.hpp
-        include/cuda/emu/cublas/handle.hpp
-        include/cuda/emu/cuda.hpp
+    target_sources(emucuda PUBLIC FILE_SET HEADERS
+        BASE_DIRS
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda
+        FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/device/mdcontainer.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/device/mdspan.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/device/container.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/device/span.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/device/location_policy.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/allocator.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/device.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/error.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/event.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/memory.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/pointer.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/stream.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/managed/container.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/managed/location_policy.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/managed/mdcontainer.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/managed/mdspan.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/managed/span.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/test/device_test.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cufft.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cufft/error.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cufft/type.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cufft/utility.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cufft/handle.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cusolver.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cusolver/error.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cusolver/handle.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/tensor.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cublas.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cublas/type.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cublas/error.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cublas/handle.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda.hpp
+    )
+
+    set_target_properties(
+        emucuda
+        PROPERTIES VERIFY_INTERFACE_HEADER_SETS ON EXPORT_NAME cuda
     )
 
     target_compile_options(emucuda PUBLIC
@@ -209,104 +212,108 @@ if (build_cuda)
     endif()
 
     find_package(CUDAToolkit REQUIRED)
-    # find_package(matx REQUIRED)
 
     target_link_libraries(emucuda PUBLIC
-        emucore
+        emu::core
         CUDA::cublas
         CUDA::cusolver
         CUDA::cudart
         CUDA::cuda_driver
-        # matx::matx
     )
-
-    if (NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
-        add_library(emu::cuda ALIAS emucuda)
-    endif()
 
 endif()
 
 add_library(emupython INTERFACE)
+add_library(emu::python ALIAS emupython)
 
-target_sources(emupython INTERFACE FILE_SET HEADERS BASE_DIRS include/python FILES
-    include/python/emu/bind/map.hpp
-    include/python/emu/cast/common.hpp
-    include/python/emu/pybind11.hpp
-    include/python/emu/pybind11/buffer.hpp
-    include/python/emu/pybind11/cast/cstring_view.hpp
-    include/python/emu/pybind11/cast/cuda/stream.hpp
-    include/python/emu/pybind11/cast/detail/capsule.hpp
-    include/python/emu/pybind11/cast/detail/layout_adaptor.hpp
-    include/python/emu/pybind11/cast/detail/location_adaptor.hpp
-    include/python/emu/pybind11/cast/detail/mdspan_caster.hpp
-    include/python/emu/pybind11/cast/mdcontainer.hpp
-    include/python/emu/pybind11/cast/mdspan.hpp
-    include/python/emu/pybind11/cast/container.hpp
-    include/python/emu/pybind11/cast/span.hpp
-    include/python/emu/pybind11/common.hpp
-    include/python/emu/pybind11/dltensor.hpp
-    include/python/emu/pybind11/format.hpp
-    include/python/emu/pybind11/numpy.hpp
+target_sources(emupython INTERFACE FILE_SET HEADERS
+    BASE_DIRS
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/python
+    FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/bind/map.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/cast/cstring_view.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/cast/cuda/stream.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/cast/detail/capsule.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/cast/detail/layout_adaptor.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/cast/detail/location_adaptor.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/cast/detail/mdspan_caster.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/cast/mdcontainer.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/cast/mdspan.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/cast/container.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/cast/span.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/format.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/numpy.hpp
+)
+
+set_target_properties(
+    emupython
+    PROPERTIES VERIFY_INTERFACE_HEADER_SETS ON EXPORT_NAME python
 )
 
 # We do not link to pybind11 here, we let the consumer do it
 target_link_libraries(emupython INTERFACE
-    emucore
+    emu::core
 )
 
-if(build_cuda)
-    target_link_libraries(emupython INTERFACE emucuda)
-endif()
-
-if (NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
-    add_library(emu::python ALIAS emupython)
+if(emu_build_cuda)
+    target_link_libraries(emupython INTERFACE emu::cuda)
 endif()
 
 # ########################################################################
 # #
 # # Install
-# # What is going on here???
+include(GNUInstallDirs)
 
 set(INSTALL_TARGETS emucore emupython)
-if(build_cuda)
+if(emu_build_cuda)
     list(APPEND INSTALL_TARGETS emucuda)
 endif()
 
-install(TARGETS ${INSTALL_TARGETS}
-    COMPONENT emu-core
-    EXPORT emu-targets
-    FILE_SET HEADERS
+
+
+install(
+    TARGETS ${INSTALL_TARGETS} COMPONENT emu
+    EXPORT emu
+    DESTINATION
+    ${CMAKE_INSTALL_LIBDIR}$<$<CONFIG:Debug>:/debug>
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}$<$<CONFIG:Debug>:/debug>
+    FILE_SET HEADERS DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
-# configure_package_config_file(
-#     "${PROJECT_SOURCE_DIR}/cmake/emu-config.cmake.in"
-#     "${PROJECT_BINARY_DIR}/emu-config.cmake"
-#     INSTALL_DESTINATION "${CMAKE_INSTALL_DATADIR}/cmake/emu")
+if(emu_install_config_file_package)
+    include(CMakePackageConfigHelpers)
 
-# write_basic_package_version_file(
-#     "${PROJECT_BINARY_DIR}/emu-config-version.cmake"
-#     VERSION "${PROJECT_VERSION}"
-#     COMPATIBILITY SameMajorVersion
-# )
+    configure_package_config_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/emu-config.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/emu-config.cmake"
+        INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/emu"
+        PATH_VARS PROJECT_NAME PROJECT_VERSION
+    )
 
-# export(TARGETS
-#     ${INSTALL_TARGETS}
-#     NAMESPACE emu::
-#     FILE "${PROJECT_BINARY_DIR}/emu-targets.cmake"
-# )
+    write_basic_package_version_file(
+        "${CMAKE_CURRENT_BINARY_DIR}/emu-config-version.cmake"
+        VERSION "${PROJECT_VERSION}"
+        COMPATIBILITY SameMajorVersion
+    )
 
-# install(FILES
-#     "${PROJECT_BINARY_DIR}/emu-config-version.cmake"
-#     "${PROJECT_BINARY_DIR}/emu-config.cmake"
-#     DESTINATION "${CMAKE_INSTALL_DATADIR}/cmake/emu"
-#     COMPONENT emu-core
-# )
+    install(
+        FILES
+            "${CMAKE_CURRENT_BINARY_DIR}/emu-config.cmake"
+            "${CMAKE_CURRENT_BINARY_DIR}/emu-config-version.cmake"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/emu"
+        COMPONENT emu
+    )
 
-# install(EXPORT emu-targets
-#     DESTINATION "${CMAKE_INSTALL_DATADIR}/cmake/emu"
-#     NAMESPACE emu::
-#     COMPONENT emu-core
-# )
+    install(
+        EXPORT emu
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/emu"
+        NAMESPACE emu::
+        FILE emu-targets.cmake
+        COMPONENT emu
+    )
+
+endif()
 
 ########################################################################
 #
@@ -314,7 +321,5 @@ install(TARGETS ${INSTALL_TARGETS}
 #
 include(CTest)
 if (BUILD_TESTING)
-    message(CHECK_START "Emu - Configuring test")
     add_subdirectory(test)
-    message(CHECK_PASS "Done")
 endif()

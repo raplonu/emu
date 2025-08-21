@@ -319,7 +319,7 @@ namespace detail
         constexpr ~basic_mdcontainer() = default;
 
         emu::capsule&        capsule() &      noexcept { return static_cast<emu::capsule&>(*this); }
-        emu::capsule const & capsule() const& noexcept { return static_cast<emu::capsule>(*this); }
+        emu::capsule const & capsule() const& noexcept { return static_cast<const emu::capsule&>(*this); }
         emu::capsule         capsule() &&     noexcept { return static_cast<emu::capsule>(*this); }
 
     };

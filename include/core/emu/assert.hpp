@@ -11,7 +11,7 @@
 #include <emu/config.hpp>
 #include <emu/macro.hpp>
 
-#include <boost/assert.hpp>
+#include <cassert>
 
 /**
  * @def EMU_ASSERT(cond)
@@ -31,7 +31,7 @@
  * }
  * @endcode
  */
-#define EMU_ASSERT(cond) BOOST_ASSERT(cond)
+#define EMU_ASSERT(cond) assert(cond)
 /**
  * @def EMU_ASSERT_MSG(cond, msg)
  * @brief Assert that a condition is true with a custom message.
@@ -52,7 +52,7 @@
  * }
  * @endcode
  */
-#define EMU_ASSERT_MSG(cond, msg) BOOST_ASSERT_MSG(cond, msg)
+#define EMU_ASSERT_MSG(cond, msg) assert((cond)&&(msg))
 
 /**
  * @def EMU_VERIFY(cond)
@@ -73,7 +73,11 @@
  * }
  * @endcode
  */
-#define EMU_VERIFY(cond) BOOST_VERIFY(cond)
+#ifdef NDEBUG
+#define EMU_VERIFY(cond) ((void)(cond))
+#else
+#define EMU_VERIFY(cond) EMU_ASSERT(cond)
+#endif
 
 /**
  * @def EMU_VERIFY_MSG(cond, msg)
@@ -93,7 +97,11 @@
  * }
  * @endcode
  */
-#define EMU_VERIFY_MSG(cond, msg) BOOST_VERIFY_MSG(cond, msg)
+#ifdef NDEBUG
+#define EMU_VERIFY_MSG(cond, msg) ((void)(cond))
+#else
+#define EMU_VERIFY_MSG(cond, msg) EMU_ASSERT_MSG(cond, msg)
+#endif
 
 /**
  * @def EMU_ASSERT_IS_VOID
@@ -113,7 +121,9 @@
  * }
  * @endcode
  */
-#define EMU_ASSERT_IS_VOID BOOST_ASSERT_IS_VOID
+#ifdef NDEBUG
+#define EMU_ASSERT_IS_VOID
+#endif
 
 /**
  * @def EMU_ASSERT_ASSUME(cond)

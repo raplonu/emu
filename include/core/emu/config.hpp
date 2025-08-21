@@ -1,9 +1,9 @@
 #pragma once
 
-#include <boost/config.hpp>
+// #include <boost/config.hpp>
 
 // False if using nvcc.
-#define EMU_GCC BOOST_GCC
+// #define EMU_GCC BOOST_GCC
 
 #ifdef __CUDACC__
 
@@ -40,6 +40,14 @@
         #define DLL_LOCAL
     #endif
 #endif
+
+namespace EMU_BOOST_NAMESPACE
+{
+
+    // This empty namespace is used to pre-define the boost namespace
+    // to avoid including boost headers in the emu namespace.
+
+} // namespace EMU_BOOST_NAMESPACE
 
 namespace emu
 {

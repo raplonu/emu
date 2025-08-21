@@ -46,7 +46,7 @@ namespace
             return const_view_type(vec.data(), emu_test::md_helper::get_mapping<rank, LayoutPolicy>());
         }
 
-        static py::dict get_array_interface(py::object obj) {
+        static py::dict get_array_interface(const py::object& obj) {
             return obj.attr("__array_interface__").cast<py::dict>();
         }
 

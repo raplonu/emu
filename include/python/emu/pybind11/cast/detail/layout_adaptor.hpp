@@ -83,11 +83,11 @@ namespace emu::cast::detail
             std::array<std::size_t, Extents::rank_dynamic()> dynamic_shape;
             auto it_shape = dynamic_shape.begin();
 
-            std::size_t last_extent = 1;
-            std::size_t last_stride = sizeof(ElementType);
-            for(auto i = 0; i < Extents::rank(); ++i) {
+            size_t last_extent = 1;
+            size_t last_stride = sizeof(ElementType);
+            for(size_t i = 0; i < Extents::rank(); ++i) {
                 EMU_TRUE_OR_RETURN_NULLOPT(buffer_info.strides[i] > 0);
-                EMU_TRUE_OR_RETURN_NULLOPT(last_stride * last_extent == buffer_info.strides[i]);
+                EMU_TRUE_OR_RETURN_NULLOPT(last_stride * last_extent == static_cast<size_t>(buffer_info.strides[i]));
                 last_extent = buffer_info.shape[i];
                 last_stride = buffer_info.strides[i];
                 if(Extents::static_extent(i) == std::dynamic_extent)
@@ -131,7 +131,7 @@ namespace emu::cast::detail
             std::array<std::size_t, Extents::rank()> dynamic_strides;
             auto it_shape = dynamic_shape.rbegin();
 
-            for(auto i = 0; i < Extents::rank(); ++i) {
+            for(size_t i = 0; i < Extents::rank(); ++i) {
                 EMU_TRUE_OR_RETURN_NULLOPT(buffer_info.strides[i] > 0);
                 if(Extents::static_extent(i) == std::dynamic_extent)
                     *(it_shape++) = buffer_info.shape[i];

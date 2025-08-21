@@ -37,7 +37,7 @@ namespace
             return const_view_type(emu_test::md_helper::get_vector<data_type>());
         }
 
-        static py::dict get_array_interface(py::object obj) {
+        static py::dict get_array_interface(const py::object& obj) {
             return obj.attr("__array_interface__").cast<py::dict>();
         }
 

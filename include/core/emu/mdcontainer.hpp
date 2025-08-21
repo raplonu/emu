@@ -52,7 +52,7 @@ namespace emu
         size_t size = (1 * ... * exts);
         auto u_ptr = std::make_unique<T[]>(size );
         return mdcontainer<T, emu::dims<nd>, LayoutPolicy, AccessorPolicy>(u_ptr.get(),
-            move(u_ptr), exts_flag, exts...);
+            std::move(u_ptr), exts_flag, exts...);
     }
 
     /*constructor 3 (span<exts>)*/
@@ -66,7 +66,7 @@ namespace emu
         std::size_t size = 1;
         for(auto e : exts ){size = size * e;}
         auto u_ptr = std::make_unique<T[]>(size );
-        return {u_ptr.get(), move(u_ptr), exts};
+        return {u_ptr.get(), std::move(u_ptr), exts};
     }
 
     template<typename T,
@@ -79,7 +79,7 @@ namespace emu
         std::size_t size = 1;
         for(auto e : exts ){size = size * e;}
         auto u_ptr = std::make_unique<T[]>(size );
-        return {u_ptr.get(), move(u_ptr), exts};
+        return {u_ptr.get(), std::move(u_ptr), exts};
     }
 
     /*constructor 4 (array<exts>)*/
@@ -93,7 +93,7 @@ namespace emu
         std::size_t size = 1;
         for(auto e :exts ){size *= e;}
         auto u_ptr = std::make_unique<T[]>(size );
-        return {u_ptr.get(), move(u_ptr), exts};
+        return {u_ptr.get(), std::move(u_ptr), exts};
     }
 
     /*constructor 5 (dextents<std::size_t, N>)*/
@@ -109,7 +109,7 @@ namespace emu
             size *= exts.extent(i);
         }
         auto u_ptr = std::make_unique<T[]>(size );
-        return {u_ptr.get(), move(u_ptr), exts};
+        return {u_ptr.get(), std::move(u_ptr), exts};
     }
 
     /*constructor 6 (mdcontainer<dextents<std::size_t, N>>::mapping)*/
@@ -120,7 +120,7 @@ namespace emu
     make_mdcontainer(const MappingType& map){
         std::size_t size=map.required_span_size();
         auto u_ptr = std::make_unique<T[]>(size );
-        return {u_ptr.get(), move(u_ptr), map};
+        return {u_ptr.get(), std::move(u_ptr), map};
     }
 
     /*constructor 7*/

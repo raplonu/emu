@@ -57,8 +57,6 @@ namespace detail
     }
 
     pointer_descriptor from_line(std::string_view line) {
-        auto not_empty = [](auto sv) { return not sv.empty(); };
-
         auto tokens = split_string_no_empty(line);
 
         auto begin = tokens.begin();
@@ -73,7 +71,7 @@ namespace detail
 
         std::advance(begin, 3);
 
-        std::string_view location = *begin;
+        const std::string_view location = *begin;
 
         return pointer_descriptor{
             .location = std::string(location),

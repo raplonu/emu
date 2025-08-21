@@ -21,6 +21,9 @@ namespace emu
         T& value;
     };
 
+    template<typename T>
+    copy(T&) -> copy<T>;
+
     /**
      * @brief A smart pointer-like class that allows manual release of the held object.
      */

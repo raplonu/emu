@@ -10,6 +10,8 @@
 #include <emu/cuda.hpp>
 #endif // EMU_CUDA
 
+#include <pybind11/numpy.h>
+
 namespace emu::cast::detail
 {
     namespace py = ::pybind11;
@@ -67,7 +69,7 @@ namespace emu::cast::detail
             return nullopt;
         }
 
-        static optional<cpp_type> from_python(py::handle handle, bool convert)
+        static optional<cpp_type> from_python(py::handle handle, bool /* convert */)
         {
             return buffer_info_from(handle).and_then([](auto buffer_info) -> optional<cpp_type> {
                 // Must have the same rank.
@@ -97,7 +99,7 @@ namespace emu::cast::detail
                 strides.push_back(mapping.stride(i) * sizeof(value_type));
             }
 
-            auto res = py::array{dtype(), move(shape), move(strides), value.data_handle(), parent};
+            auto res = py::array{dtype(), move(shape), move(strides), value.data_handle(), parent.inc_ref()};
 
             // Only way I found to force read only from const span.
             // More info here: https://github.com/pybind/pybind11/issues/481#issue-187301065
@@ -215,7 +217,7 @@ namespace emu::cast::detail
 
             auto memory = cuda.attr("UnownedMemory")(
                 /* ptr = */ i_ptr, /* size = */ mapping.required_span_size() * sizeof(value_type),
-                /* owner = */ parent, /* device_id = */ device_id
+                /* owner = */ parent.inc_ref(), /* device_id = */ device_id
             );
 
             //TODO: get the start of the provided device pointer and then specify the right offset.

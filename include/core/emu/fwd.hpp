@@ -9,11 +9,11 @@
 namespace tl
 {
 
-    template <typename T>
-    struct optional;
+    template <class T>
+    class optional;
 
-    template <typename T, typename E>
-    struct expected;
+    template <class T, class E>
+    class expected;
 
 } // namespace tl
 
