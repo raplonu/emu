@@ -37,3 +37,16 @@ coverage:
     rm -rf                            \
         build                         \
         CMakeUserPresets.json
+
+# Validate CI/CD configuration
+validate-ci:
+    ./scripts/validate-ci.sh
+
+# Run code quality checks locally (requires clang-format and clang-tidy)
+quality-check:
+    @echo "Running code formatting check..."
+    find src include -name "*.cpp" -o -name "*.hpp" -o -name "*.cu" -o -name "*.cuh" | \
+    xargs clang-format --dry-run --Werror --style=file || echo "❌ Format check failed"
+    @echo "Running static analysis..."
+    find src include -name "*.cpp" -o -name "*.hpp" | \
+    xargs clang-tidy -p=build/Debug --config-file=.clang-tidy || echo "❌ Static analysis found issues"
