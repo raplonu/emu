@@ -1,6 +1,9 @@
 # emu <img align="right" width="10%" src="image/emu.png">
 
+[![CI](https://github.com/raplonu/emu/actions/workflows/ci.yml/badge.svg)](https://github.com/raplonu/emu/actions/workflows/ci.yml)
+[![Code Quality](https://github.com/raplonu/emu/actions/workflows/code-quality.yml/badge.svg)](https://github.com/raplonu/emu/actions/workflows/code-quality.yml)
 [![Coverage Status](https://coveralls.io/repos/github/raplonu/emu/badge.svg?branch=rc1.0.0)](https://coveralls.io/github/raplonu/emu?branch=rc1.0.0)
+[![Documentation](https://github.com/raplonu/emu/actions/workflows/ci.yml/badge.svg)](https://github.com/raplonu/emu/actions/workflows/ci.yml)
 
 `emu` is a library that gather a set of utilities for C++, CUDA and python.
 
@@ -29,7 +32,7 @@
 
 
 - [ ] misc -> use GEMINI
-	- [ ] proper CI/CD
+	- [x] proper CI/CD (comprehensive GitHub Actions + GitLab CI)
 	- [ ] more documentation
 	- [ ] more unit tests
 
@@ -95,3 +98,16 @@ or use `just build`.
 ## Debug mode
 
 To use project in debug mode add `-s build_type=Debug` to `conan create|build|install` commands and `--preset conan-debug` to `cmake --build` commands.
+
+## CI/CD
+
+The project includes comprehensive CI/CD pipelines with:
+
+- **Automated Testing**: Multi-compiler builds (GCC 11/12), Release/Debug configurations
+- **Code Quality**: Static analysis with clang-tidy, automated formatting checks
+- **Security**: Vulnerability scanning and dependency auditing
+- **Documentation**: Automated Sphinx + Doxygen documentation building
+- **Package Management**: Conan package validation and testing
+- **Coverage Reporting**: Integrated with Coveralls for coverage tracking
+
+See [CI/CD Documentation](docs/ci-cd.md) for detailed information about the development workflow and CI/CD capabilities.

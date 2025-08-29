@@ -2,9 +2,19 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: 
+      - main
+      - develop
+      - 'release/**'
+      - 'hotfix/**'
+      - 'rc*'
+    tags:
+      - 'v*'
   pull_request:
-    branches: [main]
+    branches: 
+      - main
+      - develop
+      - 'release/**'
   workflow_dispatch:
 
 jobs:
@@ -104,3 +114,131 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: build/coverage.xml
           format: cobertura
+
+  static-analysis:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup environment
+        id: setup-env
+        uses: ./.github/actions/setup-env
+        with:
+          gcc_version: 12
+          python_version: "3.12"
+          conan_cache: 'true'
+
+      - name: Install clang-tidy
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-tidy-16
+
+      - name: Install Conan dependencies
+        run: |
+          conan install . \
+            --options="python=True" \
+            --lockfile=conan.lock \
+            --lockfile-partial \
+            --lockfile-out=conan.lock \
+            --build=missing \
+            --profile ${{ steps.setup-env.outputs.conan-profile-name }} \
+            -s build_type=Debug
+
+      - name: Configure CMake
+        run: cmake --preset conan-debug
+
+      - name: Run clang-tidy
+        run: |
+          find src include -name "*.cpp" -o -name "*.hpp" | \
+          xargs clang-tidy-16 \
+            -p=build/Debug \
+            --config-file=.clang-tidy \
+            --format-style=file \
+            || exit 0  # Don't fail on clang-tidy warnings for now
+
+  documentation:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install documentation dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y doxygen graphviz
+          python -m pip install --upgrade pip
+          python -m pip install sphinx sphinx-rtd-theme breathe sphinx-rtd-dark-mode
+
+      - name: Build documentation
+        run: |
+          cd docs
+          make html
+
+      - name: Upload documentation artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation
+          path: build/docs/sphinx/
+          retention-days: 7
+
+  package-validation:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        build_type: [Release, Debug]
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup environment
+        id: setup-env
+        uses: ./.github/actions/setup-env
+        with:
+          gcc_version: 12
+          python_version: "3.12"
+          conan_cache: 'true'
+
+      - name: Create Conan package
+        run: |
+          conan create . \
+            --build=missing \
+            --profile ${{ steps.setup-env.outputs.conan-profile-name }} \
+            -s build_type=${{ matrix.build_type }}
+
+      - name: Test package consumption
+        run: |
+          cd test_package
+          conan test . emu/1.0.0@ \
+            --profile ${{ steps.setup-env.outputs.conan-profile-name }} \
+            -s build_type=${{ matrix.build_type }}
+
+  security-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'

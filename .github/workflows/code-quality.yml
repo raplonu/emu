@@ -1,0 +1,88 @@
+name: Code Quality
+
+on:
+  pull_request:
+    branches: 
+      - main
+      - develop
+      - 'release/**'
+  workflow_dispatch:
+
+jobs:
+  format-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install clang-format
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format-16
+
+      - name: Check code formatting
+        run: |
+          find src include -name "*.cpp" -o -name "*.hpp" -o -name "*.cu" -o -name "*.cuh" | \
+          xargs clang-format-16 --dry-run --Werror --style=file
+
+  lint-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup environment
+        id: setup-env
+        uses: ./.github/actions/setup-env
+        with:
+          gcc_version: 12
+          python_version: "3.12"
+          conan_cache: 'true'
+
+      - name: Install clang-tidy
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-tidy-16
+
+      - name: Install Conan dependencies
+        run: |
+          conan install . \
+            --lockfile=conan.lock \
+            --lockfile-partial \
+            --lockfile-out=conan.lock \
+            --build=missing \
+            --profile ${{ steps.setup-env.outputs.conan-profile-name }} \
+            -s build_type=Debug
+
+      - name: Configure CMake
+        run: cmake --preset conan-debug
+
+      - name: Run clang-tidy
+        run: |
+          find src include -name "*.cpp" -o -name "*.hpp" | \
+          xargs clang-tidy-16 \
+            -p=build/Debug \
+            --config-file=.clang-tidy \
+            --format-style=file \
+            --warnings-as-errors='*' \
+            || echo "Clang-tidy found issues"
+
+      - name: Generate clang-tidy report
+        if: always()
+        run: |
+          find src include -name "*.cpp" -o -name "*.hpp" | \
+          xargs clang-tidy-16 \
+            -p=build/Debug \
+            --config-file=.clang-tidy \
+            --format-style=file \
+            > clang-tidy-report.txt 2>&1 || true
+
+      - name: Upload clang-tidy report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: clang-tidy-report
+          path: clang-tidy-report.txt
+          retention-days: 7

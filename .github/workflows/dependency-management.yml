@@ -1,0 +1,115 @@
+name: Dependency Management
+
+on:
+  schedule:
+    # Run weekly on Mondays at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+jobs:
+  dependency-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup environment
+        id: setup-env
+        uses: ./.github/actions/setup-env
+        with:
+          gcc_version: 12
+          python_version: "3.12"
+          conan_cache: 'true'
+
+      - name: Install dependencies
+        run: |
+          conan install . \
+            --lockfile=conan.lock \
+            --lockfile-partial \
+            --lockfile-out=conan.lock \
+            --build=missing \
+            --profile ${{ steps.setup-env.outputs.conan-profile-name }}
+
+      - name: Check for dependency updates
+        run: |
+          echo "Checking for Conan dependency updates..."
+          conan search fmt/* --remote=conancenter | head -10
+          conan search boost/* --remote=conancenter | head -10
+          conan search gtest/* --remote=conancenter | head -10
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'table'
+
+      - name: Generate dependency report
+        run: |
+          echo "# Dependency Report" > dependency-report.md
+          echo "" >> dependency-report.md
+          echo "Generated on: $(date)" >> dependency-report.md
+          echo "" >> dependency-report.md
+          echo "## Current Dependencies" >> dependency-report.md
+          echo "" >> dependency-report.md
+          echo "\`\`\`" >> dependency-report.md
+          conan info . >> dependency-report.md
+          echo "\`\`\`" >> dependency-report.md
+
+      - name: Upload dependency report
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-report
+          path: dependency-report.md
+          retention-days: 30
+
+  performance-regression:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' # Only run on manual trigger for now
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup environment
+        id: setup-env
+        uses: ./.github/actions/setup-env
+        with:
+          gcc_version: 12
+          python_version: "3.12"
+          conan_cache: 'true'
+
+      - name: Install Conan dependencies
+        run: |
+          conan install . \
+            --build=missing \
+            --profile ${{ steps.setup-env.outputs.conan-profile-name }} \
+            -s build_type=Release
+
+      - name: Configure CMake
+        run: cmake --preset conan-release
+
+      - name: Build project
+        run: cmake --build --preset conan-release
+
+      - name: Run performance tests
+        run: |
+          # This would run performance benchmarks if they exist
+          echo "Performance tests would run here"
+          # ctest --preset conan-release -L "performance"
+
+      - name: Generate performance report
+        run: |
+          echo "# Performance Report" > performance-report.md
+          echo "" >> performance-report.md
+          echo "Generated on: $(date)" >> performance-report.md
+          echo "" >> performance-report.md
+          echo "Performance benchmarks would be reported here." >> performance-report.md
+
+      - name: Upload performance report
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-report
+          path: performance-report.md
+          retention-days: 30

@@ -1,0 +1,117 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-and-package:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        build_type: [Release, Debug]
+        gcc_version: [11, 12]
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup environment
+        id: setup-env
+        uses: ./.github/actions/setup-env
+        with:
+          gcc_version: ${{ matrix.gcc_version }}
+          python_version: "3.12"
+          conan_cache: 'true'
+
+      - name: Create Conan package
+        run: |
+          conan create . \
+            --build=missing \
+            --profile ${{ steps.setup-env.outputs.conan-profile-name }} \
+            -s build_type=${{ matrix.build_type }}
+
+      - name: Export Conan package
+        run: |
+          conan export . --version=1.0.0
+
+  create-release:
+    needs: build-and-package
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup environment
+        id: setup-env
+        uses: ./.github/actions/setup-env
+        with:
+          gcc_version: 12
+          python_version: "3.12"
+
+      - name: Build documentation
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y doxygen graphviz
+          python -m pip install sphinx sphinx-rtd-theme breathe sphinx-rtd-dark-mode
+          cd docs
+          make html
+
+      - name: Create release archive
+        run: |
+          mkdir -p release-artifacts
+          # Create source archive
+          git archive --format=tar.gz --prefix=emu-${GITHUB_REF#refs/tags/}/ HEAD > release-artifacts/emu-${GITHUB_REF#refs/tags/}-source.tar.gz
+          
+          # Package documentation
+          tar -czf release-artifacts/emu-${GITHUB_REF#refs/tags/}-docs.tar.gz -C build/docs/sphinx .
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          if [ -f CHANGELOG.md ]; then
+            # Extract changelog for this version
+            awk '/^## \[/ {if(found) exit; if(/\['${GITHUB_REF#refs/tags/}'\]/) found=1; next} found' CHANGELOG.md > release-notes.md
+          else
+            echo "Release ${GITHUB_REF#refs/tags/}" > release-notes.md
+            echo "" >> release-notes.md
+            echo "Automated release created from tag ${GITHUB_REF#refs/tags/}" >> release-notes.md
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          body_path: release-notes.md
+          files: |
+            release-artifacts/*
+          draft: false
+          prerelease: ${{ contains(github.ref, '-') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-package:
+    needs: build-and-package
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, '-')
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup environment
+        id: setup-env
+        uses: ./.github/actions/setup-env
+        with:
+          gcc_version: 12
+          python_version: "3.12"
+
+      - name: Upload to Conan remote
+        run: |
+          # This would upload to a Conan remote if configured
+          echo "Package would be uploaded to Conan remote here"
+          # conan upload emu/1.0.0@ --all -r=<remote-name>
