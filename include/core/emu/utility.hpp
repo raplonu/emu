@@ -33,6 +33,11 @@ namespace emu
     }
 
     template<typename T>
+    inline void* rest(const T* t) {
+        return const_cast<void*>(reinterpret_cast<const void*>(t));
+    }
+
+    template<typename T>
     inline void* v_ptr_of(const T* t) {
         return const_cast<void*>(reinterpret_cast<const void*>(t));
     }
@@ -41,10 +46,6 @@ namespace emu
     inline void* v_ptr_of(std::span<T, Extent> s) {
         return v_ptr_of(s.data());
     }
-
-    template<typename T>
-    EMU_HODE constexpr
-    T next_mul(T a, T b) noexcept { return ( (a - 1) / b + 1) * b; }
 
     template<typename T, typename Alloc>
     constexpr auto rebind_alloc(const Alloc& alloc) {

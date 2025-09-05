@@ -1,5 +1,5 @@
 {
-    "version": 3,
+    "version": 6,
     "cmakeMinimumRequired": {
         "major": 3,
         "minor": 21,
@@ -7,41 +7,72 @@
     },
     "configurePresets": [
         {
-            "name": "vcpkg-default",
-            "displayName": "'vcpkg-default' config",
-            "description": "'vcpkg-default' configure using 'Ninja Multi-Config' generator",
-            "generator": "Ninja Multi-Config",
-            "binaryDir": "${sourceDir}/build",
+            "name": "default",
             "hidden": false,
-            "cacheVariables": {
-                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
-            }
+            "generator": "Ninja Multi-Config",
+            "binaryDir": "${sourceDir}/build"
         }
     ],
     "buildPresets": [
         {
-            "name": "vcpkg-release",
-            "configurePreset": "vcpkg-default",
+            "name": "release",
+            "configurePreset": "default",
             "configuration": "Release"
         },
         {
-            "name": "vcpkg-debug",
-            "configurePreset": "vcpkg-default",
+            "name": "debug",
+            "configurePreset": "default",
             "configuration": "Debug"
         }
     ],
     "testPresets": [
         {
-            "name": "vcpkg-release",
-            "configurePreset": "vcpkg-default",
+            "name": "release",
+            "configurePreset": "default",
             "configuration": "Release",
             "output": {"outputOnFailure": true}
         },
         {
-            "name": "vcpkg-debug",
-            "configurePreset": "vcpkg-default",
+            "name": "debug",
+            "configurePreset": "default",
             "configuration": "Debug",
             "output": {"outputOnFailure": true}
+        }
+    ],
+    "workflowPresets": [
+        {
+            "name": "debug",
+            "steps": [
+                {
+                "type": "configure",
+                "name": "default"
+                },
+                {
+                "type": "build",
+                "name": "debug"
+                },
+                {
+                "type": "test",
+                "name": "debug"
+                }
+            ]
+        },
+        {
+            "name": "release",
+            "steps": [
+                {
+                "type": "configure",
+                "name": "default"
+                },
+                {
+                "type": "build",
+                "name": "release"
+                },
+                {
+                "type": "test",
+                "name": "release"
+                }
+            ]
         }
     ]
 }

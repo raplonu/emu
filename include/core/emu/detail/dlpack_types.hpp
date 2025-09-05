@@ -1,5 +1,7 @@
 #pragma once
 
+#include <emu/error.hpp>
+
 #include <cstdint>
 #include <dlpack/dlpack.h>
 
@@ -10,6 +12,7 @@
 
 namespace emu::dlpack
 {
+
     using version_t = DLPackVersion;
 
     using device_type_t = DLDeviceType;
@@ -64,8 +67,22 @@ namespace emu::dlpack
         };
     }
 
-    inline std::string_view format_as(device_type_t dt) {
-        // this implementation need to be kept in sync with device_type_from_string in dlpack.hpp
+    constexpr bool use_byte_offset = false;
+
+    [[nodiscard]] constexpr inline version_t get_version() noexcept {
+        return {DLPACK_MAJOR_VERSION, DLPACK_MINOR_VERSION};
+    }
+
+    [[nodiscard]] constexpr inline bool flag_read_only(uint64_t flags) noexcept {
+        return (flags & DLPACK_FLAG_BITMASK_READ_ONLY) != 0;
+    }
+
+    [[nodiscard]] constexpr inline bool flag_is_copied(uint64_t flags) noexcept {
+        return (flags & DLPACK_FLAG_BITMASK_IS_COPIED) != 0;
+    }
+
+    [[nodiscard]] constexpr inline std::string_view format_as(device_type_t dt) {
+        // this implementation need to be kept in sync with device_type_from_string(string_view)
         switch (dt) {
             case kDLCPU:         return "Cpu";
             case kDLCUDA:        return "Cuda";
@@ -86,8 +103,31 @@ namespace emu::dlpack
         }
     }
 
-    inline std::string_view format_as(data_type_code_t dtc) {
-        // this implementation need to be kept in sync with data_type_code_from_string in dlpack.hpp
+    [[nodiscard]] constexpr inline result<device_type_t> device_type_from_string(std::string_view sv)
+    {
+        // this implementation need to be kept in sync with format_as(DLDeviceType)
+
+        if (sv == "Cpu") return kDLCPU;
+        if (sv == "Cuda") return kDLCUDA;
+        if (sv == "CudaHost") return kDLCUDAHost;
+        if (sv == "OpenCL") return kDLOpenCL;
+        if (sv == "Vulkan") return kDLVulkan;
+        if (sv == "Metal") return kDLMetal;
+        if (sv == "Vpi") return kDLVPI;
+        if (sv == "Rocm") return kDLROCM;
+        if (sv == "RocmHost") return kDLROCMHost;
+        if (sv == "ExtDev") return kDLExtDev;
+        if (sv == "CudaManaged") return kDLCUDAManaged;
+        if (sv == "OneApi") return kDLOneAPI;
+        if (sv == "WebGpu") return kDLWebGPU;
+        if (sv == "Hexagon") return kDLHexagon;
+        if (sv == "Maia") return kDLMAIA;
+
+        return make_unexpected(errc::dlpack_unkown_device_type);
+    }
+
+    [[nodiscard]] constexpr inline std::string_view format_as(data_type_code_t dtc) {
+        // this implementation need to be kept in sync with data_type_code_from_string(string_view)
         switch (dtc) {
             case kDLInt:          return "int";
             case kDLUInt:         return "uint";
@@ -98,6 +138,21 @@ namespace emu::dlpack
             case kDLBool:         return "bool";
             default:              return "unknow";
         }
+    }
+
+    inline result<data_type_code_t> data_type_code_from_string(std::string_view sv)
+    {
+        // this implementation need to be kept in sync with format_as(DLDataTypeCode)
+
+        if(sv == "int") return kDLInt;
+        if(sv == "uint") return kDLUInt;
+        if(sv == "float") return kDLFloat;
+        if(sv == "object") return kDLOpaqueHandle;
+        if(sv == "bfloat") return kDLBfloat;
+        if(sv == "complex") return kDLComplex;
+        if(sv == "bool") return kDLBool;
+
+        return make_unexpected(errc::dlpack_unkown_data_type_code);
     }
 
     using tensor_t = DLTensor;

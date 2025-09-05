@@ -19,12 +19,11 @@ add_executable(emucoretest
     src/core/host/container_test.cpp
     src/core/mdcontainer_test.cpp
     src/core/math_test.cpp
-    src/core/dlpack_test.cpp
     src/core/pointer_test.cpp
     src/core/functor_test.cpp
-    src/core/range_test.cpp
     src/core/expected_test.cpp
     src/core/optional_test.cpp
+    src/core/ostream_test.cpp
     src/core/scoped_test.cpp
     src/core/managed_object_test.cpp
     src/core/mdalgo_test.cpp

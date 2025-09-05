@@ -45,7 +45,6 @@ namespace {
                 auto stream_ptr = python_stream.cast<uintptr_t>();
                 EXPECT_EQ(cpp_stream.get(), reinterpret_cast<::cudaStream_t>(stream_ptr));
 
-                // TODO: check why this segfaults
                 cu_runtime.attr("cudaStreamDestroy")(python_stream);
 
             } catch (const py::error_already_set &e) {
@@ -58,19 +57,34 @@ namespace {
 
     EMU_CUDA_TEST(CastCudaStream, CppRefToPython)
     {
-        auto stream = cu::stream::create();
+        try {
+            auto stream = cu::stream::create();
 
-        {
+            {
 
-            cu::stream_ref ref = stream;
-            pybind11::object py_stream = py::cast(ref);
+                cu::stream_ref ref = stream;
+                pybind11::object py_stream = py::cast(ref);
 
-            EXPECT_FALSE(py_stream.is_none());
+                EXPECT_FALSE(py_stream.is_none());
 
-            EXPECT_EQ(
-                reinterpret_cast<cu::stream::handle_t>(py_stream.cast<uintptr_t>()),
-                ref.get()
-            );
+                EXPECT_EQ(
+                    reinterpret_cast<cu::stream::handle_t>(py_stream.cast<uintptr_t>()),
+                    ref.get()
+                );
+            }
+
+            {
+                pybind11::object py_stream = py::cast(stream);
+
+                EXPECT_FALSE(py_stream.is_none());
+
+                EXPECT_EQ(
+                    reinterpret_cast<cu::stream::handle_t>(py_stream.cast<uintptr_t>()),
+                    stream.get()
+                );
+            }
+        } catch (const py::error_already_set &e) {
+            GTEST_SKIP() << "Could not test cuda: " << e.what();
         }
 
     }

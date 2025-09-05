@@ -9,6 +9,8 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/cast.h>
 
+#include <cuda/std/mdspan>
+
 namespace emu::pybind11::detail
 {
 

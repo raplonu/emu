@@ -1,9 +1,11 @@
 from conan import ConanFile
 from conan.tools.cmake import CMakeToolchain, CMake, cmake_layout
+from conan.tools.files import copy
+from conan.tools.env import VirtualBuildEnv
 
 class EmuConan(ConanFile):
     name = 'emu'
-    version = '1.0.0'
+    version = '0.1.0'
 
     license = 'MIT'
     author = 'Julien Bernard jbernard@obspm.fr'
@@ -41,11 +43,15 @@ class EmuConan(ConanFile):
         self.requires('tl-optional/1.1.0', transitive_headers=True)
         self.requires('dlpack/1.0', transitive_headers=True)
 
-        self.test_requires('gtest/1.13.0')
+        if self.options.cuda:
+            self.requires('nv-cccl/3.2.0-dev', transitive_headers=True)
 
         if self.options.python:
             # Only required for the tests
             self.test_requires('pybind11/2.13.6')
+
+        self.tool_requires('cmake/[>=3.23 <4]')
+        self.test_requires('gtest/1.13.0')
 
     # Cannot be optional (link to the use of cuda or not).
     python_requires = 'conan_cuda/[>=1 <2]'
@@ -75,6 +81,7 @@ class EmuConan(ConanFile):
         tc.cache_variables['emu_boost_namespace'] = self.dependencies['boost'].options.namespace
 
         tc.generate()
+        VirtualBuildEnv(self).generate()
 
     def build(self):
         cmake = CMake(self)
@@ -85,6 +92,8 @@ class EmuConan(ConanFile):
         cmake.test()
 
     def package(self):
+        copy(self, 'LICENSE', self.source_folder, os.path.join(self.package_folder, 'licenses'))
+
         cmake = CMake(self)
         cmake.install()
 
@@ -116,6 +125,7 @@ class EmuConan(ConanFile):
             self.cpp_info.components['cuda'].libs = ['emucuda']
             self.cpp_info.components['cuda'].requires = [
                 'core',
+                'nv-cccl::nv-cccl',
             ]
             #TODO: check if FMT_USE_CONSTEXPR is still needed to use {fmt} in .cu files
             self.cpp_info.components['cuda'].defines = ['EMU_CUDA', 'FMT_USE_CONSTEXPR=1']

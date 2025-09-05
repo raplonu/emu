@@ -13,6 +13,7 @@ namespace emu
         static constexpr bool validate_source = true;
 
         //Note: experimental. Should not be used.
+        //TODO
         static constexpr dlpack::device_t device_of(const byte*) noexcept {
             //TODO: Maybe try to detect the device type.
             return {.device_type=dlpack::device_type_t::kDLCPU, .device_id=0};

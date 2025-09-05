@@ -4,6 +4,8 @@
 #include <emu/macro.cuh>
 #include <emu/type_traits.hpp>
 
+#include <cuda/cmath>
+
 namespace emu
 {
     EMU_DEVICE inline bool is_not_last_block() { return EMU_BID < (EMU_SIZE_G - 1); }
@@ -19,7 +21,7 @@ namespace emu
      * @return std::size_t item_per_group_nb
      */
     EMU_DEVICE inline
-    std::size_t item_per_group_nb(std::size_t item_nb, std::size_t group_size) { return ceil(item_nb, group_size); }
+    std::size_t item_per_group_nb(std::size_t item_nb, std::size_t group_size) { return cuda::ceil_div(item_nb, group_size); }
 
     /**
      * @brief Share a resource between a group. Guaranty to minimize the number of resource

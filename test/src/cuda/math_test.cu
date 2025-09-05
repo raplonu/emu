@@ -32,15 +32,17 @@ void generic_round_test(From from_0, To to_0, From from_1, To to_1, From from_2,
     ker<<<1,1>>>(to_v.data().get(), from_v.data().get());
     emu::cuda::device::current().synchronize();
 
-    EXPECT_EQ(to_v[0], to_0) << "from_0: " << emu::numeric_name<From> << " to_0: " << emu::numeric_name<To>;
-    EXPECT_EQ(to_v[1], to_1) << "from_1: " << emu::numeric_name<From> << " to_1: " << emu::numeric_name<To>;
-    EXPECT_EQ(to_v[2], to_2) << "from_2: " << emu::numeric_name<From> << " to_2: " << emu::numeric_name<To>;
-    EXPECT_EQ(to_v[3], to_3) << "from_3: " << emu::numeric_name<From> << " to_3: " << emu::numeric_name<To>;
+    using emu::as_fmt;
+
+    EXPECT_EQ(to_v[0], to_0) << "from_0: " << as_fmt(emu::numeric_name<From>) << " to_0: " << as_fmt(emu::numeric_name<To>);
+    EXPECT_EQ(to_v[1], to_1) << "from_1: " << as_fmt(emu::numeric_name<From>) << " to_1: " << as_fmt(emu::numeric_name<To>);
+    EXPECT_EQ(to_v[2], to_2) << "from_2: " << as_fmt(emu::numeric_name<From>) << " to_2: " << as_fmt(emu::numeric_name<To>);
+    EXPECT_EQ(to_v[3], to_3) << "from_3: " << as_fmt(emu::numeric_name<From>) << " to_3: " << as_fmt(emu::numeric_name<To>);
 }
 
 namespace
 {
-    TEST(math_test, device_math_as_round_same_types) {
+    TEST(MathTest, DeviceMathAsRoundSameTypes) {
         generic_round_test(
             1.1f, 2.f,
             1.5f, 1.f,
@@ -57,7 +59,7 @@ namespace
 
     }
 
-    TEST(math_test, device_math_as_round_different_types) {
+    TEST(MathTest, DeviceMathAsRoundDifferentTypes) {
         // float to int
         generic_round_test(
             1.1f, 2,

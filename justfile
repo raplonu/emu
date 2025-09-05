@@ -2,17 +2,16 @@ default: install
 
 # Install emu
 install *args:
-    # unregister just in case or else consumer will continue to use the editable version
+    # unregister to prevent usage of a forgotten editable package
     just unregister
-
     conan create . -b missing {{args}}
 
 dev *args:
     just register
-    conan build . -b missing {{args}}
+    conan build . -b missing -c tools.cmake.cmaketoolchain:generator="Ninja Multi-Config" {{args}}
 
 configure *args:
-    conan install . -b missing -c tools.cmake.cmaketoolchain:generator=Ninja Multi-Config {{args}}
+    conan install . -b missing -c tools.cmake.cmaketoolchain:generator="Ninja Multi-Config" {{args}}
     cmake --preset conan-default
 
 build build_type="release":
@@ -32,6 +31,8 @@ test build_type="release":
 # Clean build directory
 @clean:
     just unregister
-    rm -rf                            \
-        build                         \
-        CMakeUserPresets.json
+    rm -rf                                  \
+        build                               \
+        CMakeUserPresets.json               \
+        test_package/build                  \
+        test_package/CMakeUserPresets.json

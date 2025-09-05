@@ -11,10 +11,13 @@
 
 namespace emu
 {
+    template<cpts::formattable T>
+    struct as_fmt { const T& t; };
 
     template<cpts::formattable T>
-    std::ostream& operator<<(std::ostream& o, const T& t) {
-        fmt::format_to(std::ostream_iterator<char>(o), "{}", t);
+    std::ostream& operator<<(std::ostream& o, as_fmt<T> w)
+    {
+        fmt::format_to(std::ostream_iterator<char>(o), "{}", w.t);
         return o;
     }
 
