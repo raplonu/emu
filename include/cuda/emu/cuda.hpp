@@ -6,9 +6,3 @@
 #include <emu/cuda/event.hpp>
 #include <emu/cuda/memory.hpp>
 #include <emu/cuda/allocator.hpp>
-
-
-#include <cuda/mdspan>
-
-
-constexpr auto toto = cuda::is_host_accessor_v<int>;

@@ -207,15 +207,16 @@ if (emu_build_cuda)
     endif()
 
     find_package(CUDAToolkit REQUIRED)
-    find_package(CCCL REQUIRED CONFIG)
+
+    # Remove it when the 3.1 version is released in CUDA toolkit
+    find_package(nv-cccl REQUIRED CONFIG)
 
     target_link_libraries(emucuda PUBLIC
         emu::core
         CUDA::cublas
         CUDA::cusolver
         CUDA::cudart
-        CUDA::cuda_driver
-        CCCL::CCCL
+        CCCL::CCCL # nv-cccl expose the CCCL::CCCL target.
     )
 
 endif()

@@ -35,7 +35,7 @@ cmake --preset conan-default
 cmake --build --preset release
 ```
 
-> Note: The `emu` CMake presets are designed to be use with the Ninja Multi-Config generator (though it's not required). To enable it, set the environment variable: `CMAKE_GENERATOR="Ninja Multi-Config"` and add `tools.cmake.cmaketoolchain:generator = Ninja Multi-Config` in conan.
+> Note: The `emu` CMake presets are designed to be use with the Ninja Multi-Config generator (though it's not required). To enable it, set the environment variable: `CMAKE_GENERATOR="Ninja Multi-Config"` and add `tools.cmake.cmaketoolchain:generator=Ninja Multi-Config` in conan.
 
 > Note: `missing` is used to build dependencies from source if binary is not available. `editable` is used to build local dependencies register using `conan editable add` command.
 
