@@ -199,9 +199,9 @@ namespace emu::cast::detail
 
         static optional<mapping_type> mapping_from(py::dict array_interface) noexcept
         {
-          printf("Layout stride:\n");
-          py::print("CAI keys:", array_interface.attr("keys")());
-          py::print("CAI dict:", array_interface);
+          // printf("Layout stride:\n");
+          // py::print("CAI keys:", array_interface.attr("keys")());
+          // py::print("CAI dict:", array_interface);
 
           EMU_TRUE_OR_RETURN_NULLOPT(array_interface.contains("strides") && !array_interface["strides"].is_none());
 
@@ -222,8 +222,8 @@ namespace emu::cast::detail
             dynamic_shape[i] = current_shape;
             dynamic_strides[i] = current_stride / sizeof(ElementType);
           }
-          fmt::println("shape: {}", dynamic_shape);
-          fmt::println("strides: {}", dynamic_strides);
+          // fmt::println("shape: {}", dynamic_shape);
+          // fmt::println("strides: {}", dynamic_strides);
 
           auto mapping = mapping_type{Extents{dynamic_shape}, dynamic_strides};
           return mapping;
