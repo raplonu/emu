@@ -1,7 +1,5 @@
 #pragma once
 
-#include "type_traits.hpp"
-#include <emu/fwd.hpp>
 #include <emu/config.hpp>
 #include <emu/concepts.hpp>
 #include <emu/utility.hpp>
@@ -14,6 +12,19 @@
 
 namespace emu
 {
+
+    struct capsule;
+
+namespace cpts
+{
+
+    template <typename T>
+    concept capsule_owner = requires (const T& t) {
+        { t.capsule() } -> std::convertible_to<capsule>;
+    };
+
+} // namespace cpts
+
 
     template<typename T>
     struct copy
@@ -275,23 +286,6 @@ namespace emu
         else
             return {};
     }
-
-namespace spe
-{
-
-    /// std::array are not relocatable regardless if it is a reference or not.
-    template <typename T, size_t N>
-    inline constexpr bool enable_relocatable_owning_range< std::array<T, N> > = false;
-
-    /// C arrays are not relocatable regardless if it is a reference or not.
-    ///TODO: check if it is useful to have this.
-    template <typename T>
-    inline constexpr bool enable_relocatable_owning_range<T[]> = false;
-    /// C arrays are not relocatable regardless if it is a reference or not.
-    template <typename T, size_t N>
-    inline constexpr bool enable_relocatable_owning_range<T[N]> = false;
-
-} // namespace spe
 
 } // namespace emu
 

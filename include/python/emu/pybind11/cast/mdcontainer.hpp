@@ -1,9 +1,8 @@
 #pragma once
 
-
+#include <emu/mdcontainer.hpp>
 #include <emu/pybind11/cast/detail/capsule.hpp>
-#include <emu/mdspan.hpp>
-#include <emu/pybind11/cast/detail/mdspan_caster.hpp>
+#include <emu/pybind11/cast/detail/tensor_caster.hpp>
 
 #include <emu/container.hpp>
 #include <span>
@@ -16,18 +15,15 @@ namespace detail
     template<emu::cpts::mdcontainer MdContainer>
     struct type_caster< MdContainer >
     {
-
-        // span location
-        using location_policy = emu::location_type_of<MdContainer>;
-
-        using base_caster = emu::cast::detail::mdspan_caster_for<location_policy>::template md_caster<MdContainer>;
-
         using cpp_type = MdContainer;
+        using mdspan_type = emu::mdspan_type_t<cpp_type>;
 
         using element_type  = typename cpp_type::element_type;
         using extents_type  = typename cpp_type::extents_type;
         using layout_type   = typename cpp_type::layout_type;
         using accessor_type = typename cpp_type::accessor_type;
+
+        using base_caster = emu::cast::detail::tensor_caster_for<accessor_type>::template md_caster<mdspan_type>;
 
         static_assert(extents_type::rank_dynamic() > 0, "pybind11 required only default constructible types. Fixed size mdcontainer are not.");
 
@@ -46,7 +42,7 @@ namespace detail
         }
 
         static pybind11::handle cast(cpp_type value, pybind11::return_value_policy /* policy */, pybind11::handle) {
-            return base_caster::to_python(value, emu::pybind11::detail::capsule_to_handle(value.capsule())).inc_ref();
+            return base_caster::to_python(emu::as_tensor(value), emu::pybind11::detail::capsule_to_handle(value.capsule())).inc_ref();
         }
     };
 

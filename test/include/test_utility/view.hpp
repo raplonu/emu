@@ -2,7 +2,10 @@
 #include <gtest/gtest.h>
 
 #include <emu/concepts.hpp>
+#include <emu/span.hpp>
+#include <emu/mdspan.hpp>
 #include <emu/type_traits.hpp>
+#include <emu/capsule.hpp>
 
 #include <ranges>
 #include <span>
@@ -51,7 +54,7 @@ namespace emu_test
         using shared_vector::shared_vector;
     };
 
-    template<emu::cpts::view View>
+    template<typename View>
     auto data_of(const View& view)
     {
         if constexpr (std::ranges::contiguous_range<View>)
@@ -69,6 +72,8 @@ namespace emu_test
     void expect_rank(const MDSpan &md, std::size_t expected_rank) {
         EXPECT_EQ(md.rank(), expected_rank);
     }
+
+    //TODO: Use tensor_traits instead
 
     template < emu::cpts::span Span >
     void expect_address(const Span &s, typename Span::const_pointer expected_address) {
@@ -94,7 +99,7 @@ namespace emu_test
         }
     }
 
-    template < emu::cpts::view V, typename Ptr >
+    template < typename V, typename Ptr >
     void check_view(const V& v, const Ptr* expected_address, std::span<const size_t> expected_extents) {
         expect_address(v, expected_address);
         expect_extents(v, expected_extents);

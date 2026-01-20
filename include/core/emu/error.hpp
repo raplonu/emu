@@ -1,6 +1,5 @@
 #pragma once
 
-#include <emu/fwd.hpp>
 #include <emu/expected.hpp>
 #include <emu/error/generation.hpp>
 

@@ -1,7 +1,9 @@
 #pragma once
 
-#include <emu/mdalgo.hpp>
-#include <emu/pybind11/cast/detail/mdspan_caster.hpp>
+#include <emu/tensor_traits.hpp>
+#include <emu/pybind11/cast/detail/tensor_caster.hpp>
+
+#include <emu/span.hpp>
 
 PYBIND11_NAMESPACE_BEGIN(PYBIND11_NAMESPACE)
 
@@ -11,15 +13,16 @@ namespace detail
     template<emu::cpts::span Span>
     struct type_caster< Span >
     {
-        // span location
-        using location_policy = emu::location_type_of<Span>;
-
-        // mdspan equivalent of the span (mdspan_1d)
-        using md_equivalent = emu::md_equivalent<Span>;
-
-        using base_caster = emu::cast::detail::mdspan_caster_for<location_policy>::template md_caster<md_equivalent>;
 
         using cpp_type = Span;
+
+        // span location
+        using accessor_type = emu::tensor_traits<cpp_type>::accessor_type;
+
+        // mdspan equivalent of the span (mdspan_1d)
+        using mdspan_type = emu::mdspan_type_t<cpp_type>;
+
+        using base_caster = emu::cast::detail::tensor_caster_for<accessor_type>::template md_caster<mdspan_type>;
 
         using element_type  = typename cpp_type::element_type;
 
@@ -43,7 +46,7 @@ namespace detail
             // More info here: https://github.com/pybind/pybind11/issues/323#issuecomment-575717041
             // return ::pybind11::none();
             ::pybind11::str dummy_data_owner;
-            return base_caster::to_python(emu::as_md(value), dummy_data_owner).inc_ref();
+            return base_caster::to_python(emu::as_tensor(value), dummy_data_owner).inc_ref();
         }
     };
 

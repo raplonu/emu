@@ -1,9 +1,6 @@
 #pragma once
 
-#include <emu/concepts.hpp>
-#include <emu/capsule.hpp>
 #include <emu/detail/basic_mdcontainer.hpp>
-#include <emu/location_policy.hpp>
 #include <emu/span.hpp>
 #include <emu/mdspan.hpp>
 #include <emu/type_name.hpp>
@@ -14,28 +11,12 @@
 
 namespace emu
 {
-    template<typename T, typename Extents, typename LayoutPolicy, typename AccessorPolicy>
-    struct mdcontainer : emu::detail::basic_mdcontainer<
-            T, Extents, LayoutPolicy, AccessorPolicy, no_location_policy,
-            mdcontainer<T, Extents, LayoutPolicy, AccessorPolicy>
-        >
-    {
-
-        using base = emu::detail::basic_mdcontainer<
-            T, Extents, LayoutPolicy, AccessorPolicy, no_location_policy, mdcontainer<T, Extents, LayoutPolicy, AccessorPolicy>
+    template<typename T, typename Extents, typename LayoutPolicy = layout_right, typename AccessorPolicy = default_accessor<T>>
+    using mdcontainer = emu::detail::basic_mdcontainer<
+            T, Extents, LayoutPolicy, AccessorPolicy
         >;
 
-        using base::base;
-
-        template<typename OT, typename OExtents, typename OLayoutPolicy, typename OAccessorPolicy>
-        constexpr auto from_mdspan(stdex::mdspan<OT, OExtents, OLayoutPolicy, OAccessorPolicy> md) const noexcept {
-            return mdcontainer<OT, OExtents, OLayoutPolicy, OAccessorPolicy>(md, static_cast<const capsule&>(*this));
-        }
-    };
-
-    EMU_DEFINE_MDCONTAINER_DEDUCTION_GUIDES
-
-    EMU_DEFINE_MDCONTAINER_ALIAS
+    EMU_DEFINE_MDCONTAINER_ALIAS;
 
     /***************************************************/
     /* factories */

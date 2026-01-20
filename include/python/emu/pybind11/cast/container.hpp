@@ -1,11 +1,10 @@
 #pragma once
 
-#include <emu/mdalgo.hpp>
+#include <emu/tensor_traits.hpp>
 #include <emu/pybind11/cast/detail/capsule.hpp>
-#include <emu/pybind11/cast/detail/mdspan_caster.hpp>
+#include <emu/pybind11/cast/detail/tensor_caster.hpp>
 
 #include <emu/container.hpp>
-#include <span>
 
 PYBIND11_NAMESPACE_BEGIN(PYBIND11_NAMESPACE)
 
@@ -15,19 +14,19 @@ namespace detail
     template<emu::cpts::container Container>
     struct type_caster< Container >
     {
+        using cpp_type = Container;
+
         // span location
-        using location_policy = emu::location_type_of<Container>;
+        using accessor_type = emu::tensor_traits<cpp_type>::accessor_type;
 
         // mdspan equivalent of the span (mdspan_1d)
-        using md_equivalent = emu::md_equivalent<Container>;
+        using mdspan_type = emu::mdspan_type_t<cpp_type>;
 
-        using base_caster = emu::cast::detail::mdspan_caster_for<location_policy>::template md_caster<md_equivalent>;
-
-        using cpp_type = Container;
+        using base_caster = emu::cast::detail::tensor_caster_for<accessor_type>::template md_caster<mdspan_type>;
 
         using element_type  = typename cpp_type::element_type;
 
-        static_assert(Container::extent == std::dynamic_extent, "pybind11 required only default constructible types. Fixed size container are not.");
+        static_assert(cpp_type::extent == std::dynamic_extent, "pybind11 required only default constructible types. Fixed size container are not.");
 
         static constexpr auto descr() {
             return _("container<") + make_caster<element_type>::name + _(">");
@@ -44,7 +43,7 @@ namespace detail
         }
 
         static pybind11::handle cast(cpp_type value, pybind11::return_value_policy /* policy */, pybind11::handle) {
-            return base_caster::to_python(emu::as_md(value), emu::pybind11::detail::capsule_to_handle(value.capsule())).inc_ref();
+            return base_caster::to_python(emu::as_tensor(value), emu::pybind11::detail::capsule_to_handle(value.capsule())).inc_ref();
         }
     };
 } // namespace detail

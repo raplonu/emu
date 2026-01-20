@@ -1,7 +1,6 @@
 #pragma once
 
 #include <emu/macro.hpp>
-#include <emu/fwd.hpp>
 
 #include <optional>
 #include <type_traits>
@@ -52,19 +51,6 @@ namespace emu
     template<typename T, typename Reference>
     using propagate_const = std::conditional_t<std::is_const_v<Reference>, std::add_const_t<T>, T>;
 
-namespace detail
-{
-
-    template <typename T>
-    struct is_extents : std::false_type {};
-
-    template <typename IndexType, std::size_t... Extents>
-    struct is_extents<std::experimental::extents<IndexType, Extents...>> : std::true_type {};
-
-} // namespace detail
-
-    template <typename T>
-    constexpr bool is_extents = detail::is_extents<T>::value;
 
     template <typename... Ts>
     struct type_pack {};
@@ -170,27 +156,33 @@ namespace detail
 namespace spe
 {
 
-    /**
-     * @brief Host range use a blacklist approach to determine if a type is a valid source for a host range.
-     *
-     * This means that all types are valid sources for host ranges unless explicitly blacklisted.
-     *
-     * A host range is a range that can be accessed from the CPU host.
-     *
-     */
     template <typename>
-    inline constexpr bool enable_host_range = true;
+    inline constexpr bool is_host_accessible_v = false;
 
-    /**
-     * @brief Cuda device range use a whitelist approach to determine if a type is a valid source for a cuda device range.
-     *
-     * This means that all types are invalid valid sources for cuda device ranges unless explicitly whitelisted.
-     *
-     * A cuda device range is a range that can be accessed from the GPU device.
-     *
-     */
     template <typename>
-    inline constexpr bool enable_cuda_device_range = false;
+    inline constexpr bool is_device_accessible_v = false;
+
+    // /**
+    //  * @brief Host range use a blacklist approach to determine if a type is a valid source for a host range.
+    //  *
+    //  * This means that all types are valid sources for host ranges unless explicitly blacklisted.
+    //  *
+    //  * A host range is a range that can be accessed from the CPU host.
+    //  *
+    //  */
+    // template <typename>
+    // inline constexpr bool enable_host_range = true;
+
+    // /**
+    //  * @brief Cuda device range use a whitelist approach to determine if a type is a valid source for a cuda device range.
+    //  *
+    //  * This means that all types are invalid valid sources for cuda device ranges unless explicitly whitelisted.
+    //  *
+    //  * A cuda device range is a range that can be accessed from the GPU device.
+    //  *
+    //  */
+    // template <typename>
+    // inline constexpr bool enable_cuda_device_range = false;
 
     /**
      * @brief Relocation range use a blacklist for rvalue refenrence and whitelist for lvalue reference
@@ -201,6 +193,19 @@ namespace spe
      */
     template <typename T>
     inline constexpr detail::indeterminate_bool enable_relocatable_owning_range;
+
+    /// std::array are not relocatable regardless if it is a reference or not.
+    template <typename T, size_t N>
+    inline constexpr bool enable_relocatable_owning_range< std::array<T, N> > = false;
+
+    /// C arrays are not relocatable regardless if it is a reference or not.
+    ///TODO: check if it is useful to have this.
+    template <typename T>
+    inline constexpr bool enable_relocatable_owning_range<T[]> = false;
+    /// C arrays are not relocatable regardless if it is a reference or not.
+    template <typename T, size_t N>
+    inline constexpr bool enable_relocatable_owning_range<T[N]> = false;
+
 
 } // namespace spe
 

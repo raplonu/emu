@@ -1,30 +1,14 @@
 #pragma once
 
-#include <emu/type_traits.hpp>
-#include <emu/concepts.hpp>
 #include <emu/detail/basic_mdspan.hpp>
+#include <emu/host/accessor.hpp>
 
 namespace emu::host
 {
 
-    template<typename T, typename Extents, typename LayoutPolicy, typename AccessorPolicy>
-    struct mdspan : emu::detail::basic_mdpan<
-        T, Extents, LayoutPolicy, AccessorPolicy, host::location_policy,
-        mdspan<T, Extents, LayoutPolicy, AccessorPolicy>
-    >
-    {
-        using base = emu::detail::basic_mdpan< T, Extents, LayoutPolicy, AccessorPolicy, host::location_policy, mdspan >;
+    template<typename T, typename Extents, typename LayoutPolicy = layout_right, typename AccessorPolicy = default_accessor<T>>
+    using mdspan = stdex::mdspan<T, Extents, LayoutPolicy, host::accessor<AccessorPolicy>>;
 
-        using base::base;
-
-        template<typename OT, typename OExtents, typename OLayoutPolicy, typename OAccessorPolicy>
-        constexpr auto from_mdspan(stdex::mdspan<OT, OExtents, OLayoutPolicy, OAccessorPolicy> md) const noexcept {
-            return mdspan<OT, OExtents, OLayoutPolicy, OAccessorPolicy>(md);
-        }
-    };
-
-    EMU_DEFINE_MDSPAN_DEDUCTION_GUIDES
-
-    EMU_DEFINE_MDSPAN_ALIAS
+    EMU_DEFINE_MDSPAN_ALIAS;
 
 } // namespace emu::host

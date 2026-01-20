@@ -3,7 +3,8 @@
 #include <cstdint>
 #include <emu/type_traits.hpp>
 #include <emu/concepts.hpp>
-#include <emu/detail/basic_mdspan.hpp>
+#include <emu/detail/mdspan_types.hpp>
+#include <emu/tensor_traits.hpp>
 
 #include <emu/info.hpp>
 #include <emu/utility.hpp>
@@ -20,7 +21,39 @@ namespace emu
 namespace detail
 {
 
-    template <typename ElementType, size_t Extent, typename LocationPolicy, typename ActualType>
+    template <typename ElementType, size_t Extent, typename AccessorPolicy>
+    struct basic_span;
+
+} // namespace detail
+
+namespace cpts
+{
+
+    template <typename T>
+    concept emu_span = same_as<T, emu::detail::basic_span<
+                        typename T::element_type, T::extent,
+                        typename T::accessor_type>
+                       >;
+
+    template <typename T>
+    concept std_span = same_as<T, std::span<typename T::element_type, T::extent>>;
+
+    template <typename T>
+    concept span = std_span<T>
+                or emu_span<T>;
+
+    template <typename T>
+    concept const_span = span<T> and is_const<typename T::element_type>;
+
+    template <typename T>
+    concept mutable_span = span<T> and (not is_const<typename T::element_type>);
+
+} // namespace cpts
+
+namespace detail
+{
+
+    template <typename ElementType, size_t Extent, typename AccessorPolicy>
     struct basic_span : std::span<ElementType, Extent> {
 
         using base = std::span<ElementType, Extent>;
@@ -36,52 +69,50 @@ namespace detail
         using iterator         = typename base::iterator;
         using reverse_iterator = typename base::reverse_iterator;
 
-        using location_type = LocationPolicy;
-        using actual_type = ActualType;
+        using accessor_type = AccessorPolicy;
 
         static constexpr size_t extent = Extent;
 
-        template <typename Type>
-        inline static constexpr bool validate_source = location_type::template validate_source<Type>;
+        // TODO: use accessor_type internally: in constructors and operator[].
+        // like mdspan, don't bother to add too many constructors. Just for one.
+        // [[no_unique_address]] accessor_type accessor{};
 
         constexpr basic_span() noexcept = default;
 
         template <std::contiguous_iterator It>
-        constexpr explicit(extent != dynamic_extent)
+        constexpr explicit(extent != std::dynamic_extent)
             basic_span(It first, size_t count) noexcept
             : base(first, count)
+            // , accessor{}
         {}
 
         template <std::contiguous_iterator It, std::sized_sentinel_for<It> End>
             requires(not std::is_convertible_v<End, size_t>)
-        constexpr explicit(extent != dynamic_extent)
+        constexpr explicit(extent != std::dynamic_extent)
             basic_span(It first, End last) EMU_NOEXCEPT_EXPR(base(first, last))
             : base(first, last)
         {}
 
         template <size_t ArrayExtent>
-            requires(extent == dynamic_extent or extent == ArrayExtent)
+            requires(extent == std::dynamic_extent or extent == ArrayExtent)
         constexpr basic_span(tid<ElementType> (&arr)[ArrayExtent]) noexcept : base(arr) {}
 
         template <typename U, size_t ArrayExtent>
-            requires (extent == dynamic_extent or extent == ArrayExtent)
-                 and (validate_source<std::array<U, ArrayExtent>&>)
+            requires (extent == std::dynamic_extent or extent == ArrayExtent)
         constexpr basic_span(std::array<U, ArrayExtent>& arr) noexcept
             : base(arr.data(), arr.size())
         {}
 
         template <typename U, size_t ArrayExtent>
-            requires (extent == dynamic_extent or extent == ArrayExtent)
-                 and (validate_source<const std::array<U, ArrayExtent>&>)
+            requires (extent == std::dynamic_extent or extent == ArrayExtent)
                  and (is_const<element_type>)
         constexpr basic_span(const std::array<U, ArrayExtent>& arr) noexcept
             : base(arr.data(), arr.size())
         {}
 
         template<cpts::contiguous_sized_range Range>
-            requires validate_source<Range>
-                 and (std::ranges::borrowed_range<Range> or is_const<element_type>)
-        constexpr explicit(extent != dynamic_extent)
+            requires (std::ranges::borrowed_range<Range> or is_const<element_type>)
+        constexpr explicit(extent != std::dynamic_extent)
         basic_span(Range&& range)
             EMU_NOEXCEPT_EXPR(base(EMU_FWD(range)))
             : base(EMU_FWD(range))
@@ -89,24 +120,24 @@ namespace detail
 
         explicit(extent != std::dynamic_extent)
         constexpr basic_span( std::initializer_list<value_type> il ) noexcept
-            requires validate_source<std::initializer_list<value_type>>
-                 and std::is_const_v<element_type>
+            requires std::is_const_v<element_type>
             : base(il.begin(), il.size())
         {}
 
-        template<typename OT, size_t OExtent, typename OActualType>
-        requires (extent == dynamic_extent
-              or OExtent == dynamic_extent
+
+        template<typename OT, size_t OExtent, typename OAccessor>
+        requires (extent == std::dynamic_extent
+               or OExtent == std::dynamic_extent
                or extent == OExtent)
-        constexpr explicit(extent != dynamic_extent && OExtent != dynamic_extent)
-        basic_span(const basic_span<OT, OExtent, LocationPolicy, OActualType> &other) noexcept
+        constexpr explicit(extent != std::dynamic_extent && OExtent != std::dynamic_extent)
+        basic_span(const basic_span<OT, OExtent, OAccessor> &other) noexcept
             : base(static_cast<const base&>(other)) {}
 
         template<typename OT, size_t OExtent>
-        requires (extent == dynamic_extent
-               or OExtent == dynamic_extent
+        requires (extent == std::dynamic_extent
+               or OExtent == std::dynamic_extent
                or extent == OExtent)
-        constexpr explicit(extent != dynamic_extent && OExtent != dynamic_extent)
+        constexpr explicit(extent != std::dynamic_extent && OExtent != std::dynamic_extent)
         basic_span(const std::span<OT, OExtent> &other) noexcept
             : base(other) {}
 
@@ -114,7 +145,7 @@ namespace detail
          * @brief Special constructor that allows implicit conversion from std::span to emu::span.
          *
          */
-        constexpr basic_span(std::span<ElementType, Extent> sp) noexcept requires (extent != dynamic_extent)
+        constexpr basic_span(std::span<ElementType, Extent> sp) noexcept requires (extent != std::dynamic_extent)
             : base(sp)
         {}
 
@@ -133,29 +164,29 @@ namespace detail
 
         template< size_t Count >
         constexpr auto first() const {
-            return from_span(base::template first<Count>());
+            return actual_from_base(base::template first<Count>());
         }
 
         constexpr auto first( size_type count ) const {
-            return from_span(base::first(count));
+            return actual_from_base(base::first(count));
         }
 
         template< size_t Count >
         constexpr auto last() const {
-            return from_span(base::template last<Count>());
+            return actual_from_base(base::template last<Count>());
         }
 
         constexpr auto last( size_type count ) const {
-            return from_span(base::last(count));
+            return actual_from_base(base::last(count));
         }
 
-        template< size_t Offset, size_t Count = dynamic_extent >
+        template< size_t Offset, size_t Count = std::dynamic_extent >
         constexpr auto subspan() const {
-            return from_span(base::template subspan<Offset, Count>());
+            return actual_from_base(base::template subspan<Offset, Count>());
         }
 
-        constexpr auto subspan( size_type offset, size_type count = dynamic_extent ) const {
-            return from_span(base::subspan(offset, count));
+        constexpr auto subspan( size_type offset, size_type count = std::dynamic_extent ) const {
+            return actual_from_base(base::subspan(offset, count));
         }
 
         // using base::front;
@@ -163,32 +194,71 @@ namespace detail
         // using base::operator[];
         // using base::data;
 
+        constexpr reference operator[](size_type idx) const noexcept
+        {
+            return base::operator[](idx);
+        }
+
         // using base::size;
         // using base::size_bytes;
         // using base::empty;
 
+        /**
+         * @brief Returns an ActualType constructed from a std::span.
+         *
+         * Default implementation that constructs ActualType from data pointer and size.
+         * Can be specialized in derived classes for custom behavior.
+         *
+         * @tparam OT
+         * @tparam OExtent
+         * @param sp
+         * @return constexpr auto
+         */
         template<typename OT, size_t OExtent>
-        constexpr auto from_span(std::span<OT, OExtent> sp) const noexcept {
-            return self().from_span(sp);
-        }
-
-        const actual_type& self() const noexcept {
-            return static_cast<const actual_type&>(*this);
+        constexpr auto actual_from_base(std::span<OT, OExtent> sp) const noexcept {
+            return basic_span(sp.data(), sp.size());
         }
 
     };
 
+    //Note: the following deduction guides do not take into account the AccessorPolicy.
+    //It must be provided by alias partial specialization. Then `void` will be replaced by the actual accessor policy.
+
+    template< class It, class EndOrSize >
+    basic_span( It, EndOrSize ) -> basic_span<iterator_cv_value<It>, dynamic_extent, void>;
+
+    template< class T, size_t N >
+    basic_span( T (&)[N] ) -> basic_span<T, N, void>;
+
+    template< typename Range >
+    basic_span( Range&& ) -> basic_span< range_cv_value<Range>, dynamic_extent, void>;
+
+    template< class T, size_t N >
+    basic_span( std::array<T, N>& ) -> basic_span<T, N, void>;
+
+    template< class T, size_t N >
+    basic_span( const std::array<T, N>& ) -> basic_span< const T, N, void>;
+
+    template< class T, size_t N >
+    basic_span( std::span<T, N>& ) -> basic_span<T, N, void>;
+
+    template< class T, size_t N >
+    basic_span( std::span<const T, N>& ) -> basic_span< const T, N, void>;
+
+    template< typename T >
+    basic_span( std::initializer_list<T> ) -> basic_span< const T, dynamic_extent, void>;
+
 } // namespace detail
 
-    template<cpts::span Span>
-    constexpr auto c_contigous(const Span&) {
-        return true;
-    }
+    // template<cpts::span Span>
+    // constexpr auto c_contigous(const Span&) {
+    //     return true;
+    // }
 
-    template<cpts::span Span>
-    constexpr auto f_contigous(const Span&) {
-        return true;
-    }
+    // template<cpts::span Span>
+    // constexpr auto f_contigous(const Span&) {
+    //     return true;
+    // }
 
     // Use of reinterpret_cast is safe here as it is used to cast between byte and ElementType
     // Note that you can convert T1 to byte and then to T2 using as_t. Be careful with this.
@@ -241,16 +311,92 @@ namespace detail
             return as_writable_bytes(sp);
     }
 
+    template <typename ElementType, size_t Extent, typename AccessorPolicy>
+    struct tensor_traits<emu::detail::basic_span<ElementType, Extent, AccessorPolicy>>
+    {
+        static constexpr std::size_t rank = 1;
+
+        using extents_type = dims<rank>;
+        using layout_type = layout_right;
+
+        using mapping_type = typename layout_type::mapping<extents_type>;
+
+        using element_type = ElementType;
+        using value_type = rm_cvref<element_type>;
+
+        using index_type = std::size_t;
+        using size_type = std::size_t;
+        using rank_type = std::size_t;
+
+        using accessor_type = AccessorPolicy;
+
+        using data_handle_type = typename accessor_type::data_handle_type;
+        using reference = typename accessor_type::reference;
+
+        static constexpr data_handle_type data_handle(emu::detail::basic_span<ElementType, Extent, AccessorPolicy>& span) noexcept {
+            return span.data();
+        }
+
+        static constexpr mapping_type mapping(const emu::detail::basic_span<ElementType, Extent, AccessorPolicy>& span) noexcept {
+            return mapping_type(extents_type{span.size()});
+        }
+
+        static constexpr accessor_type accessor(const emu::detail::basic_span<ElementType, Extent, AccessorPolicy>&) noexcept {
+            return accessor_type();
+        }
+
+        static constexpr size_type size(const emu::detail::basic_span<ElementType, Extent, AccessorPolicy>& span) noexcept {
+            return span.size();
+        }
+
+        static constexpr bool is_empty(const emu::detail::basic_span<ElementType, Extent, AccessorPolicy>& span) noexcept {
+            return span.empty();
+        }
+
+        static constexpr index_type extent(const emu::detail::basic_span<ElementType, Extent, AccessorPolicy>& span, rank_type) noexcept {
+            return span.size();
+        }
+
+        static constexpr index_type stride(const emu::detail::basic_span<ElementType, Extent, AccessorPolicy>&, rank_type) noexcept {
+            return 1;
+        }
+
+        static constexpr bool is_unique(const emu::detail::basic_span<ElementType, Extent, AccessorPolicy>&) { return true; }
+        static constexpr bool is_exhaustive(const emu::detail::basic_span<ElementType, Extent, AccessorPolicy>&) { return true; }
+        static constexpr bool is_strided(const emu::detail::basic_span<ElementType, Extent, AccessorPolicy>&) { return true; }
+        static constexpr bool is_always_unique(const emu::detail::basic_span<ElementType, Extent, AccessorPolicy>&) { return true; }
+        static constexpr bool is_always_exhaustive(const emu::detail::basic_span<ElementType, Extent, AccessorPolicy>&) { return true; }
+        static constexpr bool is_always_strided(const emu::detail::basic_span<ElementType, Extent, AccessorPolicy>&) { return true; }
+        static constexpr std::size_t required_span_size(const emu::detail::basic_span<ElementType, Extent, AccessorPolicy>& span) {
+            return span.size();
+        }
+    };
+
 namespace spe
 {
 
     // template<cpts::span Span>
     // inline constexpr bool enable_relocatable_range<Span> = true;
 
-    template<cpts::span SpanType>
+    template<cpts::std_span SpanType>
     struct info_t< SpanType >
     {
         constexpr auto format_type(fmt::format_context::iterator it) const {
+            it = fmt::format_to(it, "span< {}, ", type_name<typename SpanType::element_type>);
+            it = detail::format_extent(it, SpanType::extent);
+            return fmt::format_to(it, " >");
+        }
+
+        constexpr auto format_value(const SpanType &sp, fmt::format_context::iterator it) const {
+            return fmt::format_to(it, "{} [ {} ]", fmt::ptr(sp.data()), sp.size());
+        }
+    };
+
+    template<cpts::emu_span SpanType>
+    struct info_t< SpanType >
+    {
+        constexpr auto format_type(fmt::format_context::iterator it) const {
+            //TODO: Adds info about accessor.
             it = fmt::format_to(it, "span< {}, ", type_name<typename SpanType::element_type>);
             it = detail::format_extent(it, SpanType::extent);
             return fmt::format_to(it, " >");
@@ -276,34 +422,11 @@ inline constexpr bool
 std::ranges::enable_view<EmuSpan>
     = EmuSpan::extent == 0 || EmuSpan::extent == std::dynamic_extent;
 
-template<emu::cpts::span Span>
-struct std::hash<Span> {
-    std::size_t operator()(const Span& sp) const noexcept {
-        return std::hash<uintptr_t>{}(reinterpret_cast<uintptr_t>(sp.data())) ^ std::hash<size_t>{}(sp.size());
-    }
-};
-
-#define EMU_DEFINE_SPAN_DEDUCTION_GUIDES                                  \
-    template< class It, class EndOrSize >                                 \
-    span( It, EndOrSize ) -> span<iterator_cv_value<It>, dynamic_extent>; \
-                                                                          \
-    template< class T, size_t N >                                         \
-    span( T (&)[N] ) -> span<T, N>;                                       \
-                                                                          \
-    template< typename Range >                                            \
-    span( Range&& ) -> span< range_cv_value<Range>, dynamic_extent>;      \
-                                                                          \
-    template< class T, size_t N >                                         \
-    span( std::array<T, N>& ) -> span<T, N>;                              \
-                                                                          \
-    template< class T, size_t N >                                         \
-    span( const std::array<T, N>& ) -> span< const T, N>;                 \
-                                                                          \
-    template< class T, size_t N >                                         \
-    span( std::span<T, N>& ) -> span<T, N>;                               \
-                                                                          \
-    template< class T, size_t N >                                         \
-    span( std::span<const T, N>& ) -> span< const T, N>;                  \
-                                                                          \
-    template< typename T >                                                \
-    span( std::initializer_list<T> ) -> span< const T, dynamic_extent>;
+//TODO: why I needed that ?
+// I think it was to compare span without looking at the content.
+// template<emu::cpts::span Span>
+// struct std::hash<Span> {
+//     std::size_t operator()(const Span& sp) const noexcept {
+//         return std::hash<uintptr_t>{}(reinterpret_cast<uintptr_t>(sp.data())) ^ std::hash<size_t>{}(sp.size());
+//     }
+// };

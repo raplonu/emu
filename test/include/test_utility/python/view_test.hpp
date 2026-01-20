@@ -1,5 +1,7 @@
 #pragma once
 
+#include <emu/pybind11/format.hpp>
+
 #include <gtest/gtest.h>
 #include <test_utility/python/core.hpp>
 #include <test_utility/view.hpp>

@@ -25,6 +25,16 @@ namespace emu
     using tl::in_place_t;
     using tl::in_place;
 
+namespace cpts
+{
+
+    template <typename T>
+    concept optional = specialization_of<T, tl::optional>
+                    or specialization_of<T, std::optional>;
+
+} // namespace cpts
+
+
     /**
      * @brief Returns the opt content if exists or will emplace it from the additional arguments provided.
      *
@@ -92,14 +102,18 @@ namespace emu
         return (opt) ? EMU_FWD(opt).value() : EMU_FWD(opt).emplace(EMU_FWD(fn)(EMU_FWD(args)...));
     }
 
-    template<typename Fn, typename... Opts>
-        requires( (cpts::opt_like< decay<Opts> > && ...) )
-    auto invoke_when_all(Fn&& fn, Opts&&... opts) -> tl::optional<decltype(fn(EMU_FWD(opts).value()...))> {
-        if ((opts && ...))
-            return fn(EMU_FWD(opts).value()...);
-        else
-            return nullopt;
-    }
+    //TODO: rewrite bellow:
+    // Change from opt_like to "can be deref"
+    // Chrange from EMU_FWD(opts).value() to *EMU_FWD(opts)
+
+    // template<typename Fn, typename... Opts>
+    //     requires( (cpts::opt_like< decay<Opts> > && ...) )
+    // auto invoke_when_all(Fn&& fn, Opts&&... opts) -> tl::optional<decltype(fn(EMU_FWD(opts).value()...))> {
+    //     if ((opts && ...))
+    //         return fn(EMU_FWD(opts).value()...);
+    //     else
+    //         return nullopt;
+    // }
 
 namespace spe
 {

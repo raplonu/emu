@@ -1,6 +1,6 @@
 #pragma once
 
-#include <emu/pybind11/cast/detail/mdspan_caster.hpp>
+#include <emu/pybind11/cast/detail/tensor_caster.hpp>
 
 PYBIND11_NAMESPACE_BEGIN(PYBIND11_NAMESPACE)
 
@@ -10,10 +10,6 @@ namespace detail
     template<emu::cpts::mdspan Mdspan>
     struct type_caster< Mdspan >
     {
-        // span location
-        using location_policy = emu::location_type_of<Mdspan>;
-
-        using base_caster = emu::cast::detail::mdspan_caster_for<location_policy>::template md_caster<Mdspan>;
 
         using cpp_type = Mdspan;
 
@@ -21,6 +17,8 @@ namespace detail
         using extents_type  = typename cpp_type::extents_type;
         using layout_type   = typename cpp_type::layout_type;
         using accessor_type = typename cpp_type::accessor_type;
+
+        using base_caster = emu::cast::detail::tensor_caster_for<accessor_type>::template md_caster<Mdspan>;
 
         static_assert(extents_type::rank_dynamic() > 0, "pybind11 required only default constructible types. Fixed size mdspan are not.");
 

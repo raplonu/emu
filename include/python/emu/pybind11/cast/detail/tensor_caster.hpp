@@ -1,13 +1,13 @@
 #pragma once
 
 #include <emu/concepts.hpp>
-#include <emu/location_policy.hpp>
-#include <emu/host/location_policy.hpp>
+#include <emu/tensor_traits.hpp>
+#include <emu/host/accessor.hpp>
 #include <emu/pybind11/cast/detail/layout_adaptor.hpp>
 
 #ifdef EMU_CUDA
-#include <emu/cuda/device/location_policy.hpp>
 #include <emu/cuda.hpp>
+#include <emu/cuda/device/accessor.hpp>
 #endif // EMU_CUDA
 
 #include <pybind11/numpy.h>
@@ -16,23 +16,18 @@ namespace emu::cast::detail
 {
     namespace py = ::pybind11;
 
-
-    template<typename LocationPolicy>
-    struct mdspan_caster_for;
+    template<typename Accessor>
+    struct tensor_caster_for;
 
     template<cpts::mdspan Mdspan>
-        // requires std::same_as<location_type_of<Mdspan>, no_location_policy>
-        //       or std::same_as<location_type_of<Mdspan>, host::location_policy>
-    struct host_mdspan_caster
+    struct host_tensor_caster
     {
         using cpp_type = Mdspan;
         using element_type = typename cpp_type::element_type;
         using value_type = typename cpp_type::value_type;
         using extents_type = typename cpp_type::extents_type;
         using layout_type = typename cpp_type::layout_type;
-        using mapping_type = typename layout_type::template mapping<extents_type>;
-
-        using location_type = location_type_of<cpp_type>;
+        using mapping_type = typename cpp_type::mapping_type;
 
         using layout_adaptor = detail::layout_adaptor<element_type, extents_type, layout_type>;
 
@@ -111,21 +106,39 @@ namespace emu::cast::detail
 
     };
 
-
-    template<>
-    struct mdspan_caster_for<no_location_policy>
+    template<cpts::mdspan Mdspan>
+        // requires std::same_as<location_type_of<Mdspan>, no_location_policy>
+        //       or std::same_as<location_type_of<Mdspan>, host::location_policy>
+    struct host_mdspan_caster
     {
-        template<typename Mdspan>
-        using md_caster = host_mdspan_caster<Mdspan>;
+        using cpp_type = Mdspan;
+        using element_type = typename cpp_type::element_type;
+        using value_type = typename cpp_type::value_type;
+        using extents_type = typename cpp_type::extents_type;
+        using layout_type = typename cpp_type::layout_type;
+        using mapping_type = typename layout_type::template mapping<extents_type>;
+
+        using layout_adaptor = detail::layout_adaptor<element_type, extents_type, layout_type>;
+
+
 
     };
 
 
-    template<>
-    struct mdspan_caster_for<host::location_policy>
+    template<typename ElementType>
+    struct tensor_caster_for< default_accessor<ElementType> >
     {
         template<typename Mdspan>
-        using md_caster = host_mdspan_caster<Mdspan>;
+        using md_caster = host_tensor_caster<Mdspan>;
+
+    };
+
+
+    template<typename Accessor>
+    struct tensor_caster_for<host::accessor<Accessor>>
+    {
+        template<typename Mdspan>
+        using md_caster = host_tensor_caster<Mdspan>;
 
     };
 
@@ -135,7 +148,7 @@ namespace emu::cast::detail
     // Have to explicitly reference device::mdspan because dump compiler.
     // template<typename T, typename Extents, typename LayoutPolicy, typename AccessorPolicy>
         // requires std::same_as<location_type_of<Mdspan>, cuda::device_location_policy>
-    template<cuda::device::cpts::mdspan MdSpan>
+    template<cpts::mdspan MdSpan>
     struct cuda_device_mdspan_caster
     {
 
@@ -145,8 +158,6 @@ namespace emu::cast::detail
         using extents_type = typename cpp_type::extents_type;
         using layout_type = typename cpp_type::layout_type;
         using mapping_type = typename layout_type::template mapping<extents_type>;
-
-        using location_type = location_type_of<cpp_type>;
 
         using layout_adaptor = detail::layout_adaptor<element_type, extents_type, layout_type>;
 
@@ -234,8 +245,8 @@ namespace emu::cast::detail
 
     };
 
-    template<>
-    struct mdspan_caster_for<cuda::device_location_policy>
+    template<typename Accessor>
+    struct tensor_caster_for<cuda::device::accessor<Accessor>>
     {
         template<typename Mdspan>
         using md_caster = cuda_device_mdspan_caster<Mdspan>;

@@ -1,30 +1,16 @@
 #pragma once
 
-#include <emu/type_traits.hpp>
 #include <emu/detail/basic_mdcontainer.hpp>
-#include <emu/cuda/device/location_policy.hpp>
+#include <emu/cuda/device/accessor.hpp>
 
 namespace emu::cuda::device
 {
 
-    template<typename T, typename Extents, typename LayoutPolicy, typename AccessorPolicy>
-    struct mdcontainer : emu::detail::basic_mdcontainer<
-        T, Extents, LayoutPolicy, AccessorPolicy, cuda::device_location_policy,
-        mdcontainer<T, Extents, LayoutPolicy, AccessorPolicy>
-    >
-    {
-        using base = emu::detail::basic_mdcontainer< T, Extents, LayoutPolicy, AccessorPolicy, cuda::device_location_policy, mdcontainer >;
+    template<typename T, typename Extents, typename LayoutPolicy = layout_right, typename AccessorPolicy = default_accessor<T>>
+    using mdcontainer = emu::detail::basic_mdcontainer<
+        T, Extents, LayoutPolicy, cuda::device::accessor<AccessorPolicy>
+    >;
 
-        using base::base;
-
-        template<typename OT, typename OExtents, typename OLayoutPolicy, typename OAccessorPolicy>
-        constexpr auto from_mdspan(stdex::mdspan<OT, OExtents, OLayoutPolicy, OAccessorPolicy> md) const noexcept {
-            return mdcontainer<OT, OExtents, OLayoutPolicy, OAccessorPolicy>(md, static_cast<const capsule&>(*this));
-        }
-    };
-
-    EMU_DEFINE_MDCONTAINER_DEDUCTION_GUIDES
-
-    EMU_DEFINE_MDCONTAINER_ALIAS
+    EMU_DEFINE_MDCONTAINER_ALIAS;
 
 } // namespace emu::cuda::device

@@ -10,8 +10,6 @@
 
 #include <cstdlib>
 
-
-
 #include <test_utility/view/core.hpp>
 
 #include <test_utility/view/mdview_test.hpp>

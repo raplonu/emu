@@ -1,10 +1,10 @@
 #pragma once
 
-#include <emu/location_policy.hpp>
-#include <emu/host/location_policy.hpp>
+#include <emu/detail/mdspan_types.hpp>
 
 #include <pybind11/pybind11.h>
 
+#include <concepts>
 #include <vector>
 
 namespace emu::detail
@@ -12,9 +12,9 @@ namespace emu::detail
 
     namespace py = ::pybind11;
 
-    template<typename LocationPolicy>
-        requires std::same_as<LocationPolicy, no_location_policy> or std::same_as<LocationPolicy, host::location_policy>
-    struct location_adaptor
+    template<typename Accessor>
+        requires cpts::default_accessor<Accessor> or cpts::host_accessor<Accessor>
+    struct accessor_adaptor
     {
         static bool check(py::handle handle) noexcept
         {
@@ -76,7 +76,7 @@ namespace emu::detail
 #ifdef EMU_CUDA
 
     template<>
-    struct location_adaptor<cuda::device_location_policy>
+    struct accessor_adaptor<cuda::device_accessor>
     {
         static bool check(py::handle handle) noexcept
         {

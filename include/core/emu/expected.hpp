@@ -53,26 +53,33 @@ namespace emu
      **/
     using tl::unexpected;
 
+namespace cpts
+{
 
-    namespace spe
-    {
-        template<typename T, typename E>
-        struct transform< expected<T, E> > {
+    template <typename T>
+    concept expected = specialization_of<T, tl::expected>;
 
-            template<typename Fr, typename Fn>
-            constexpr auto operator()(Fr&& opt, Fn&& fn) const {
-                return EMU_FWD(opt).map(EMU_FWD(fn));
-            }
-        };
+} // namespace cpts
 
-        template<typename T, typename E>
-        struct unwrap_error<expected<T, E>> {
-            constexpr unexpected<E> operator()(const expected<T, E>& e) const {
-                return unexpected(e.error());
-            }
-        };
+namespace spe
+{
+    template<typename T, typename E>
+    struct transform< expected<T, E> > {
 
-    } // namespace spe
+        template<typename Fr, typename Fn>
+        constexpr auto operator()(Fr&& opt, Fn&& fn) const {
+            return EMU_FWD(opt).map(EMU_FWD(fn));
+        }
+    };
+
+    template<typename T, typename E>
+    struct unwrap_error<expected<T, E>> {
+        constexpr unexpected<E> operator()(const expected<T, E>& e) const {
+            return unexpected(e.error());
+        }
+    };
+
+} // namespace spe
 
 
 

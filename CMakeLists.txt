@@ -59,15 +59,12 @@ target_sources(emucore
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/detail/dlpack_types.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/expected.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/functor.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/fwd.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/hash.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/host/location_policy.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/host/mdcontainer.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/host/mdspan.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/host/container.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/host/span.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/info.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/location_policy.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/macro.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/managed_object.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/math.hpp
@@ -81,7 +78,6 @@ target_sources(emucore
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/scoped.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/container.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/span.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/mdalgo.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/mdspan.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/assert.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/capsule.hpp
@@ -158,7 +154,6 @@ if (emu_build_cuda)
             ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/device/mdspan.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/device/container.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/device/span.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/device/location_policy.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/allocator.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/device.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/error.hpp
@@ -167,7 +162,6 @@ if (emu_build_cuda)
             ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/pointer.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/stream.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/managed/container.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/managed/location_policy.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/managed/mdcontainer.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/managed/mdspan.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/managed/span.hpp
@@ -234,7 +228,7 @@ target_sources(emupython INTERFACE FILE_SET HEADERS
         ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/cast/cuda/stream.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/cast/detail/capsule.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/cast/detail/layout_adaptor.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/cast/detail/location_adaptor.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/cast/detail/accessor_adaptor.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/cast/detail/mdspan_caster.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/cast/mdcontainer.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/cast/mdspan.hpp

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <emu/fwd.hpp>
 #include <emu/concepts.hpp>
 #include <emu/assert.hpp>
 
