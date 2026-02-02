@@ -82,8 +82,13 @@ namespace detail
 } // namespace detail
 
     template <typename T, typename... Args>
-    auto info(const T &t, Args&&... args) {
+    constexpr auto info(const T &t, Args&&... args) {
         return detail::info_holder_t<T>{t, std::forward<Args>(args)...};
+    }
+
+    template<typename T, typename... Args>
+    constexpr std::string info_str(const T &t, Args&&... args) {
+        return fmt::to_string(info(t, std::forward<Args>(args)...));
     }
 
 } // namespace emu

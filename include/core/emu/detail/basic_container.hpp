@@ -54,21 +54,21 @@ namespace detail
     template <typename ElementType, size_t Extent, typename AccessorPolicy>
     struct basic_container : basic_span<ElementType, Extent, AccessorPolicy>, emu::capsule
     {
-        using base = basic_span<ElementType, Extent, AccessorPolicy>;
+        using span_type = basic_span<ElementType, Extent, AccessorPolicy>;
         using capsule_base = emu::capsule;
 
-        using element_type     = typename base::element_type;
-        using value_type       = typename base::value_type;
-        using size_type        = typename base::size_type;
-        using difference_type  = typename base::difference_type;
-        using pointer          = typename base::pointer;
-        using const_pointer    = typename base::const_pointer;
-        using reference        = typename base::reference;
-        using const_reference  = typename base::const_reference;
-        using iterator         = typename base::iterator;
-        using reverse_iterator = typename base::reverse_iterator;
+        using element_type     = typename span_type::element_type;
+        using value_type       = typename span_type::value_type;
+        using size_type        = typename span_type::size_type;
+        using difference_type  = typename span_type::difference_type;
+        using pointer          = typename span_type::pointer;
+        using const_pointer    = typename span_type::const_pointer;
+        using reference        = typename span_type::reference;
+        using const_reference  = typename span_type::const_reference;
+        using iterator         = typename span_type::iterator;
+        using reverse_iterator = typename span_type::reverse_iterator;
 
-        using accessor_type   = typename base::accessor_type;
+        using accessor_type   = typename span_type::accessor_type;
 
         static constexpr size_t extent = Extent;
 
@@ -76,7 +76,7 @@ namespace detail
         /**
          * @brief Inherits constructors from `basic_span`.
          */
-        using base::base;
+        using span_type::span_type;
 
 
         /**
@@ -89,7 +89,7 @@ namespace detail
         template <std::contiguous_iterator It, typename DataHolder>
             explicit (extent != dynamic_extent)
         constexpr basic_container(It first, size_t count, DataHolder&& dh)
-            : base(first, count)
+            : span_type(first, count)
             , capsule_base(EMU_FWD(dh))
         {};
 
@@ -103,7 +103,7 @@ namespace detail
             requires (not std::is_convertible_v<End, size_t>)
             explicit (extent != dynamic_extent)
         constexpr basic_container(It first, End last, DataHolder&& dh)
-            : base(first, last)
+            : span_type(first, last)
             , capsule_base(EMU_FWD(dh))
         {};
 
@@ -116,9 +116,9 @@ namespace detail
                  and (std::ranges::borrowed_range<Range> or is_const<element_type> or cpts::relocatable_owning_range<Range>)
             explicit (extent != dynamic_extent)
         constexpr basic_container(Range&& range)
-            noexcept( noexcept(base(range))
+            noexcept( noexcept(span_type(range))
                   and noexcept(capsule_from_range(EMU_FWD(range))))
-            : base(range)
+            : span_type(range)
             , capsule_base(capsule_from_range(EMU_FWD(range)))
         {}
 
@@ -130,7 +130,7 @@ namespace detail
         template<cpts::contiguous_sized_range Range, typename DataHolder>
             explicit (extent != dynamic_extent)
         constexpr basic_container(Range&& range, DataHolder&& dh)
-            : base(EMU_FWD(range))
+            : span_type(EMU_FWD(range))
             , capsule_base(EMU_FWD(dh))
         {}
 
@@ -150,7 +150,7 @@ namespace detail
                or extent == OExtent)
         explicit (extent != dynamic_extent && OExtent != dynamic_extent)
         constexpr basic_container(const basic_container<OT, OExtent, AccessorPolicy>& other) noexcept
-            : base(static_cast<const base&>(other))
+            : span_type(static_cast<const span_type&>(other))
             , capsule_base(other.capsule())
         {}
 
@@ -165,19 +165,19 @@ namespace detail
                or extent == OExtent)
         explicit (extent != dynamic_extent && OExtent != dynamic_extent)
         constexpr basic_container(const basic_span<OT, OExtent, AccessorPolicy>& other, DataHolder&& dh) noexcept
-            : base(static_cast<const base&>(other))
+            : span_type(static_cast<const span_type&>(other))
             , capsule_base(EMU_FWD(dh))
         {}
 
         /**
-         * @brief Constructs a `basic_container` from a `base` and a data holder.
-         * @param s The `base` to construct from.
+         * @brief Constructs a `basic_container` from a `span_type` and a data holder.
+         * @param s The `span_type` to construct from.
          * @param dh The data holder for lifetime management.
          */
         template<typename DataHolder>
         constexpr explicit
-        basic_container(base s, DataHolder&& dh)
-            : base(s)
+        basic_container(span_type s, DataHolder&& dh)
+            : span_type(s)
             , capsule_base(EMU_FWD(dh))
         {}
 
@@ -209,20 +209,20 @@ namespace detail
 
         // template< std::size_t Count >
         // constexpr basic_container<element_type, Count, location_type> first() const noexcept {
-        //     return from_span(base::template first<Count>());
+        //     return from_span(span_type::template first<Count>());
         // }
 
         // constexpr basic_container<element_type, std::dynamic_extent, location_type> first( size_type count ) const noexcept {
-        //     return from_span(base::first(count));
+        //     return from_span(span_type::first(count));
         // }
 
         // template< std::size_t Count >
         // constexpr basic_container<element_type, Count, location_type> last() const noexcept {
-        //     return from_span(base::template last<Count>());
+        //     return from_span(span_type::template last<Count>());
         // }
 
         // constexpr basic_container<element_type, std::dynamic_extent, location_type> last( size_type count ) const noexcept {
-        //     return from_span(base::last(count));
+        //     return from_span(span_type::last(count));
         // }
 
         /**
@@ -234,7 +234,7 @@ namespace detail
         template< std::size_t Offset,
               std::size_t Count = std::dynamic_extent >
         constexpr auto subcontainer() const noexcept {
-            return actual_from_base(base::template subspan<Offset, Count>());
+            return actual_from_base(span_type::template subspan<Offset, Count>());
         }
 
         /**
@@ -245,23 +245,23 @@ namespace detail
          */
         constexpr auto subcontainer( size_type offset,
                  size_type count = std::dynamic_extent ) const noexcept {
-            return actual_from_base(base::subspan(offset, count));
+            return actual_from_base(span_type::subspan(offset, count));
         }
 
         /**
          * @brief Returns a pair consisting of the span and the capsule.
          * @return A pair containing the span and the capsule.
          */
-        std::pair<base, emu::capsule> as_pair() const & noexcept  {
-            return {base(*this), capsule()};
+        std::pair<span_type, emu::capsule> as_pair() const & noexcept  {
+            return {span_type(*this), capsule()};
         }
 
         /**
          * @brief Returns a pair consisting of the span and the capsule.
          * @return A pair containing the span and the capsule.
          */
-        std::pair<base, emu::capsule> as_pair() && noexcept {
-            return {base(*this), std::move(capsule())};
+        std::pair<span_type, emu::capsule> as_pair() && noexcept {
+            return {span_type(*this), std::move(capsule())};
         }
 
         // template< size_t Offset, size_t Count = dynamic_extent >
@@ -269,50 +269,50 @@ namespace detail
 
         // constexpr auto subspan( size_type offset, size_type count = dynamic_extent ) const -> basic_container = delete;
 
-        // using base::begin;
-        // using base::end;
-        // using base::rbegin;
-        // using base::rend;
+        // using span_type::begin;
+        // using span_type::end;
+        // using span_type::rbegin;
+        // using span_type::rend;
 
         template< size_t Count >
         constexpr auto first() const {
-            return actual_from_base(base::template first<Count>());
+            return actual_from_base(span_type::template first<Count>());
         }
 
         constexpr auto first( size_type count ) const {
-            return actual_from_base(base::first(count));
+            return actual_from_base(span_type::first(count));
         }
 
         template< size_t Count >
         constexpr auto last() const {
-            return actual_from_base(base::template last<Count>());
+            return actual_from_base(span_type::template last<Count>());
         }
 
         constexpr auto last( size_type count ) const {
-            return actual_from_base(base::last(count));
+            return actual_from_base(span_type::last(count));
         }
 
         template< size_t Offset, size_t Count = dynamic_extent >
         constexpr auto subspan() const {
-            return actual_from_base(base::template subspan<Offset, Count>());
+            return actual_from_base(span_type::template subspan<Offset, Count>());
         }
 
         constexpr auto subspan( size_type offset, size_type count = dynamic_extent ) const {
-            return actual_from_base(base::subspan(offset, count));
+            return actual_from_base(span_type::subspan(offset, count));
         }
 
-        // using base::front;
-        // using base::back;
-        // using base::operator[];
-        // using base::data;
+        // using span_type::front;
+        // using span_type::back;
+        // using span_type::operator[];
+        // using span_type::data;
 
         constexpr reference operator[](size_type idx) const noexcept
         {
-            return base::operator[](idx);
+            return span_type::operator[](idx);
         }
-        // using base::size;
-        // using base::size_bytes;
-       // using base::empty;
+        // using span_type::size;
+        // using span_type::size_bytes;
+       // using span_type::empty;
 
         template<typename OT, size_t OExtent>
         constexpr auto actual_from_base(std::span<OT, OExtent> sp) const noexcept {
@@ -372,6 +372,11 @@ namespace detail
 
 
 } // namespace detail
+
+    template <typename ElementType, size_t Extent, typename AccessorPolicy>
+     struct tensor_traits< detail::basic_container<ElementType, Extent, AccessorPolicy>>
+        : tensor_traits< typename detail::basic_container<ElementType, Extent, AccessorPolicy>::span_type >
+     {};
 
 } // namespace emu
 

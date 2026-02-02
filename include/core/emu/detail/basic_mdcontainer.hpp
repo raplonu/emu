@@ -451,9 +451,9 @@ namespace detail
 
 } // namespace detail
 
-
-    template<cpts::mdcontainer MdContainer>
-     struct tensor_traits< MdContainer > : tensor_traits< typename MdContainer::mdspan_type >
+    template<typename ElementType, typename Extents, typename LayoutPolicy, typename AccessorPolicy >
+     struct tensor_traits< detail::basic_mdcontainer<ElementType, Extents, LayoutPolicy, AccessorPolicy>>
+        : tensor_traits< typename detail::basic_mdcontainer<ElementType, Extents, LayoutPolicy, AccessorPolicy>::mdspan_type >
      {};
 
     constexpr detail::exts_flag_t exts_flag;

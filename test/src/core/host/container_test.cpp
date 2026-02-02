@@ -26,9 +26,6 @@ struct DeviceRange {
 
 };
 
-template<>
-inline constexpr bool emu::spe::enable_host_range<DeviceRange> = false;
-
 namespace
 {
     TEST(HostContainer, Construct)

@@ -13,22 +13,21 @@ include(GoogleTest)
 
 add_executable(emucoretest
     src/core/concepts_test.cpp
-    # src/core/capsule_test.cpp
-    # src/core/cstring_view_test.cpp
+    src/core/capsule_test.cpp
+    src/core/cstring_view_test.cpp
     # src/core/container_test.cpp
     # src/core/host/container_test.cpp
     # src/core/mdcontainer_test.cpp
-    # src/core/math_test.cpp
-    # src/core/pointer_test.cpp
-    # src/core/functor_test.cpp
-    # src/core/expected_test.cpp
-    # src/core/optional_test.cpp
-    # src/core/ostream_test.cpp
-    # src/core/scoped_test.cpp
-    # src/core/managed_object_test.cpp
-    # src/core/mdalgo_test.cpp
-    # src/core/detail/dlpack_types_test.cpp
-    # src/core/string_test.cpp
+    src/core/math_test.cpp
+    src/core/pointer_test.cpp
+    src/core/functor_test.cpp
+    src/core/expected_test.cpp
+    src/core/optional_test.cpp
+    src/core/ostream_test.cpp
+    src/core/scoped_test.cpp
+    src/core/managed_object_test.cpp
+    src/core/detail/dlpack_types_test.cpp
+    src/core/string_test.cpp
 )
 
 target_link_libraries(emucoretest PRIVATE
@@ -71,8 +70,9 @@ if (emu_build_python_test)
 
     if(emu_build_cuda)
         target_sources(emupythontest PRIVATE
-            src/python/pybind11/cast/cuda_span_test.cpp
-            src/python/pybind11/cast/cuda/stream_test.cpp
+            src/python/pybind11/cast/cuda_device_span_test.cpp
+            src/python/pybind11/cast/cuda_device_mdspan_test.cpp
+            # src/python/pybind11/cast/cuda/stream_test.cpp
         )
     endif()
 

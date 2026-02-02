@@ -7,6 +7,12 @@
 #include <concepts>
 #include <vector>
 
+#ifdef EMU_CUDA
+
+#include <emu/cuda/device/accessor.hpp>
+
+#endif // EMU_CUDA
+
 namespace emu::detail
 {
 

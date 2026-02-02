@@ -333,7 +333,7 @@ namespace detail
         using data_handle_type = typename accessor_type::data_handle_type;
         using reference = typename accessor_type::reference;
 
-        static constexpr data_handle_type data_handle(emu::detail::basic_span<ElementType, Extent, AccessorPolicy>& span) noexcept {
+        static constexpr data_handle_type data_handle(const emu::detail::basic_span<ElementType, Extent, AccessorPolicy>& span) noexcept {
             return span.data();
         }
 

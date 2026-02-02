@@ -117,7 +117,7 @@ namespace emu
             return mdspan.extent(r);
         }
 
-        static constexpr index_type stride(const MdSpan& mdspan, rank_type  r) noexcept {
+        static constexpr index_type stride(const MdSpan& mdspan, rank_type r) noexcept {
             return mdspan.stride(r);
         }
 
@@ -164,7 +164,7 @@ namespace emu
         using data_handle_type = typename accessor_type::data_handle_type;
         using reference = typename accessor_type::reference;
 
-        static constexpr data_handle_type data_handle(Range& range) noexcept {
+        static constexpr data_handle_type data_handle(const Range& range) noexcept {
             return std::ranges::data(range);
         }
 
