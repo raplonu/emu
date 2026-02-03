@@ -4,12 +4,24 @@
 #include <emu/mdspan.hpp>
 #include <emu/optional.hpp>
 #include <emu/pybind11.hpp>
+#include <emu/pybind11/format.hpp>
 
 #include <pybind11/numpy.h>
+
 
 namespace emu::cast::detail
 {
     namespace py = ::pybind11;
+
+#define EMU_ASSIGN_EXTENT_IF_DYNAMIC_OR_CHECK_STATIC(static_extent, input_value, output_value) \
+    do {                                                                                       \
+        auto extent_value = static_cast<size_t>(input_value);                                  \
+        if(static_extent == dynamic_extent) {                                                  \
+            output_value = extent_value;                                                       \
+        } else {                                                                               \
+            EMU_TRUE_OR_RETURN_NULLOPT(static_extent == extent_value);                         \
+        }                                                                                      \
+    } while(0)
 
     template<typename ElementType, typename Extents, typename LayoutPolicy>
     struct layout_adaptor;
@@ -21,18 +33,19 @@ namespace emu::cast::detail
 
         static optional<mapping_type> mapping_from(const py::buffer_info& buffer_info) noexcept
         {
-            std::array<std::size_t, Extents::rank_dynamic()> dynamic_shape;
+            std::array<size_t, Extents::rank_dynamic()> dynamic_shape;
             auto it_shape = dynamic_shape.rbegin();
 
-            std::size_t last_extent = 1;
-            std::size_t last_stride = sizeof(ElementType);
+            size_t last_extent = 1;
+            size_t last_stride = sizeof(ElementType);
             for(int i = Extents::rank() - 1; i >= 0; --i) {
                 EMU_TRUE_OR_RETURN_NULLOPT(buffer_info.strides[i] > 0);
                 EMU_TRUE_OR_RETURN_NULLOPT(last_stride * last_extent == static_cast<size_t>(buffer_info.strides[i]));
+
                 last_extent = buffer_info.shape[i];
                 last_stride = buffer_info.strides[i];
-                if(Extents::static_extent(i) == std::dynamic_extent)
-                    *(it_shape++) = buffer_info.shape[i];
+
+                EMU_ASSIGN_EXTENT_IF_DYNAMIC_OR_CHECK_STATIC(Extents::static_extent(i), buffer_info.shape[i], *(it_shape++));
             }
 
             return mapping_type{Extents{dynamic_shape}};
@@ -40,33 +53,39 @@ namespace emu::cast::detail
 
         static optional<mapping_type> mapping_from(py::dict array_interface) noexcept
         {
-            std::array<std::size_t, Extents::rank_dynamic()> dynamic_shape;
+            std::array<size_t, Extents::rank_dynamic()> dynamic_shape;
             auto it_shape = dynamic_shape.rbegin();
 
-            std::size_t last_extent = 1;
-            std::size_t last_stride = sizeof(ElementType);
+            auto shape = array_interface["shape"].cast<py::sequence>();
 
-            auto shape = array_interface["shape"].cast<py::list>();
+            py::sequence strides;
+            size_t stride_size = 0;
 
-            py::list strides;
+            if (array_interface.contains("strides"))
+                if (py::object s = array_interface["strides"]; !s.is_none()) {
+                    strides = s.cast<py::sequence>();
+                    stride_size = strides.size();
+                }
 
-            if (auto s = pybind11::try_attr(array_interface, "strides"); s)
-                strides = s->cast<py::list>();
+            EMU_TRUE_OR_RETURN_NULLOPT(stride_size == Extents::rank() or stride_size == 0);
 
+            size_t last_extent = 1;
+            size_t last_stride = sizeof(ElementType);
 
             for(int i = Extents::rank() - 1; i >= 0; --i) {
                 auto current_shape = shape[i].cast<size_t>();
 
-                if (strides.size() != 0) {
-                    auto current_stride = shape[i].cast<size_t>();
+                if (stride_size != 0) {
+                    auto current_stride = strides[i].cast<size_t>();
+
                     EMU_TRUE_OR_RETURN_NULLOPT(current_stride > 0);
                     EMU_TRUE_OR_RETURN_NULLOPT(last_stride * last_extent == static_cast<size_t>(current_stride));
+
                     last_extent = current_shape;
                     last_stride = current_stride;
                 }
 
-                if(Extents::static_extent(i) == std::dynamic_extent)
-                    *(it_shape++) = current_shape;
+                EMU_ASSIGN_EXTENT_IF_DYNAMIC_OR_CHECK_STATIC(Extents::static_extent(i), current_shape, *(it_shape++));
             }
 
             return mapping_type{Extents{dynamic_shape}};
@@ -80,7 +99,7 @@ namespace emu::cast::detail
 
         static optional<mapping_type> mapping_from(const py::buffer_info& buffer_info) noexcept
         {
-            std::array<std::size_t, Extents::rank_dynamic()> dynamic_shape;
+            std::array<size_t, Extents::rank_dynamic()> dynamic_shape;
             auto it_shape = dynamic_shape.begin();
 
             size_t last_extent = 1;
@@ -88,10 +107,11 @@ namespace emu::cast::detail
             for(size_t i = 0; i < Extents::rank(); ++i) {
                 EMU_TRUE_OR_RETURN_NULLOPT(buffer_info.strides[i] > 0);
                 EMU_TRUE_OR_RETURN_NULLOPT(last_stride * last_extent == static_cast<size_t>(buffer_info.strides[i]));
+
                 last_extent = buffer_info.shape[i];
                 last_stride = buffer_info.strides[i];
-                if(Extents::static_extent(i) == std::dynamic_extent)
-                    *(it_shape++) = buffer_info.shape[i];
+
+                EMU_ASSIGN_EXTENT_IF_DYNAMIC_OR_CHECK_STATIC(Extents::static_extent(i), buffer_info.shape[i], *(it_shape++));
             }
 
             return mapping_type{Extents{dynamic_shape}};
@@ -99,24 +119,58 @@ namespace emu::cast::detail
 
         static optional<mapping_type> mapping_from(py::dict array_interface) noexcept
         {
-            //TODO: implement
-            fmt::print(stderr, "WARNING: {} not implemented!\n", __PRETTY_FUNCTION__);
-            return nullopt;
-            // std::array<std::size_t, Extents::rank_dynamic()> dynamic_shape;
-            // auto it_shape = dynamic_shape.begin();
+            std::array<size_t, Extents::rank_dynamic()> dynamic_shape;
+            auto it_shape = dynamic_shape.begin();
 
-            // std::size_t last_extent = 1;
-            // std::size_t last_stride = sizeof(ElementType);
-            // for(auto i = 0; i < Extents::rank(); ++i) {
-            //     EMU_TRUE_OR_RETURN_NULLOPT(buffer_info.strides[i] > 0);
-            //     EMU_TRUE_OR_RETURN_NULLOPT(last_stride * last_extent == buffer_info.strides[i]);
-            //     last_extent = buffer_info.shape[i];
-            //     last_stride = buffer_info.strides[i];
-            //     if(Extents::static_extent(i) == std::dynamic_extent)
-            //         *(it_shape++) = buffer_info.shape[i];
-            // }
+            // shape: typically a tuple in __array_interface__
+            auto shape = array_interface["shape"].cast<py::sequence>();
 
-            // return mapping_type{Extents{dynamic_shape}};
+            // strides: may be missing or None (missing => C-contiguous in NumPy's array interface)
+            py::sequence strides;
+            size_t stride_size = 0;
+
+            if (array_interface.contains("strides")) {
+                if (py::object s = array_interface["strides"]; !s.is_none()) {
+                    strides = s.cast<py::sequence>();
+                    stride_size = strides.size();
+                }
+            }
+
+            EMU_TRUE_OR_RETURN_NULLOPT(stride_size == Extents::rank() or stride_size == 0);
+
+            // If no strides are provided, NumPy specifies C-contiguous.
+            // Accept only if C- and F-contiguity are equivalent (rank<=1 or degenerate extents).
+            if (stride_size == 0) {
+                if constexpr (Extents::rank() > 1) {
+                    size_t non_ones = 0;
+                    for (size_t i = 0; i < Extents::rank(); ++i) {
+                        const auto e = shape[i].cast<size_t>();
+                        if (e != 1) ++non_ones;
+                    }
+                    EMU_TRUE_OR_RETURN_NULLOPT(non_ones <= 1);
+                }
+            }
+
+            size_t last_extent = 1;
+            size_t last_stride = sizeof(ElementType);
+
+            for(size_t i = 0; i < Extents::rank(); ++i) {
+                const auto current_shape  = shape[i].cast<size_t>();
+
+                if(stride_size != 0) {
+                    const auto current_stride = strides[i].cast<size_t>();
+
+                    EMU_TRUE_OR_RETURN_NULLOPT(current_stride > 0);
+                    EMU_TRUE_OR_RETURN_NULLOPT(last_stride * last_extent == current_stride);
+
+                    last_extent = current_shape;
+                    last_stride = current_stride;
+                }
+
+                EMU_ASSIGN_EXTENT_IF_DYNAMIC_OR_CHECK_STATIC(Extents::static_extent(i), current_shape, *(it_shape++));
+            }
+
+            return mapping_type{Extents{dynamic_shape}};
         }
     };
 
@@ -127,14 +181,15 @@ namespace emu::cast::detail
 
         static optional<mapping_type> mapping_from(const py::buffer_info& buffer_info) noexcept
         {
-            std::array<std::size_t, Extents::rank_dynamic()> dynamic_shape;
-            std::array<std::size_t, Extents::rank()> dynamic_strides;
+            std::array<size_t, Extents::rank_dynamic()> dynamic_shape;
+            std::array<size_t, Extents::rank()> dynamic_strides;
             auto it_shape = dynamic_shape.rbegin();
 
             for(size_t i = 0; i < Extents::rank(); ++i) {
                 EMU_TRUE_OR_RETURN_NULLOPT(buffer_info.strides[i] > 0);
-                if(Extents::static_extent(i) == std::dynamic_extent)
-                    *(it_shape++) = buffer_info.shape[i];
+
+                EMU_ASSIGN_EXTENT_IF_DYNAMIC_OR_CHECK_STATIC(Extents::static_extent(i), buffer_info.shape[i], *(it_shape++));
+
                 dynamic_strides[i] = buffer_info.strides[i] / sizeof(ElementType);
             }
 
@@ -162,5 +217,6 @@ namespace emu::cast::detail
         }
     };
 
+#undef EMU_ASSIGN_EXTENT_IF_DYNAMIC_OR_CHECK_STATIC
 
 } // namespace emu::cast::detail

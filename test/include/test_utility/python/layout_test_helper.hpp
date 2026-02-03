@@ -110,17 +110,17 @@ namespace emu_test
 
             std::vector<result_type> mappings;
             if constexpr (ExtentType::rank() == 1) {
-                // mappings.push_back({mapping_type(ExtentType{0}, std::array<size_t, 1>{0}), 0});
-                mappings.push_back({mapping_type(ExtentType{1}, std::array<size_t, 1>{1}), 1});
-                mappings.push_back({mapping_type(ExtentType{5}, std::array<size_t, 1>{2}), 5});
+                // mappings.push_back({mapping_type(ExtentType{0}, std::array{0}), 0});
+                mappings.push_back({mapping_type(ExtentType{1}, std::array{1}), 1});
+                mappings.push_back({mapping_type(ExtentType{5}, std::array{2}), 5});
             } else if constexpr (ExtentType::rank() == 2) {
-                // mappings.push_back({mapping_type(ExtentType{0, 0}, std::array<size_t, 2>{0, 0}), 0});
-                mappings.push_back({mapping_type(ExtentType{1, 1}, std::array<size_t, 2>{1, 2}), 1});
-                mappings.push_back({mapping_type(ExtentType{3, 4}, std::array<size_t, 2>{5, 3}), 12});
+                // mappings.push_back({mapping_type(ExtentType{0, 0}, std::array{0, 0}), 0});
+                mappings.push_back({mapping_type(ExtentType{1, 1}, std::array{1, 2}), 1});
+                mappings.push_back({mapping_type(ExtentType{3, 4}, std::array{5, 3}), 12});
             } else if constexpr (ExtentType::rank() == 3) {
-                // mappings.push_back({mapping_type(ExtentType{0, 0, 0}, std::array<size_t, 3>{0, 0, 0}), 0});
-                mappings.push_back({mapping_type(ExtentType{1, 1, 1}, std::array<size_t, 3>{1, 2, 3}), 1});
-                mappings.push_back({mapping_type(ExtentType{2, 3, 4}, std::array<size_t, 3>{12, 4, 2}), 24});
+                // mappings.push_back({mapping_type(ExtentType{0, 0, 0}, std::array{0, 0, 0}), 0});
+                mappings.push_back({mapping_type(ExtentType{1, 1, 1}, std::array{1, 2, 3}), 1});
+                mappings.push_back({mapping_type(ExtentType{2, 3, 4}, std::array{12, 4, 2}), 24});
             }
             return mappings;
         }
