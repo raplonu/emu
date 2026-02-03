@@ -199,12 +199,6 @@ namespace emu::cast::detail
 
         static optional<mapping_type> mapping_from(py::dict array_interface) noexcept
         {
-          // printf("Layout stride:\n");
-          // py::print("CAI keys:", array_interface.attr("keys")());
-          // py::print("CAI dict:", array_interface);
-
-          EMU_TRUE_OR_RETURN_NULLOPT(array_interface.contains("strides") && !array_interface["strides"].is_none());
-
           constexpr size_t rank = Extents::rank();
 
           const auto shape = array_interface["shape"].cast<py::list>();
@@ -222,28 +216,8 @@ namespace emu::cast::detail
             dynamic_shape[i] = current_shape;
             dynamic_strides[i] = current_stride / sizeof(ElementType);
           }
-          // fmt::println("shape: {}", dynamic_shape);
-          // fmt::println("strides: {}", dynamic_strides);
 
-          auto mapping = mapping_type{Extents{dynamic_shape}, dynamic_strides};
-          return mapping;
-
-          //TODO: implement
-          // fmt::print(stderr, "WARNING: {} not implemented!\n", __PRETTY_FUNCTION__);
-
-          // return nullopt;
-          // std::array<std::size_t, Extents::rank_dynamic()> dynamic_shape;
-          // std::array<std::size_t, Extents::rank()> dynamic_strides;
-          // auto it_shape = dynamic_shape.rbegin();
-
-          // for(auto i = 0; i < Extents::rank(); ++i) {
-          //     EMU_TRUE_OR_RETURN_NULLOPT(buffer_info.strides[i] > 0);
-          //     if(Extents::static_extent(i) == std::dynamic_extent)
-          //         *(it_shape++) = buffer_info.shape[i];
-          //     dynamic_strides[i] = buffer_info.strides[i] / sizeof(ElementType);
-          // }
-
-          // return mapping_type{Extents{dynamic_shape}, dynamic_strides};
+          return mapping_type{Extents{dynamic_shape}, dynamic_strides};
         }
     };
 
