@@ -2,6 +2,7 @@
 
 #include <test_utility/python/core.hpp>
 #include <test_utility/python/view_test.hpp>
+#include <test_utility/python/capsule_test.hpp>
 #include <test_utility/python/layout_test_helper.hpp>
 #include <test_utility/python/accessor_test_helper.hpp>
 
@@ -15,7 +16,8 @@ namespace
     REGISTER_TYPED_TEST_SUITE_P(
         PythonViewTest,  // The first argument is the test case name.
         // The rest of the arguments are the test names.
-        CppToPythonToCppView
+        CppToPythonToCppView,
+        CppToPythonToCppCapsule
     );
 
     namespace py = pybind11;

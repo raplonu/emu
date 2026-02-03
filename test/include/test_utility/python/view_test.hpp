@@ -21,10 +21,10 @@ namespace
         using const_view_type = typename TestFixture::const_view_type;
         using element_type = typename TestFixture::element_type;
 
-        using tensor_t = emu::tensor_traits<view_type>;
-        using ctensor_t = emu::tensor_traits<const_view_type>;
 
         TestFixture::for_each_test_value([](const view_type& view){
+            using tensor_t = emu::tensor_traits<view_type>;
+
             // c++ to python
             py::object obj = py::cast(view);
 
@@ -56,6 +56,8 @@ namespace
         });
 
         TestFixture::for_each_const_test_value([](const const_view_type& cview){
+            using ctensor_t = emu::tensor_traits<const_view_type>;
+
             // c++ to python
             py::object obj = py::cast(cview);
 

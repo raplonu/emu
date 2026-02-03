@@ -138,6 +138,7 @@ namespace emu::cast::detail
 
             EMU_TRUE_OR_RETURN_NULLOPT(stride_size == Extents::rank() or stride_size == 0);
 
+            //TODO: needs better review about this block:
             // If no strides are provided, NumPy specifies C-contiguous.
             // Accept only if C- and F-contiguity are equivalent (rank<=1 or degenerate extents).
             if (stride_size == 0) {
