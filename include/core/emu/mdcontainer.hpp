@@ -11,11 +11,32 @@
 
 namespace emu
 {
-    template<typename T, typename Extents, typename LayoutPolicy = layout_right, typename AccessorPolicy = default_accessor<T>>
-    using mdcontainer = emu::detail::basic_mdcontainer<
-            T, Extents, LayoutPolicy, AccessorPolicy
-        >;
 
+    template<
+        typename T, typename Extents,
+        typename LayoutPolicy = layout_right,
+        typename AccessorPolicy = default_accessor<T>
+    >
+    struct mdcontainer
+        : emu::detail::basic_mdcontainer<
+            T,
+            Extents,
+            LayoutPolicy,
+            AccessorPolicy
+        >
+    {
+        using base = emu::detail::basic_mdcontainer<T, Extents, LayoutPolicy, AccessorPolicy>;
+
+        using base::base;
+
+        constexpr mdcontainer() noexcept = default;
+
+        friend constexpr void swap(mdcontainer& x, mdcontainer& y) noexcept {
+            swap(static_cast<base&>(x), static_cast<base&>(y));
+        }
+    };
+
+    EMU_DEFINE_MDCONTAINER_DEDUCTION_GUIDES(mdcontainer);
     EMU_DEFINE_MDCONTAINER_ALIAS;
 
     /***************************************************/
@@ -103,29 +124,5 @@ namespace emu
         auto u_ptr = std::make_unique<T[]>(size );
         return {u_ptr.get(), std::move(u_ptr), map};
     }
-
-    /*constructor 7*/
-    //TODO if need be
-
-    // template <class ElementType, class Extents, class LayoutPolicy,
-    //       class AccessorPolicy, class... SliceSpecifiers>
-    // constexpr auto submdcontainer(
-    //     const mdcontainer<ElementType, Extents, LayoutPolicy, AccessorPolicy> &src,
-    //     SliceSpecifiers... slices)
-    // {
-    //     return mdcontainer(emu::submdspan(src, EMU_FWD(slices)...), static_cast<const capsule&>(src) );
-    // }
-
-namespace spe
-{
-    template <typename ElementType, typename Extents, typename LayoutPolicy,
-              typename AccessorPolicy>
-    struct info_t< mdcontainer<ElementType, Extents, LayoutPolicy, AccessorPolicy> >
-        : info_t<mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy>>
-    {
-        //TODO: Adds the capsule info
-    };
-
-} // namespace spe
 
 } // namespace emu

@@ -15,9 +15,9 @@ add_executable(emucoretest
     src/core/concepts_test.cpp
     src/core/capsule_test.cpp
     src/core/cstring_view_test.cpp
-    # src/core/container_test.cpp
-    # src/core/host/container_test.cpp
-    # src/core/mdcontainer_test.cpp
+    src/core/container_test.cpp
+    src/core/host/container_test.cpp
+    src/core/mdcontainer_test.cpp
     src/core/math_test.cpp
     src/core/pointer_test.cpp
     src/core/functor_test.cpp

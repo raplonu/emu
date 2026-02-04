@@ -78,7 +78,16 @@ namespace cpts
 {
 
     template <typename T>
-    concept mdspan = specialization_of<T, stdex::mdspan>;
+    concept mdspan
+        = std::derived_from<
+            T,
+            stdex::mdspan<
+                typename T::element_type,
+                typename T::extents_type,
+                typename T::layout_type,
+                typename T::accessor_type
+            >
+        >;
 
     template <typename T>
     concept const_mdspan = mdspan<T> and std::is_const_v<typename T::element_type>;
@@ -120,19 +129,28 @@ namespace cpts
      * @param slices
      * @return sub MdSpan
      */
-    template <cpts::mdspan MdSpan, class... SliceSpecifiers>
+    template<
+        template<typename, typename, typename, typename> class MdSpan,
+        typename T,
+        typename Extents,
+        typename LayoutPolicy,
+        typename AccessorPolicy,
+        class... SliceSpecifiers
+    >
     constexpr auto submdspan(
-        const MdSpan &src, SliceSpecifiers... slices)
+        const MdSpan<T, Extents, LayoutPolicy, AccessorPolicy> &src, SliceSpecifiers... slices)
     {
+
         return [&]<std::size_t... Is>(std::index_sequence<Is...>) {
             auto res = stdex::submdspan(src, slices..., ((void)Is, full_extent)...);
 
-            if constexpr (requires { src.actual_from_base(res); })
-                return src.actual_from_base(res);
-            else
-                return res;
+            return MdSpan(
+                res.data_handle(),
+                res.mapping(),
+                res.accessor()
+            );
 
-        } (std::make_index_sequence<MdSpan::rank() - sizeof...(SliceSpecifiers)>{});
+        } (std::make_index_sequence<Extents::rank() - sizeof...(SliceSpecifiers)>{});
     }
 
     template<typename LayoutPolicy> inline const char* layout_name() { return "unknow"; }
@@ -263,17 +281,15 @@ namespace spe
         using element_type = typename type::element_type;
         using mapping_type = typename type::mapping_type;
 
-        info_t< mapping_type > mapping_info;
-
         constexpr auto format_type(fmt::format_context::iterator it) const {
             it = fmt::format_to(it, "mdspan<{}, ", emu::type_name<element_type>);
-            it = mapping_info.format_type(it);
+            it = format_type_info<mapping_type>(it);
             return fmt::format_to(it, ">");
         }
 
         constexpr auto format_value(const type &t, fmt::format_context::iterator it) const {
             it = fmt::format_to(it, "@ {}, ", fmt::ptr(t.data_handle()));
-            it = mapping_info.format_value(t.mapping(), it);
+            it = format_value_info(t.mapping(), it);
             return it;
         }
     };

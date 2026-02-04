@@ -1,9 +1,11 @@
 #pragma once
 
 #include <emu/tensor_traits.hpp>
+#include <emu/pybind11/cast/detail/capsule.hpp>
 #include <emu/pybind11/cast/detail/tensor_caster.hpp>
 
 #include <emu/span.hpp>
+#include <emu/container.hpp>
 
 PYBIND11_NAMESPACE_BEGIN(PYBIND11_NAMESPACE)
 
@@ -36,7 +38,12 @@ namespace detail
 
         bool load(handle src, bool convert) {
             return base_caster::from_python(src, convert).map([&](auto new_value){
-                value = cpp_type(new_value.data_handle(), new_value.size());
+                if constexpr (emu::cpts::container<cpp_type>) {
+                    auto capsule = emu::pybind11::detail::handle_to_capsule(src);
+                    value = cpp_type(new_value.data_handle(), new_value.size(), std::move(capsule));
+                } else {
+                    value = cpp_type(new_value.data_handle(), new_value.size());
+                }
                 return true;
             }).value_or(false);
         }
@@ -45,8 +52,15 @@ namespace detail
             // In order to avoid copying data, we declare a dummy parent.
             // More info here: https://github.com/pybind/pybind11/issues/323#issuecomment-575717041
             // return ::pybind11::none();
-            ::pybind11::str dummy_data_owner;
-            return base_caster::to_python(emu::as_tensor(value), dummy_data_owner).inc_ref();
+            auto md_span = emu::as_tensor(value);
+
+            if constexpr (emu::cpts::container<cpp_type>) {
+                auto capsule = emu::pybind11::detail::capsule_to_handle(value.capsule());
+                return base_caster::to_python(md_span, capsule).inc_ref();
+            } else {
+                ::pybind11::str dummy_data_owner;
+                return base_caster::to_python(md_span, dummy_data_owner).inc_ref();
+            }
         }
     };
 

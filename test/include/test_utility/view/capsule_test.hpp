@@ -5,6 +5,7 @@
 #include <test_utility/view/core.hpp>
 
 #include <emu/scoped.hpp>
+#include <emu/tensor_traits.hpp>
 
 namespace
 {
@@ -177,11 +178,13 @@ namespace
         using view_type = typename TestFixture::view_type;
         using data_type = typename TestFixture::data_type;
 
+        using tensor_t = emu::tensor_traits<view_type>;
+
         std::array<data_type, 5> arr = {1, 2, 3, 4, 5};
 
         const view_type con{ arr };
 
-        emu_test::expect_address(con, arr.data());
+        EXPECT_EQ(tensor_t::data_handle(con), arr.data());
         EXPECT_EQ(con.size(), arr.size());
         EXPECT_EQ(con.use_count(), 0);
     }

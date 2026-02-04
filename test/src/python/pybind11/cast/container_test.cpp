@@ -8,8 +8,7 @@
 
 #include <emu/container.hpp>
 
-#include <emu/pybind11/cast/container.hpp>
-#include <emu/pybind11/cast/span.hpp> // Only used to check cast conflicts
+#include <emu/pybind11/cast/span.hpp>
 
 namespace
 {

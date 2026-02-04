@@ -8,7 +8,6 @@
 #include <emu/mdspan.hpp>
 
 #include <emu/pybind11/cast/mdspan.hpp>
-#include <emu/pybind11/cast/mdcontainer.hpp> // Only used to check cast conflicts
 
 namespace
 {

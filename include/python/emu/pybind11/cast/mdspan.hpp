@@ -1,5 +1,7 @@
 #pragma once
 
+#include <emu/mdcontainer.hpp>
+#include <emu/pybind11/cast/detail/capsule.hpp>
 #include <emu/pybind11/cast/detail/tensor_caster.hpp>
 
 PYBIND11_NAMESPACE_BEGIN(PYBIND11_NAMESPACE)
@@ -30,7 +32,12 @@ namespace detail
 
         bool load(handle src, bool convert) {
             return base_caster::from_python(src, convert).map([&](auto new_value){
-                value = std::move(new_value);
+                if constexpr (emu::cpts::mdcontainer<cpp_type>) {
+                    auto capsule = emu::pybind11::detail::handle_to_capsule(src);
+                    value = cpp_type(new_value, std::move(capsule));
+                } else {
+                    value = std::move(new_value);
+                }
                 return true;
             }).value_or(false);
         }
@@ -38,8 +45,14 @@ namespace detail
         static pybind11::handle cast(cpp_type value, pybind11::return_value_policy /* policy */, pybind11::handle /* parent */) {
             // In order to avoid copying data, we declare a dummy parent.
             // More info here: https://github.com/pybind/pybind11/issues/323#issuecomment-575717041
-            ::pybind11::str dummy_data_owner;
-            return base_caster::to_python(value, dummy_data_owner).inc_ref();
+
+            if constexpr (emu::cpts::mdcontainer<cpp_type>) {
+                auto capsule = emu::pybind11::detail::capsule_to_handle(value.capsule());
+                return base_caster::to_python(emu::as_tensor(value), capsule).inc_ref();
+            } else {
+                ::pybind11::str dummy_data_owner;
+                return base_caster::to_python(value, dummy_data_owner).inc_ref();
+            }
         }
     };
 

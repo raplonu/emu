@@ -170,7 +170,7 @@ namespace emu::cast::detail
             return py::hasattr(handle, "__cuda_array_interface__");
         }
 
-        static optional<cpp_type> from_python(py::handle handle, bool convert)
+        static optional<cpp_type> from_python(py::handle handle, bool /* convert */)
         {
             return pybind11::try_attr(handle, "__cuda_array_interface__")
                 .and_then(pybind11::try_cast<py::dict>)

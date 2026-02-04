@@ -66,8 +66,7 @@ namespace detail
 
         template <typename... Args>
         info_holder_t(const T &t, Args&&... args)
-            : t(t)
-            , info{std::forward<Args>(args)...}
+            : t(t), info{EMU_FWD(args)...}
         {}
 
         constexpr auto format_type(fmt::format_context::iterator it) const {
@@ -81,14 +80,24 @@ namespace detail
 
 } // namespace detail
 
+    template<typename T, typename... Args>
+    auto format_type_info(fmt::format_context::iterator it, Args&&... args) {
+        return spe::info_t<T>{EMU_FWD(args)...}.format_type(it);
+    }
+
+    template<typename T, typename... Args>
+    auto format_value_info(const T &t, fmt::format_context::iterator it, Args&&... args) {
+        return spe::info_t<T>{EMU_FWD(args)...}.format_value(t, it);
+    }
+
     template <typename T, typename... Args>
     constexpr auto info(const T &t, Args&&... args) {
-        return detail::info_holder_t<T>{t, std::forward<Args>(args)...};
+        return detail::info_holder_t<T>{t, EMU_FWD(args)...};
     }
 
     template<typename T, typename... Args>
     constexpr std::string info_str(const T &t, Args&&... args) {
-        return fmt::to_string(info(t, std::forward<Args>(args)...));
+        return fmt::to_string(info(t, EMU_FWD(args)...));
     }
 
 } // namespace emu

@@ -10,6 +10,25 @@
 namespace emu
 {
 
+namespace detail
+{
+
+    template <typename T, typename Default, typename = void>
+    struct accessor_type_or_impl {
+        using type = Default;
+    };
+
+    // Specialization: enabled only if T::accessor_type exists
+    template <typename T, typename Default>
+    struct accessor_type_or_impl<T, Default, std::void_t<typename T::accessor_type>> {
+        using type = typename T::accessor_type;
+    };
+
+    template <typename T, typename Default>
+    using accessor_type_or = typename accessor_type_or_impl<T, Default>::type;
+
+} // namespace detail
+
     template<typename T>
     struct tensor_traits;
 
@@ -159,7 +178,7 @@ namespace emu
         using size_type = std::size_t;
         using rank_type = std::size_t;
 
-        using accessor_type = default_accessor<element_type>;
+        using accessor_type = detail::accessor_type_or<Range, default_accessor<element_type>>;
 
         using data_handle_type = typename accessor_type::data_handle_type;
         using reference = typename accessor_type::reference;
@@ -172,8 +191,11 @@ namespace emu
             return mapping_type(extents_type{size(range)});
         }
 
-        static constexpr accessor_type accessor(const Range&) noexcept {
-            return accessor_type();
+        static constexpr accessor_type accessor(const Range& range) noexcept {
+            if constexpr (requires { range.accessor(); })
+                return range.accessor();
+            else
+                return accessor_type();
         }
 
         static constexpr size_type size(const Range& range) noexcept {

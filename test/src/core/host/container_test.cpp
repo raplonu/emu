@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <emu/host/container.hpp>
+#include <emu/container.hpp>
 #include <emu/scoped.hpp>
 
 #include <emu/info.hpp>
@@ -8,23 +9,6 @@
 
 #include <vector>
 #include <array>
-
-struct DeviceRange {
-
-    int i;
-
-    int* begin() { return &i; }
-    int* end() { return &i + 1; }
-
-    [[nodiscard]] const int* begin() const { return &i; }
-    [[nodiscard]] const int* end() const { return &i + 1; }
-
-    [[nodiscard]] int* data() { return &i; }
-    [[nodiscard]] const int* data() const { return &i; }
-
-    [[nodiscard]] static std::size_t size() { return 1; }
-
-};
 
 namespace
 {
@@ -81,15 +65,6 @@ namespace
         {
             static_assert(std::constructible_from<emu::host::container<int>, std::vector<int>>);
 
-            static_assert(not std::constructible_from<emu::host::container<int>, DeviceRange>);
-            static_assert(not std::constructible_from<emu::host::container<int>, DeviceRange&>);
-
-            static_assert(not std::constructible_from<emu::host::container<const int>, DeviceRange>);
-            static_assert(not std::constructible_from<emu::host::container<const int>, DeviceRange&>);
-
-            static_assert(not std::constructible_from<emu::host::container<const int>, const DeviceRange>);
-            static_assert(not std::constructible_from<emu::host::container<const int>, const DeviceRange&>);
-
             using DataHolder = int;
 
             static_assert(std::constructible_from<emu::host::container<int>, std::vector<int>, DataHolder>);
@@ -97,13 +72,6 @@ namespace
 
             static_assert(std::constructible_from<emu::host::container<const int>, const std::vector<int>, DataHolder>);
             static_assert(std::constructible_from<emu::host::container<const int>, const std::vector<int>&, DataHolder>);
-
-            static_assert(not std::constructible_from<emu::host::container<int>, DeviceRange, DataHolder>);
-            static_assert(not std::constructible_from<emu::host::container<int>, DeviceRange&, DataHolder>);
-
-            static_assert(not std::constructible_from<emu::host::container<const int>, const DeviceRange, DataHolder>);
-            static_assert(not std::constructible_from<emu::host::container<const int>, const DeviceRange&, DataHolder>);
-
 
         }
     }

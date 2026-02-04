@@ -3,6 +3,7 @@
 #include <emu/config.hpp>
 #include <emu/concepts.hpp>
 #include <emu/utility.hpp>
+#include <emu/info.hpp>
 
 #include <gsl/pointers>
 
@@ -286,6 +287,17 @@ namespace cpts
         else
             return {};
     }
+
+namespace spe
+{
+    template<>
+    struct info_t< capsule > : default_info_t< capsule >
+    {
+        auto format_value(const capsule &cap, fmt::format_context::iterator it) const {
+            return fmt::format_to(it, "count: {}", cap.use_count());
+        }
+    };
+} // namespace spe
 
 } // namespace emu
 

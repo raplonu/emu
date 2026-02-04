@@ -197,7 +197,7 @@ namespace emu::cast::detail
             return mapping_type{Extents{dynamic_shape}, dynamic_strides};
         }
 
-        static optional<mapping_type> mapping_from(py::dict array_interface) noexcept
+        static optional<mapping_type> mapping_from(py::dict /* array_interface */) noexcept
         {
             //TODO: implement
             fmt::print(stderr, "WARNING: {} not implemented!\n", __PRETTY_FUNCTION__);

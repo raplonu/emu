@@ -19,7 +19,6 @@ namespace
 
         using view_type = typename TestFixture::view_type;
         using const_view_type = typename TestFixture::const_view_type;
-        using element_type = typename TestFixture::element_type;
 
         TestFixture::for_each_test_value([](const view_type& view){
             using tensor_t = emu::tensor_traits<view_type>;

@@ -8,7 +8,6 @@
 #include <emu/cuda/device/span.hpp>
 
 #include <emu/pybind11/cast/span.hpp>
-#include <emu/pybind11/cast/container.hpp> // Only used to check cast conflicts
 
 namespace
 {
