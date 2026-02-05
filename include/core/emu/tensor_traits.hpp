@@ -10,6 +10,13 @@
 namespace emu
 {
 
+template<typename T>
+struct tensor_traits {
+    // By default, all types are considered unsupported tensors. Specializations will provide actual traits for supported tensor types.
+    //TODO: Evaluate the possibility to provide some default implementations for non-tensor types, such as scalar types or other ranges.
+    constexpr static bool unsupported = true;
+};
+
 namespace detail
 {
 
@@ -29,88 +36,38 @@ namespace detail
 
 } // namespace detail
 
+namespace cpts
+{
+
+    // check if T is not unsupported by tensor_traits
     template<typename T>
-    struct tensor_traits;
+    concept tensor = not requires { tensor_traits<T>::unsupported; };
 
-    // template<typename T>
-    // struct tensor_traits
-    // {
-    //     static constexpr std::size_t rank = 0;
-
-    //     using extents_type = dims<rank>;
-    //     using layout_type = layout_right;
-
-    //     using mapping_type = typename layout_type::mapping<extents_type>;
-
-    //     using element_type = T;
-    //     using value_type = rm_cvref<element_type>;
-
-    //     using accessor_type = default_accessor<element_type>;
-
-    //     using data_handle_type = typename accessor_type::data_handle_type;
-    //     using reference = typename accessor_type::reference;
-
-    //     static constexpr data_handle_type data_handle(T& t) noexcept {
-    //         return std::addressof(t);
-    //     }
-
-    //     static constexpr mapping_type mapping(const T&) noexcept {
-    //         return mapping_type();
-    //     }
-
-    //     static constexpr accessor_type accessor(const T&) noexcept {
-    //         return accessor_type();
-    //     }
-
-    //     static constexpr std::size_t size(const T&) noexcept {
-    //         return 1; // Default size for non-tensor types
-    //     }
-
-    //     static constexpr bool is_empty(const T&) noexcept {
-    //         return false; // Default empty check for non-tensor types
-    //     }
-
-    //     static constexpr std::size_t extent(const T&, std::size_t) noexcept {
-    //         return 0; // Default extent for non-tensor types
-    //     }
-
-    //     static constexpr std::size_t stride(const T&, std::size_t) noexcept {
-    //         return 1;
-    //     }
-
-    //     static constexpr bool is_unique(const T&) { return true; }
-    //     static constexpr bool is_exhaustive(const T&) { return true; }
-    //     static constexpr bool is_strided(const T&) { return true; }
-    //     static constexpr bool is_always_unique(const T&) { return true; }
-    //     static constexpr bool is_always_exhaustive(const T&) { return true; }
-    //     static constexpr bool is_always_strided(const T&) { return true; }
-
-    //     static constexpr std::size_t required_span_size(const T&) {
-    //         return 1;
-    //     }
-    // };
+} // namespace cpts
 
     template<cpts::mdspan MdSpan>
     struct tensor_traits<MdSpan>
     {
-        static constexpr std::size_t rank = MdSpan::rank();
+        using type = rm_cvref<MdSpan>;
 
-        using extents_type = typename MdSpan::extents_type;
-        using layout_type = typename MdSpan::layout_type;
+        static constexpr std::size_t rank = type::rank();
 
-        using mapping_type = typename MdSpan::mapping_type;
+        using extents_type = typename type::extents_type;
+        using layout_type = typename type::layout_type;
 
-        using element_type = typename MdSpan::element_type;
-        using value_type = typename MdSpan::value_type;
+        using mapping_type = typename type::mapping_type;
 
-        using index_type = typename MdSpan::index_type;
-        using size_type = typename MdSpan::size_type;
-        using rank_type = typename MdSpan::rank_type;
+        using element_type = typename type::element_type;
+        using value_type = typename type::value_type;
 
-        using accessor_type = typename MdSpan::accessor_type;
+        using index_type = typename type::index_type;
+        using size_type = typename type::size_type;
+        using rank_type = typename type::rank_type;
 
-        using data_handle_type = typename MdSpan::data_handle_type;
-        using reference = typename MdSpan::reference;
+        using accessor_type = typename type::accessor_type;
+
+        using data_handle_type = typename type::data_handle_type;
+        using reference = typename type::reference;
 
         static constexpr data_handle_type data_handle(const MdSpan& mdspan) noexcept {
             return mdspan.data_handle();
@@ -178,13 +135,14 @@ namespace detail
         using size_type = std::size_t;
         using rank_type = std::size_t;
 
-        using accessor_type = detail::accessor_type_or<Range, default_accessor<element_type>>;
+        using accessor_type = detail::accessor_type_or<rm_cvref<Range>, default_accessor<element_type>>;
 
         using data_handle_type = typename accessor_type::data_handle_type;
         using reference = typename accessor_type::reference;
 
-        static constexpr data_handle_type data_handle(const Range& range) noexcept {
-            return std::ranges::data(range);
+        template<typename R>
+        static constexpr data_handle_type data_handle(R&& range) noexcept {
+            return std::ranges::data(EMU_FWD(range));
         }
 
         static constexpr mapping_type mapping(const Range& range) noexcept {

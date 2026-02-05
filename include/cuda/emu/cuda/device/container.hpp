@@ -39,7 +39,7 @@ namespace emu::cuda::device
     EMU_DEFINE_CONTAINER_DEDUCTION_GUIDES(container);
 
     template<typename T>
-    container<T> make_container(const device_t& device, size_t size) {
+    container<T> make_container(device_ref device, size_t size) {
         auto u_ptr = device::make_unique<T[]>(device, size);
         return container<T>(u_ptr.get(), size, std::move(u_ptr));
     }

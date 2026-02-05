@@ -16,8 +16,6 @@ namespace
         // The rest of the arguments are the test names.
         CppToPythonToCppView);
 
-    namespace py = pybind11;
-
     template<typename T, typename ExtentType, typename LayoutHelper>
     struct mdspan_test_helper : emu_test::ViewTestHelperBase< mdspan_test_helper<T, ExtentType, LayoutHelper> >
     {

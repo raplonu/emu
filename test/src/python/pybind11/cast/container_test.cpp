@@ -19,8 +19,6 @@ namespace
         CppToPythonToCppCapsule
     );
 
-    namespace py = pybind11;
-
     template<typename T>
     struct container_test_helper : emu_test::ViewTestHelperBase< container_test_helper<T> >
     {

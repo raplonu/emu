@@ -59,7 +59,7 @@ namespace emu::cuda::device
         };
 
         /// @brief The CUDA device this allocator targets
-        device_t device;
+        device_ref device;
 
         /**
          * @brief Default constructor
@@ -68,7 +68,7 @@ namespace emu::cuda::device
          *
          * @note This constructor is noexcept
          */
-        allocator() noexcept: device(device::current()) {}
+        allocator() noexcept: device(current_device()) {}
 
         /**
          * @brief Device-specific constructor
@@ -79,7 +79,7 @@ namespace emu::cuda::device
          *
          * @note This constructor is noexcept
          */
-        allocator(device_t device) noexcept: device(device) {}
+        allocator(device_ref device) noexcept: device(device) {}
 
         /**
          * @brief Copy constructor from different type
@@ -110,7 +110,7 @@ namespace emu::cuda::device
          */
         pointer allocate(size_type n)
         {
-            device.make_current();
+            set_current(device);
 
             return emu::cuda::device::detail::allocate<value_type>(n);
         }

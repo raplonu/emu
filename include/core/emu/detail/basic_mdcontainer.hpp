@@ -24,21 +24,20 @@ namespace cpts
     template <typename T>
     concept mdcontainer
         = std::derived_from<
-            T,
+            rm_cvref<T>,
             emu::detail::basic_mdcontainer<
-                typename T::element_type,
-                typename T::extents_type,
-                typename T::layout_type,
-                typename T::accessor_type
+                typename rm_cvref<T>::element_type,
+                typename rm_cvref<T>::extents_type,
+                typename rm_cvref<T>::layout_type,
+                typename rm_cvref<T>::accessor_type
             >
         >;
 
     template <typename T>
-    concept const_mdcontainer = mdspan<T> and std::is_const_v<typename T::element_type>;
+    concept const_mdcontainer = mdspan<T> and std::is_const_v<typename rm_cvref<T>::element_type>;
 
     template <typename T>
-    concept mutable_mdcontainer = mdspan<T> and (not std::is_const_v<typename T::element_type>);
-
+    concept mutable_mdcontainer = mdspan<T> and (not std::is_const_v<typename rm_cvref<T>::element_type>);
 
 } // namespace detail
 
@@ -46,7 +45,7 @@ namespace detail
 {
     struct exts_flag_t {};
 
-    template<typename T, typename Extents, typename LayoutPolicy = layout_right, typename AccessorPolicy>
+    template<typename T, typename Extents, typename LayoutPolicy, typename AccessorPolicy>
     struct basic_mdcontainer : mdspan<T, Extents, LayoutPolicy, AccessorPolicy>, emu::capsule
     {
         using mdspan_type = mdspan<T, Extents, LayoutPolicy, AccessorPolicy>;

@@ -25,7 +25,6 @@ namespace emu
 
         /// The object to be destroyed.
         static constexpr bool noexcept_invoke = std::is_nothrow_invocable_v<function_type, value_type>;
-        //();EMU_NOEXCEPT_EXPR(std::declval<function_type&>()(std::declval<value_type&>()));
 
         /**
          * @brief Default constructor.
@@ -43,8 +42,9 @@ namespace emu
         template<cpts::not_derived_from<scoped> T1>
         constexpr scoped(T1 && value, bool owning = true)
             EMU_NOEXCEPT_EXPR(value_type(EMU_FWD(value)), function_type())
-        :
-            value(EMU_FWD(value)), function(), owning_(owning)
+            :value_(EMU_FWD(value))
+            , function_()
+            , owning_(owning)
         {}
 
         /**
@@ -59,8 +59,9 @@ namespace emu
         template<typename T1, cpts::not_equivalent<bool> F1>
         constexpr scoped(T1 && value, F1 && function, bool owning = true)
             EMU_NOEXCEPT_EXPR(value_type(EMU_FWD(value)), function_type(EMU_FWD(function)))
-        :
-            value(EMU_FWD(value)), function(EMU_FWD(function)), owning_(owning)
+            : value_(EMU_FWD(value))
+            , function_(EMU_FWD(function))
+            , owning_(owning)
         {}
 
         scoped(const scoped & oc) = delete;
@@ -71,8 +72,9 @@ namespace emu
          * @param oc The scoped object to be moved.
          */
         constexpr scoped(scoped && oc)
-            EMU_NOEXCEPT_EXPR(value_type(std::move(oc.value)), function_type(std::move(oc.function)))
-            : value(std::move(oc.value)), function(std::move(oc.function))
+            EMU_NOEXCEPT_EXPR(value_type(std::move(oc.value_)), function_type(std::move(oc.function_)))
+            : value_(std::move(oc.value_))
+            , function_(std::move(oc.function_))
             , owning_(std::exchange(oc.owning_, false))
         {}
 
@@ -85,12 +87,12 @@ namespace emu
          * @return scoped& The reference to the moved scoped object.
          */
         scoped& operator=(scoped && oc)
-            noexcept(noexcept_invoke and noexcept(std::declval<value_type&>() = std::move(oc.value), std::declval<function_type&>() = std::move(oc.function)))
+            noexcept(noexcept_invoke and noexcept(std::declval<value_type&>() = std::move(oc.value_), std::declval<function_type&>() = std::move(oc.function_)))
         {
             invoke();
 
-            value    = std::move(oc.value);
-            function = std::move(oc.function);
+            value_    = std::move(oc.value_);
+            function_ = std::move(oc.function_);
             owning_ = std::exchange(oc.owning_, false);
 
             return *this;
@@ -104,13 +106,17 @@ namespace emu
             invoke();
         }
 
+        constexpr value_type& value() & noexcept { return value_; }
+        constexpr const value_type& value() const& noexcept { return value_; }
+        constexpr value_type value() && noexcept { return std::move(value_); }
+
         /**
          * @brief Dereference operator.
          *
          * @return T& The reference to the stored value.
          */
         constexpr T& operator*() noexcept {
-            return value;
+            return value_;
         }
 
         /**
@@ -119,7 +125,7 @@ namespace emu
          * @return const T& The const reference to the stored value.
          */
         constexpr const T& operator*() const noexcept {
-            return value;
+            return value_;
         }
 
         // TODO: Adds value methods.
@@ -134,7 +140,7 @@ namespace emu
             EMU_NOEXCEPT_EXPR(std::move(std::declval<value_type&>()))
         {
             owning_ = false;
-            return std::move(value);
+            return std::move(value_);
         }
 
         /**
@@ -149,7 +155,7 @@ namespace emu
             noexcept(noexcept_invoke and noexcept(std::declval<value_type&>() = EMU_FWD(new_value)))
         {
             invoke();
-            value = EMU_FWD(new_value);
+            value_ = EMU_FWD(new_value);
             owning_ = owning;
         }
 
@@ -169,8 +175,8 @@ namespace emu
                 and noexcept(std::declval<function_type&>() = EMU_FWD(new_function)))
         {
             invoke();
-            value = EMU_FWD(new_value);
-            function = EMU_FWD(new_function);
+            value_ = EMU_FWD(new_value);
+            function_ = EMU_FWD(new_function);
             owning_ = owning;
         }
 
@@ -189,14 +195,12 @@ namespace emu
          *
          */
         void invoke() noexcept(noexcept_invoke) {
-            if (owning_) function(value);
+            if (owning_) function_(value_);
         }
 
-    public:
-        value_type value;
-        function_type function;
-
     private:
+        value_type value_;
+        function_type function_;
         bool owning_ = false;
     };
 
@@ -213,26 +217,26 @@ namespace emu
         template<cpts::not_derived_from<scoped> F1>
         constexpr scoped(F1 function, bool owning = true)
             EMU_NOEXCEPT_EXPR(function_type(EMU_FWD(function))):
-            function(EMU_FWD(function)), owning_(owning)
+            function_(EMU_FWD(function)), owning_(owning)
         {}
 
         scoped(const scoped & oc) = delete;
 
         constexpr scoped(scoped && oc)
-            EMU_NOEXCEPT_EXPR(function_type(std::move(oc.function)))
+            EMU_NOEXCEPT_EXPR(function_type(std::move(oc.function_)))
         :
-            function(std::move(oc.function)),
+            function_(std::move(oc.function_)),
             owning_(std::exchange(oc.owning_, false))
         {}
 
         scoped& operator=(const scoped & oc) = delete;
 
         scoped& operator=(scoped && oc)
-            noexcept(noexcept_invoke and noexcept(std::declval<function_type&>() = std::move(oc.function)))
+            noexcept(noexcept_invoke and noexcept(std::declval<function_type&>() = std::move(oc.function_)))
         {
             invoke();
 
-            function = std::move(oc.function);
+            function_ = std::move(oc.function_);
             owning_ = std::exchange(oc.owning_, false);
 
             return *this;
@@ -259,13 +263,11 @@ namespace emu
 
     private:
         void invoke() {
-            if (owning_) function();
+            if (owning_) function_();
         }
 
-    public:
-        function_type function;
-
     private:
+        function_type function_;
         bool owning_ = true;
     };
 

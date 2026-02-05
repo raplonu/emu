@@ -80,20 +80,20 @@ namespace cpts
     template <typename T>
     concept mdspan
         = std::derived_from<
-            T,
+            rm_cvref<T>,
             stdex::mdspan<
-                typename T::element_type,
-                typename T::extents_type,
-                typename T::layout_type,
-                typename T::accessor_type
+                typename rm_cvref<T>::element_type,
+                typename rm_cvref<T>::extents_type,
+                typename rm_cvref<T>::layout_type,
+                typename rm_cvref<T>::accessor_type
             >
         >;
 
     template <typename T>
-    concept const_mdspan = mdspan<T> and std::is_const_v<typename T::element_type>;
+    concept const_mdspan = mdspan<T> and std::is_const_v<typename rm_cvref<T>::element_type>;
 
     template <typename T>
-    concept mutable_mdspan = mdspan<T> and (not std::is_const_v<typename T::element_type>);
+    concept mutable_mdspan = mdspan<T> and (not std::is_const_v<typename rm_cvref<T>::element_type>);
 
     template <typename T>
     concept extents = is_extents<T>;
@@ -265,7 +265,7 @@ namespace spe
 
         constexpr auto format_value(const Mapping &m, fmt::format_context::iterator it) const {
             // perform both compile time and runtime check for exhaustive mapping.
-            if constexpr (m.is_always_exhaustive()) /* and */ if (m.is_exhaustive())
+            if (m.is_always_exhaustive() and m.is_exhaustive())
                     return fmt::format_to(it, "[{}]", emu::extent(m));
 
             // otherwise, the mapping is not exhaustive, so we print the strides.

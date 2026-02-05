@@ -94,7 +94,7 @@ namespace detail
      */
     template<typename... TypeLists, typename Caller, typename... Args>
     void product(Caller&& c, Args&&... args) {
-        detail::apply_impl<TypeLists...>::template product(EMU_FWD(c), EMU_FWD(args)...);
+        detail::apply_impl<TypeLists...>::product(EMU_FWD(c), EMU_FWD(args)...);
     }
 
     template<auto V>

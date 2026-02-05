@@ -54,7 +54,7 @@ namespace detail
         return static_cast<memory_type_t>(attr.type);
     }
 
-    inline device::id_t get_device_of_pointer(const void* ptr) {
+    inline device_id get_device_of_pointer(const void* ptr) {
         pointer_attribute_t attr = detail::get_pointer_attributes(ptr);
         if (attr.type == cudaMemoryTypeUnregistered) {
             throw_error(

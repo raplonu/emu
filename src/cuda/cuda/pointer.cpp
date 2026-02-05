@@ -12,6 +12,8 @@
 namespace emu::cuda
 {
 
+namespace
+{
     optional<dlpack::device_t> get_dlpack_device_of_pointer(const byte* ptr) {
         auto* v_ptr = v_ptr_of(ptr);
 
@@ -38,6 +40,9 @@ namespace emu::cuda
                 return nullopt;
         }
     }
+
+} // namespace
+
 
 } // namespace emu::cuda
 

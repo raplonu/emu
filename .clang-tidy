@@ -6,6 +6,7 @@
 # readability-braces-around-statements: Not having braces can be actually more readable.
 # readability-uppercase-literal-suffix: force numeric suffix to be upper case... Just why ???
 # readability-implicit-bool-conversion: Implicit bool conversion is one of the safest and most useful implicit conversions.
+# readability-convert-member-functions-to-static: This add so little value. I know when I need a member function to be static or not.
 # *-magic-numbers: Disable for now. May be useful in the future.
 # clang-analyzer-cplusplus.StringChecker: Disable because it triggers errors present in third-party libraries.
 # *-avoid-c-arrays: Disable because it doesn't allow using std::*_ptr<T[]> and std::make_*_ptr<T[]>.
@@ -32,6 +33,7 @@ Checks: >
   -readability-braces-around-statements,
   -readability-implicit-bool-conversion,
   -readability-uppercase-literal-suffix,
+  -readability-convert-member-functions-to-static,
   -clang-analyzer-cplusplus.StringChecker,
   -modernize-avoid-c-arrays, -cppcoreguidelines-avoid-c-arrays,
   -modernize-use-trailing-return-type,

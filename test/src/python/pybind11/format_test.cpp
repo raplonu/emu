@@ -17,9 +17,9 @@ namespace {
             EXPECT_EQ(formatted, "42");
         }
         {
-            auto formatted = fmt::format("{}", py::float_(3.14));
+            auto formatted = fmt::format("{}", py::float_(7.14));
 
-            EXPECT_EQ(formatted, "3.14");
+            EXPECT_EQ(formatted, "7.14");
         }
         {
             auto formatted = fmt::format("{}", py::str("Hello, World!"));
@@ -43,9 +43,9 @@ namespace {
             EXPECT_EQ(formatted, "00042");
         }
         {
-            auto formatted = fmt::format("{:.2f}", py::float_(3.14159));
+            auto formatted = fmt::format("{:.2f}", py::float_(7.14159));
 
-            EXPECT_EQ(formatted, "3.14");
+            EXPECT_EQ(formatted, "7.14");
         }
         {
             auto formatted = fmt::format("{:>7}", py::str("Hello"));

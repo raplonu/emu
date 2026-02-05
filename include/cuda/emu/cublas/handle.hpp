@@ -27,9 +27,9 @@ namespace detail
         void operator()(id_t id) const { destroy(id); }
     };
 
-    emu::cuda::stream::handle_t get_stream(id_t handle);
+    emu::cuda::stream_id get_stream(id_t handle);
 
-    void set_stream(id_t handle, emu::cuda::stream::handle_t stream);
+    void set_stream(id_t handle, emu::cuda::stream_id stream);
 
     cublasMath_t get_math_mode(id_t handle);
 
@@ -49,9 +49,9 @@ namespace detail
     {
         handle_t();
 
-        handle_t(handle::id_t id, ::emu::cuda::device::id_t device_id, bool owning);
+        handle_t(handle::id_t id, ::emu::cuda::device_ref device, bool owning);
 
-        handle_t(::emu::cuda::device::id_t device_id);
+        handle_t(::emu::cuda::device_ref device);
 
         constexpr handle_t(handle_t && o) = default;
         handle_t(const handle_t &) = delete;
@@ -59,12 +59,12 @@ namespace detail
         handle_t& operator=(handle_t &&) = default;
         handle_t& operator=(const handle_t &) = delete;
 
-        [[nodiscard]] handle::id_t id() const noexcept { return id_.value; }
-        [[nodiscard]] ::emu::cuda::device::id_t device_id() const noexcept { return device_id_; }
+        [[nodiscard]] handle::id_t id() const noexcept { return id_.value(); }
+        [[nodiscard]] ::emu::cuda::device_ref device() const noexcept { return device_; }
 
-        void set_stream(const ::emu::cuda::stream_t & stream) const;
+        void set_stream(::emu::cuda::stream_ref stream) const;
 
-        [[nodiscard]] ::emu::cuda::stream_t stream() const;
+        [[nodiscard]] ::emu::cuda::stream_ref stream() const;
 
         void set_math_mode(cublasMath_t mode) const;
 
@@ -82,7 +82,7 @@ namespace detail
 
     private:
         handle::scoped_handle id_;
-        ::emu::cuda::device::id_t device_id_;
+        ::emu::cuda::device_ref device_;
     };
 
 namespace handle
@@ -95,9 +95,9 @@ namespace handle
     /**
      * Create cublas handle_t on current device.
      */
-    handle_t create(const ::emu::cuda::device_t& device);
+    handle_t create(::emu::cuda::device_ref device);
 
-    handle_t wrap(id_t id, const ::emu::cuda::device_t& device, bool take_ownership);
+    handle_t wrap(id_t id, ::emu::cuda::device_ref device, bool take_ownership);
 
 } // namespace handle
 

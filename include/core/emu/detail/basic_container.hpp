@@ -27,20 +27,20 @@ namespace cpts
 
     template <typename T>
     concept container
-        = std::derived_from<T,
+        = std::derived_from<rm_cvref<T>,
             emu::detail::basic_container<
-                typename T::element_type,
-                T::extent,
-                typename T::accessor_type,
-                typename T::derived_type
+                typename rm_cvref<T>::element_type,
+                         rm_cvref<T>::extent,
+                typename rm_cvref<T>::accessor_type,
+                typename rm_cvref<T>::derived_type
             >
         >;
 
     template <typename T>
-    concept const_container = container<T> and std::is_const_v<typename T::element_type>;
+    concept const_container = container<T> and std::is_const_v<typename rm_cvref<T>::element_type>;
 
     template <typename T>
-    concept mutable_container = container<T> and (not std::is_const_v<typename T::element_type>);
+    concept mutable_container = container<T> and (not std::is_const_v<typename rm_cvref<T>::element_type>);
 
 } // namespace cpts
 

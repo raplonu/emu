@@ -38,18 +38,19 @@
 //             return {.code = static_cast<uint8_t>(kDLOpaqueHandle), .bits = sizeof(TypeIn) * CHAR_BIT, .lanes = 1};
 //         }
 
-//         #define MAP_TYPE(type, value, dl_code, dl_lanes)                                                        \
-//         template <>                                                                                             \
-//         struct dlpack_supported<type> : std::true_type {};                                                      \
-//         template <>                                                                                             \
-//         constexpr dlpack::data_type_t dl_data_type_impl<type>() {                                               \
-//             return {.code = static_cast<uint8_t>(dl_code), .bits = sizeof(type) * CHAR_BIT, .lanes = dl_lanes}; \
-//         }                                                                                                       \
-//         template <>                                                                                             \
-//         constexpr dlpack::data_type_ext_t dl_data_type_ext_impl<type>() {                                       \
-//             return {.code = static_cast<uint8_t>(dl_code), .bits = sizeof(type) * CHAR_BIT, .lanes = dl_lanes}; \
-//         }
-
+/*
+        #define MAP_TYPE(type, value, dl_code, dl_lanes)                                                        \
+        template <>                                                                                             \
+        struct dlpack_supported<type> : std::true_type {};                                                      \
+        template <>                                                                                             \
+        constexpr dlpack::data_type_t dl_data_type_impl<type>() {                                               \
+            return {.code = static_cast<uint8_t>(dl_code), .bits = sizeof(type) * CHAR_BIT, .lanes = dl_lanes}; \
+        }                                                                                                       \
+        template <>                                                                                             \
+        constexpr dlpack::data_type_ext_t dl_data_type_ext_impl<type>() {                                       \
+            return {.code = static_cast<uint8_t>(dl_code), .bits = sizeof(type) * CHAR_BIT, .lanes = dl_lanes}; \
+        }
+*/
 //         MAP_TYPE(bool,        data_type_t::boolean,  dlpack::data_type_code_t::kDLBool,  1)
 //         MAP_TYPE(int8_t,      data_type_t::int8,     dlpack::data_type_code_t::kDLInt,   1)
 //         MAP_TYPE(int16_t,     data_type_t::int16,    dlpack::data_type_code_t::kDLInt,   1)

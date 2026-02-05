@@ -28,6 +28,7 @@ add_executable(emucoretest
     src/core/managed_object_test.cpp
     src/core/detail/dlpack_types_test.cpp
     src/core/string_test.cpp
+    src/core/tensor_traits_test.cpp
 )
 
 target_link_libraries(emucoretest PRIVATE
@@ -43,8 +44,10 @@ if (emu_build_cuda)
     add_executable(emucudatest
         src/cuda/test.cu
         src/cuda/math_test.cu
-        src/cuda/memory_test.cpp
         src/cuda/pointer_test.cpp
+        src/cuda/cuda/memory_test.cpp
+        src/cuda/cuda/stream_test.cpp
+        src/cuda/cuda/event_test.cpp
     )
 
     target_link_libraries(emucudatest PRIVATE
@@ -54,6 +57,7 @@ if (emu_build_cuda)
     target_include_directories(emucudatest PRIVATE include)
 
     gtest_discover_tests(emucudatest)
+
 endif()
 
 if (emu_build_python_test)
@@ -72,7 +76,8 @@ if (emu_build_python_test)
         target_sources(emupythontest PRIVATE
             src/python/pybind11/cast/cuda_device_span_test.cpp
             src/python/pybind11/cast/cuda_device_mdspan_test.cpp
-            # src/python/pybind11/cast/cuda/stream_test.cpp
+            src/python/pybind11/cast/cuda/stream_test.cpp
+            src/python/pybind11/cast/cuda/event_test.cpp
         )
     endif()
 

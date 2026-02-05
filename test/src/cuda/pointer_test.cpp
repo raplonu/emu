@@ -24,7 +24,7 @@ namespace
 
     TEST(Pointer, DeviceHeapPointer)
     {
-        auto ptr = emu::cuda::device::make_unique<int[]>(emu::cuda::device::get(0), 1);
+        auto ptr = emu::cuda::device::make_unique<int[]>(emu::cuda::device_ref(0), 1);
 
         auto device = emu::get_device_of_pointer(ptr.get());
 
@@ -38,9 +38,9 @@ namespace
 
     TEST(Pointer, DeviceHeapPointerMultiDevice)
     {
-        if (emu::cuda::devices::count() > 1)
+        if (emu::cuda::devices.size() > 1)
         {
-            auto ptr = emu::cuda::device::make_unique<int[]>(emu::cuda::device::get(1), 1);
+            auto ptr = emu::cuda::device::make_unique<int[]>(emu::cuda::device_ref(1), 1);
 
             auto device = emu::get_device_of_pointer(ptr.get());
 
@@ -56,10 +56,10 @@ namespace
 
     TEST(Pointer, DevicePointerDescriptor)
     {
-        auto ptr = emu::cuda::device::make_unique<int[]>(emu::cuda::device::get(0), 1);
+        auto ptr = emu::cuda::device::make_unique<int[]>(emu::cuda::device_ref(0), 1);
         auto desc_opt = emu::pointer_descritor_of(reinterpret_cast<const std::byte*>(ptr.get()));
         ASSERT_TRUE(desc_opt.has_value());
-        auto desc = desc_opt.value();
+        const auto& desc = desc_opt.value();
         EXPECT_TRUE(desc.location.empty());
 
         // Check that the pointer is within the returned region

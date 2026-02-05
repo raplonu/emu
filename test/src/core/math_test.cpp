@@ -4,10 +4,10 @@
 
 using namespace emu;
 
-long double operator "" _ld(long double ld) { return ld; }
-
 namespace
 {
+    long double operator ""_ld(long double ld) { return ld; }
+
     TEST(math_test, std_math_round) {
         EXPECT_EQ(math::std::ceil (1.1f), 2.0f);
         EXPECT_EQ(math::std::floor(1.5f), 1.0f);

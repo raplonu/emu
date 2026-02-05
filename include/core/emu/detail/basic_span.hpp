@@ -32,27 +32,27 @@ namespace cpts
 
     template <typename T>
     concept emu_span
-        = std::derived_from<T,
+        = std::derived_from<rm_cvref<T>,
             emu::detail::basic_span<
-                typename T::element_type,
-                T::extent,
-                typename T::accessor_type,
-                typename T::derived_type
+                typename rm_cvref<T>::element_type,
+                         rm_cvref<T>::extent,
+                typename rm_cvref<T>::accessor_type,
+                typename rm_cvref<T>::derived_type
             >
         >;
 
     template <typename T>
-    concept std_span = same_as<T, std::span<typename T::element_type, T::extent>>;
+    concept std_span = same_as<T, std::span<typename rm_cvref<T>::element_type, rm_cvref<T>::extent>>;
 
     template <typename T>
     concept span = std_span<T>
                 or emu_span<T>;
 
     template <typename T>
-    concept const_span = span<T> and is_const<typename T::element_type>;
+    concept const_span = span<T> and is_const<typename rm_cvref<T>::element_type>;
 
     template <typename T>
-    concept mutable_span = span<T> and (not is_const<typename T::element_type>);
+    concept mutable_span = span<T> and (not is_const<typename rm_cvref<T>::element_type>);
 
 } // namespace cpts
 

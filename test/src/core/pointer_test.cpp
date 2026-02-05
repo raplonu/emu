@@ -39,7 +39,7 @@ namespace
         const int x = 42;
         auto desc_opt = emu::pointer_descritor_of(reinterpret_cast<const emu::byte*>(&x));
         ASSERT_TRUE(desc_opt.has_value());
-        auto desc = desc_opt.value();
+        const auto& desc = desc_opt.value();
         EXPECT_EQ(desc.location, "[stack]");
 
         // Check that the pointer is within the returned region

@@ -5,6 +5,8 @@
 
 #include <pybind11/embed.h> // everything needed for embedding
 
+#include <bit>
+
 namespace py = pybind11;
 namespace cu = emu::cuda;
 
@@ -26,7 +28,7 @@ namespace {
                 EXPECT_TRUE(cpp_stream.get());
 
                 auto stream_ptr = python_stream.attr("ptr").cast<uintptr_t>();
-                EXPECT_EQ(cpp_stream.get(), reinterpret_cast<::cudaStream_t>(stream_ptr));
+                EXPECT_EQ(cpp_stream.get(), std::bit_cast<cu::stream_id>(stream_ptr));
 
             } catch (const py::error_already_set &e) {
                 GTEST_SKIP() << "Could not test cupy: " << e.what();
@@ -36,14 +38,14 @@ namespace {
             try {
                 auto cu_runtime = py::module_::import("cuda.bindings.runtime");
 
-                ::pybind11::object python_stream = cu_runtime.attr("cudaStreamCreate")()[py::int_(1)];
+                const ::pybind11::object python_stream = cu_runtime.attr("cudaStreamCreate")()[py::int_(1)];
 
                 auto cpp_stream = python_stream.cast<cu::stream_ref>();
 
                 EXPECT_TRUE(cpp_stream.get());
 
                 auto stream_ptr = python_stream.cast<uintptr_t>();
-                EXPECT_EQ(cpp_stream.get(), reinterpret_cast<::cudaStream_t>(stream_ptr));
+                EXPECT_EQ(cpp_stream.get(), std::bit_cast<cu::stream_id>(stream_ptr));
 
                 cu_runtime.attr("cudaStreamDestroy")(python_stream);
 
@@ -58,31 +60,32 @@ namespace {
     EMU_CUDA_TEST(CastCudaStream, CppRefToPython)
     {
         try {
-            auto stream = cu::stream::create();
+            auto stream = cu::stream_handle(cu::current_device());
 
             {
 
-                cu::stream_ref ref = stream;
-                pybind11::object py_stream = py::cast(ref);
+                const cu::stream_ref& ref = stream;
+                const pybind11::object py_stream = py::cast(ref);
 
                 EXPECT_FALSE(py_stream.is_none());
 
                 EXPECT_EQ(
-                    reinterpret_cast<cu::stream::handle_t>(py_stream.cast<uintptr_t>()),
+                    std::bit_cast<cu::stream_id>(py_stream.cast<uintptr_t>()),
                     ref.get()
                 );
             }
 
             {
-                pybind11::object py_stream = py::cast(stream);
+                const pybind11::object py_stream = py::cast(stream);
 
                 EXPECT_FALSE(py_stream.is_none());
 
                 EXPECT_EQ(
-                    reinterpret_cast<cu::stream::handle_t>(py_stream.cast<uintptr_t>()),
+                    std::bit_cast<cu::stream_id>(py_stream.cast<uintptr_t>()),
                     stream.get()
                 );
             }
+
         } catch (const py::error_already_set &e) {
             GTEST_SKIP() << "Could not test cuda: " << e.what();
         }

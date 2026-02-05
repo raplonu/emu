@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <list>
 #include <string>
+
 namespace emu
 {
 
@@ -13,10 +14,14 @@ namespace detail
 
     using device_finder_set = std::list<device_finder_engine>;
 
+namespace
+{
     device_finder_set& get_device_finders() {
         static device_finder_set finders;
         return finders;
     }
+
+} // namespace
 
     void register_device_finder(device_finder_engine finder) {
         get_device_finders().push_back(std::move(finder));
@@ -27,19 +32,8 @@ namespace detail
 
 } // namespace detail
 
-    std::filesystem::perms permissions_from_string(std::string_view sv) {
-        using std::filesystem::perms;
-        perms permissions = perms::none;
-
-        if (sv.size() == 4) {
-            if (sv[0] == 'r') permissions |= perms::owner_read;
-            if (sv[1] == 'w') permissions |= perms::owner_write;
-            if (sv[2] == 'x') permissions |= perms::owner_exec;
-            // if (sv[3] == 'p') permissions |= # not supported
-        }
-
-        return permissions;
-    }
+namespace
+{
 
     std::pair<std::uintptr_t, std::uintptr_t> memory_range_from_string(std::string_view sv) {
         auto tokens = split_string(sv, "-");
@@ -54,6 +48,20 @@ namespace detail
         EMU_UNWRAP_RES_OR_THROW(emu::from_chars(*begin, stop, 16));
 
         return {start, stop};
+    }
+
+    std::filesystem::perms permissions_from_string(std::string_view sv) {
+        using std::filesystem::perms;
+        perms permissions = perms::none;
+
+        if (sv.size() == 4) {
+            if (sv[0] == 'r') permissions |= perms::owner_read;
+            if (sv[1] == 'w') permissions |= perms::owner_write;
+            if (sv[2] == 'x') permissions |= perms::owner_exec;
+            // if (sv[3] == 'p') permissions |= # not supported
+        }
+
+        return permissions;
     }
 
     pointer_descriptor from_line(std::string_view line) {
@@ -79,6 +87,10 @@ namespace detail
             .base_region = std::span{std::bit_cast<byte*>(start), size}
         };
     }
+
+} // namespace
+
+
 
     optional<pointer_descriptor> pointer_descritor_of(const byte* b_ptr) {
         std::ifstream file{detail::maps_path};  // create regular file

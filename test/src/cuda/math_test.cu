@@ -24,13 +24,15 @@ void generic_round_test(From from_0, To to_0, From from_1, To to_1, From from_2,
     thrust::device_vector<From> from_v(4);
     thrust::device_vector<To>   to_v  (4);
 
+    emu::cuda::stream stream(emu::cuda::current_device());
+
     from_v[0] = from_0;
     from_v[1] = from_1;
     from_v[2] = from_2;
     from_v[3] = from_3;
 
-    ker<<<1,1>>>(to_v.data().get(), from_v.data().get());
-    emu::cuda::device::current().synchronize();
+    ker<<<1,1,0,stream.get()>>>(to_v.data().get(), from_v.data().get());
+    stream.sync();
 
     using emu::as_fmt;
 

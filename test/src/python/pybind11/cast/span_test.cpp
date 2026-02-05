@@ -17,8 +17,6 @@ namespace
         CppToPythonToCppView
     );
 
-    namespace py = pybind11;
-
     template<typename T>
     struct span_test_helper : emu_test::ViewTestHelperBase< span_test_helper<T> >
     {

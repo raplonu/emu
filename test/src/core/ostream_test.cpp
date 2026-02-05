@@ -12,6 +12,7 @@ struct TestType {
 template<>
 struct fmt::formatter<TestType> {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
     template<typename FormatContext>
     auto format(const TestType& t, FormatContext& ctx) const {
         return format_to(ctx.out(), "TestType{{ a: {}, b: {} }}", t.a, t.b);
@@ -21,7 +22,7 @@ struct fmt::formatter<TestType> {
 namespace
 {
     TEST(OstreamTest, CustomType) {
-        TestType t;
+        const TestType t;
         std::ostringstream oss;
         oss << emu::as_fmt(t);
         EXPECT_EQ(oss.str(), "TestType{ a: 42, b: 3.14 }");

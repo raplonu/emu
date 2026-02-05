@@ -1,130 +1,57 @@
 #pragma once
 
-#include <emu/scoped.hpp>
-#include <emu/cuda/error.hpp>
+#include <emu/scoped_base.hpp>
 #include <emu/cuda/device.hpp>
 
 #include <cuda/stream_ref>
-
-#include <cuda_runtime_api.h>
+#include <cuda/stream>
 
 namespace emu::cuda
 {
-    struct stream_t;
 
+    using stream_id = cudaStream_t;
+
+    /// Owning handle to a CUDA stream. Manages the lifetime of the stream and provides utility functions.
+    using ::cuda::stream;
+    /// Non-owning reference to a CUDA stream. Does not manage the lifetime of the stream.
     using ::cuda::stream_ref;
-
-namespace stream
-{
-    using handle_t = cudaStream_t;
 
 namespace detail
 {
-    inline handle_t create()
-    {
-        handle_t handle;
-        EMU_CHECK_OR_THROW_WHAT(cudaStreamCreateWithFlags(&handle, cudaStreamNonBlocking),
-                                "Failed to create CUDA stream");
-        return handle;
-    }
 
-    inline handle_t create(bool synchronizes_with_default_stream)
+    struct stream_destroyer
     {
-        handle_t handle;
-        auto flags = synchronizes_with_default_stream ? cudaStreamDefault : cudaStreamNonBlocking;
-        EMU_CHECK_OR_THROW_WHAT(cudaStreamCreateWithFlags(&handle, flags),
-                                "Failed to create CUDA stream");
-        return handle;
-    }
-
-    inline void destroy(handle_t handle)
-    {
-        cudaStreamDestroy(handle);
-    }
-
-    struct Destroyer
-    {
-        void operator()(handle_t handle) const { destroy(handle); }
+        void operator()(stream_ref ref) const {
+            auto _ = stream::from_native_handle(ref.get()); // borrow and delete
+        }
     };
-
-    inline void synchronize(handle_t handle)
-    {
-        EMU_CHECK_OR_THROW_WHAT(cudaStreamSynchronize(handle),
-                                "Failed to create CUDA stream");
-    }
-
-    inline device::id_t get_device_id(handle_t handle)
-    {
-        device::id_t device_id;
-        EMU_CHECK_OR_THROW_WHAT(cudaStreamGetDevice(handle, &device_id),
-                                "Failed to create CUDA stream");
-        return device_id;
-    }
 
 } // namespace detail
 
-    using scoped_handle = scoped<handle_t, detail::Destroyer>;
-
-    stream_t create(device_t device, bool synchronizes_with_default_stream);
-
-    stream_t wrap(stream::handle_t handle, bool take_ownership);
-
-} // namespace stream
-
-    struct stream_t
+    struct stream_handle : scoped_base<stream_ref, detail::stream_destroyer>
     {
     protected:
-        stream_t(stream::handle_t handle, bool owning)
-            : handle_(handle, owning)
-        {}
+        using base = scoped_base<stream_ref, detail::stream_destroyer>;
 
     public:
-        stream_t(stream_t &&) = default;
-        stream_t(const stream_t &) = delete;
+        stream_handle(device_ref device, int priority = stream::default_priority)
+        : base(stream(device, priority).release(), true)
+        {}
 
-        stream_t& operator=(stream_t &&) = default;
-        stream_t& operator=(const stream_t &) = delete;
+        stream_handle(stream_ref ref, bool take_ownership)
+            : base(ref, take_ownership)
+        {}
 
-        [[nodiscard]] stream::handle_t get() const noexcept { return handle_.value; }
-        [[nodiscard]] device::id_t device_id() const noexcept { return stream::detail::get_device_id(handle_.value); }
-
-        [[nodiscard]] operator stream_ref() const noexcept {
-            return stream_ref(handle_.value);
+        [[nodiscard]] static stream_handle from_native_handle(stream_id id, bool take_ownership)
+        {
+            return stream_handle(stream_ref(id), take_ownership);
         }
 
-        void wait() const {
-            stream::detail::synchronize(handle_.value);
-        }
+        // Disallow construction from an `int`, e.g., `0`.
+        static stream_handle from_native_handle(int, bool) = delete;
 
-        bool ready() const {
-            // Check if the stream is ready for more work
-            return true; // Placeholder, actual implementation may vary
-        }
-
-        friend stream_t stream::create(device_t, bool);
-        friend stream_t stream::wrap(stream::handle_t, bool);
-
-    private:
-        stream::scoped_handle handle_;
+        // Disallow construction from `nullptr`.
+        static stream_handle from_native_handle(::std::nullptr_t, bool) = delete;
     };
-
-namespace stream
-{
-
-    inline stream_t create(device_t device, bool synchronizes_with_default_stream = false) {
-        device.make_current();
-
-        return stream_t(stream::detail::create(synchronizes_with_default_stream), true);
-    }
-
-    inline stream_t create(bool synchronizes_with_default_stream = false) {
-        return create(device::current(), synchronizes_with_default_stream);
-    }
-
-    inline stream_t wrap(stream::handle_t handle, bool take_ownership) {
-        return stream_t(handle, take_ownership);
-    }
-
-} // namespace stream
 
 } // namespace emu::cuda
