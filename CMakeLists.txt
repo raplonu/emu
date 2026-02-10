@@ -30,6 +30,10 @@ set(
     "Custom boost namespace name"
 )
 
+# Enable clang tidy with warning as error
+# set(CMAKE_CXX_CLANG_TIDY clang-tidy;-warnings-as-errors=*)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 ########################################################################
 #
 # Emu Core
@@ -49,17 +53,13 @@ target_sources(emucore
         BASE_DIRS
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core
         FILES
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/assert.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/associative_container.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/config.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/debug.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/detail/basic_mdspan.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/detail/dlpack_types.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/detail/basic_container.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/detail/basic_mdcontainer.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/detail/basic_mdspan.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/detail/basic_span.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/detail/mdspan_types.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/error/generation.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/functor.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/hash.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/host/accessor.hpp
@@ -67,29 +67,34 @@ target_sources(emucore
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/host/mdcontainer.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/host/mdspan.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/host/span.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/macro.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/managed_object.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/math.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/ostream.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/pointer.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/scoped.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/storage.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/string.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/type_name.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/utility.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/type_traits.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/info.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/macro.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/scoped_base.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/scoped.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/assert.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/capsule.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/concepts.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/config.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/container.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/cstring_view.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/debug.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/error.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/error/generation.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/expected.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/info.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/mdcontainer.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/optional.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/ostream.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/pointer.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/span.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/string.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/type_name.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/type_traits.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/utility.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/mdspan.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/numeric_type.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/optional.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/span.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/tensor_traits.hpp
 )
 
@@ -152,41 +157,41 @@ if (emu_build_cuda)
         BASE_DIRS
             ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda
         FILES
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/atomic.cuh
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/config.cuh
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cublas.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cublas/error.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cublas/handle.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cublas/type.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/allocator.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/device.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/device/accessor.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/device/container.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/device/mdcontainer.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/device/mdspan.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/device/span.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/device/container.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/device/mdcontainer.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/error.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/event.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/managed/accessor.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/managed/container.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/managed/mdcontainer.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/managed/mdspan.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/managed/span.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/test/device_test.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/allocator.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/device.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/event.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/memory.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/pointer.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/stream.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/test/device_test.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cufft.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cufft/error.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cufft/handle.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cufft/type.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cufft/utility.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cufft/error.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cufft/handle.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cusolver.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cusolver/error.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cusolver/handle.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/macro.cuh
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/utility.cuh
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/atomic.cuh
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/config.cuh
             ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/utility.cuh
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cublas.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cublas/error.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cublas/handle.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cublas/type.hpp
     )
 
     set_target_properties(
@@ -230,18 +235,19 @@ target_sources(emupython INTERFACE FILE_SET HEADERS
     BASE_DIRS
         ${CMAKE_CURRENT_SOURCE_DIR}/include/python
     FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/bind/map.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/cast/cstring_view.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/cast/cuda/stream.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/cast/cuda/event.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/cast/detail/capsule.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/cast/detail/accessor_adaptor.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/cast/detail/tensor_caster.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/cast/detail/layout_adaptor.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/cast/detail/tensor_caster.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/cast/mdspan.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/cast/span.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/format.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/numpy.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/bind/map.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/format.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11.hpp
 )
 
 set_target_properties(

@@ -7,7 +7,7 @@ from conan.tools.env import VirtualBuildEnv
 
 class EmuConan(ConanFile):
     name = 'emu'
-    version = '0.1.0-rc.3'
+    version = '0.1.0-rc.4'
 
     license = 'MIT'
     author = 'Julien Bernard jbernard@obspm.fr'
@@ -100,7 +100,10 @@ class EmuConan(ConanFile):
         cmake.install()
 
     def package_info(self):
+        lib_location = 'lib' if self.settings.build_type == 'Release' else 'lib/debug'
+
         self.cpp_info.components['core'].libs = ['emucore']
+        self.cpp_info.components['core'].libdirs = [lib_location]
         self.cpp_info.components['core'].requires = [
             'fmt::fmt',
             'ms-gsl::_ms-gsl',
@@ -120,6 +123,7 @@ class EmuConan(ConanFile):
 
         if self.options.cuda:
             self.cpp_info.components['cuda'].libs = ['emucuda']
+            self.cpp_info.components['cuda'].libdirs = [lib_location]
             self.cpp_info.components['cuda'].requires = [
                 'core',
                 'nv-cccl::nv-cccl',
