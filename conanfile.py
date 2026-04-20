@@ -7,7 +7,7 @@ from conan.tools.env import VirtualBuildEnv
 
 class EmuConan(ConanFile):
     name = 'emu'
-    version = '0.1.0-rc.4'
+    version = '0.1.0-rc.5'
 
     license = 'MIT'
     author = 'Julien Bernard jbernard@obspm.fr'

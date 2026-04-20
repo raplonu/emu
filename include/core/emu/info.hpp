@@ -96,7 +96,7 @@ namespace detail
     }
 
     template<typename T, typename... Args>
-    constexpr std::string info_str(const T &t, Args&&... args) {
+    std::string info_str(const T &t, Args&&... args) {
         return fmt::to_string(info(t, EMU_FWD(args)...));
     }
 
