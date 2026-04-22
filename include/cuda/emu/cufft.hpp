@@ -1,7 +1,7 @@
 #pragma once
 
 #include <emu/cufft/handle.hpp>
-#include <emu/cublas/type.hpp>
+#include <emu/cufft/type.hpp>
 
 #include <cufft.h>
 

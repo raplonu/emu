@@ -1,5 +1,7 @@
 #pragma once
 
+#include <emu/concepts.hpp>
+
 #include <pybind11/stl_bind.h>
 
 #include <fmt/format.h>
@@ -59,23 +61,23 @@ namespace detail
     template <typename KeyType>
     struct keys_view {
         virtual size_t len() = 0;
-        virtual py::iterator iter() = 0;
+        virtual pybind11::iterator iter() = 0;
         virtual bool contains(const KeyType &k) = 0;
-        virtual bool contains(const py::object &k) = 0;
+        virtual bool contains(const pybind11::object &k) = 0;
         virtual ~keys_view() = default;
     };
 
     template <typename MappedType>
     struct values_view {
         virtual size_t len() = 0;
-        virtual py::iterator iter() = 0;
+        virtual pybind11::iterator iter() = 0;
         virtual ~values_view() = default;
     };
 
     template <typename KeyType, typename MappedType>
     struct items_view {
         virtual size_t len() = 0;
-        virtual py::iterator iter() = 0;
+        virtual pybind11::iterator iter() = 0;
         virtual ~items_view() = default;
     };
 
@@ -83,9 +85,9 @@ namespace detail
     struct KeysViewImpl : public KeysView {
         explicit KeysViewImpl(Map &map) : map(map) {}
         size_t len() override { return map.size(); }
-        py::iterator iter() override { return py::make_key_iterator(map.begin(), map.end()); }
+        pybind11::iterator iter() override { return pybind11::make_key_iterator(map.begin(), map.end()); }
         bool contains(const typename Map::key_type &k) override { return map.find(k) != map.end(); }
-        bool contains(const py::object &) override { return false; }
+        bool contains(const pybind11::object &) override { return false; }
         Map &map;
     };
 
@@ -93,7 +95,7 @@ namespace detail
     struct ValuesViewImpl : public ValuesView {
         explicit ValuesViewImpl(Map &map) : map(map) {}
         size_t len() override { return map.size(); }
-        py::iterator iter() override { return py::make_value_iterator(map.begin(), map.end()); }
+        pybind11::iterator iter() override { return pybind11::make_value_iterator(map.begin(), map.end()); }
         Map &map;
     };
 
@@ -101,7 +103,7 @@ namespace detail
     struct ItemsViewImpl : public ItemsView {
         explicit ItemsViewImpl(Map &map) : map(map) {}
         size_t len() override { return map.size(); }
-        py::iterator iter() override { return py::make_iterator(map.begin(), map.end()); }
+        pybind11::iterator iter() override { return pybind11::make_iterator(map.begin(), map.end()); }
         Map &map;
     };
 
@@ -132,8 +134,8 @@ namespace detail
 
         cl.def(
             "__iter__",
-            [](Map &m) { return py::make_key_iterator(m.begin(), m.end()); },
-            py::keep_alive<0, 1>() /* Essential: keep map alive while iterator exists */
+            [](Map &m) { return pybind11::make_key_iterator(m.begin(), m.end()); },
+            pybind11::keep_alive<0, 1>() /* Essential: keep map alive while iterator exists */
         );
 
         cl.def(
@@ -141,7 +143,7 @@ namespace detail
             [](Map &m) {
                 return std::unique_ptr<KeysView>(new detail::KeysViewImpl<Map, KeysView>(m));
             },
-            py::keep_alive<0, 1>() /* Essential: keep map alive while view exists */
+            pybind11::keep_alive<0, 1>() /* Essential: keep map alive while view exists */
         );
 
         cl.def(
@@ -149,7 +151,7 @@ namespace detail
             [](Map &m) {
                 return std::unique_ptr<ValuesView>(new detail::ValuesViewImpl<Map, ValuesView>(m));
             },
-            py::keep_alive<0, 1>() /* Essential: keep map alive while view exists */
+            pybind11::keep_alive<0, 1>() /* Essential: keep map alive while view exists */
         );
 
         cl.def(
@@ -157,7 +159,7 @@ namespace detail
             [](Map &m) {
                 return std::unique_ptr<ItemsView>(new detail::ItemsViewImpl<Map, ItemsView>(m));
             },
-            py::keep_alive<0, 1>() /* Essential: keep map alive while view exists */
+            pybind11::keep_alive<0, 1>() /* Essential: keep map alive while view exists */
         );
 
         cl.def("__contains__", [](Map &m, const KeyType &k) -> bool {
@@ -168,7 +170,7 @@ namespace detail
             return true;
         });
         // Fallback for when the object is not of the key type
-        cl.def("__contains__", [](Map &, const py::object &) -> bool { return false; });
+        cl.def("__contains__", [](Map &, const pybind11::object &) -> bool { return false; });
 
         cl.def("__len__", &Map::size);
 
@@ -176,11 +178,11 @@ namespace detail
             [](Map &m, const KeyType &k) -> MappedType & {
                 auto it = m.find(k);
                 if (it == m.end()) {
-                    throw py::key_error();
+                    throw pybind11::key_error();
                 }
                 return it->second;
             },
-            py::return_value_policy::reference_internal // ref + keepalive
+            pybind11::return_value_policy::reference_internal // ref + keepalive
         );
 
         return cl;
@@ -204,7 +206,7 @@ namespace detail
         cl.def("__delitem__", [](Map &m, const KeyType &k) {
             auto it = m.find(k);
             if (it == m.end()) {
-                throw py::key_error();
+                throw pybind11::key_error();
             }
             m.erase(it);
         });
@@ -213,7 +215,7 @@ namespace detail
 
 
     template <typename Map, typename holder_type = std::unique_ptr<Map>, typename... Args>
-    py::class_<Map, holder_type> init(py::handle scope, const std::string &name, Args &&...args) {
+    pybind11::class_<Map, holder_type> init(pybind11::handle scope, const std::string &name, Args &&...args) {
         using KeyType = typename Map::key_type;
         using MappedType = typename Map::mapped_type;
         using StrippedKeyType = std::remove_cvref_t<KeyType>;
@@ -221,68 +223,68 @@ namespace detail
         using KeysView = detail::keys_view<StrippedKeyType>;
         using ValuesView = detail::values_view<StrippedMappedType>;
         using ItemsView = detail::items_view<StrippedKeyType, StrippedMappedType>;
-        using Class_ = py::class_<Map, holder_type>;
+        using Class_ = pybind11::class_<Map, holder_type>;
 
         // If either type is a non-module-local bound type then make the map binding non-local as well;
         // otherwise (e.g. both types are either module-local or converting) the map will be
         // module-local.
-        auto *tinfo = py::detail::get_type_info(typeid(MappedType));
+        auto *tinfo = pybind11::detail::get_type_info(typeid(MappedType));
         bool local = !tinfo || tinfo->module_local;
         if (local) {
-            tinfo = py::detail::get_type_info(typeid(KeyType));
+            tinfo = pybind11::detail::get_type_info(typeid(KeyType));
             local = !tinfo || tinfo->module_local;
         }
 
         Class_ cl(scope, name.c_str(), pybind11::module_local(local), std::forward<Args>(args)...);
-        static constexpr auto key_type_descr = py::detail::make_caster<KeyType>::name;
-        static constexpr auto mapped_type_descr = py::detail::make_caster<MappedType>::name;
+        static constexpr auto key_type_descr = pybind11::detail::make_caster<KeyType>::name;
+        static constexpr auto mapped_type_descr = pybind11::detail::make_caster<MappedType>::name;
         std::string key_type_name(key_type_descr.text), mapped_type_name(mapped_type_descr.text);
 
         // If key type isn't properly wrapped, fall back to C++ names
         if (key_type_name == "%") {
-            key_type_name = py::detail::type_info_description(typeid(KeyType));
+            key_type_name = pybind11::detail::type_info_description(typeid(KeyType));
         }
         // Similarly for value type:
         if (mapped_type_name == "%") {
-            mapped_type_name = py::detail::type_info_description(typeid(MappedType));
+            mapped_type_name = pybind11::detail::type_info_description(typeid(MappedType));
         }
 
         // Wrap KeysView[KeyType] if it wasn't already wrapped
-        if (!py::detail::get_type_info(typeid(KeysView))) {
-            py::class_<KeysView> keys_view(
+        if (!pybind11::detail::get_type_info(typeid(KeysView))) {
+            pybind11::class_<KeysView> keys_view(
                 scope, ("KeysView[" + key_type_name + "]").c_str(), pybind11::module_local(local));
             keys_view.def("__len__", &KeysView::len);
             keys_view.def("__iter__",
                         &KeysView::iter,
-                        py::keep_alive<0, 1>() /* Essential: keep view alive while iterator exists */
+                        pybind11::keep_alive<0, 1>() /* Essential: keep view alive while iterator exists */
             );
             keys_view.def("__contains__",
                         static_cast<bool (KeysView::*)(const KeyType &)>(&KeysView::contains));
             // Fallback for when the object is not of the key type
             keys_view.def("__contains__",
-                        static_cast<bool (KeysView::*)(const py::object &)>(&KeysView::contains));
+                        static_cast<bool (KeysView::*)(const pybind11::object &)>(&KeysView::contains));
         }
         // Similarly for ValuesView:
-        if (!py::detail::get_type_info(typeid(ValuesView))) {
-            py::class_<ValuesView> values_view(scope,
+        if (!pybind11::detail::get_type_info(typeid(ValuesView))) {
+            pybind11::class_<ValuesView> values_view(scope,
                                         ("ValuesView[" + mapped_type_name + "]").c_str(),
                                         pybind11::module_local(local));
             values_view.def("__len__", &ValuesView::len);
             values_view.def("__iter__",
                             &ValuesView::iter,
-                            py::keep_alive<0, 1>() /* Essential: keep view alive while iterator exists */
+                            pybind11::keep_alive<0, 1>() /* Essential: keep view alive while iterator exists */
             );
         }
         // Similarly for ItemsView:
-        if (!py::detail::get_type_info(typeid(ItemsView))) {
-            py::class_<ItemsView> items_view(
+        if (!pybind11::detail::get_type_info(typeid(ItemsView))) {
+            pybind11::class_<ItemsView> items_view(
                 scope,
                 ("ItemsView[" + key_type_name + ", ").append(mapped_type_name + "]").c_str(),
                 pybind11::module_local(local));
             items_view.def("__len__", &ItemsView::len);
             items_view.def("__iter__",
                         &ItemsView::iter,
-                        py::keep_alive<0, 1>() /* Essential: keep view alive while iterator exists */
+                        pybind11::keep_alive<0, 1>() /* Essential: keep view alive while iterator exists */
             );
         }
 

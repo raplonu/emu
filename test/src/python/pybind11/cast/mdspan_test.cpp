@@ -48,7 +48,7 @@ namespace
     >;
 
     INSTANTIATE_TYPED_TEST_SUITE_P(MdSpanPythonTests,    // Instance name
-                                PythonViewTest,             // Test case name
-                                MdSpanTestsList);  // Type list
+                                   PythonViewTest,       // Test case name
+                                   MdSpanTestsList);     // Type list
 
 } // namespace

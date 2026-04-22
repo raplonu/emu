@@ -1,13 +1,12 @@
+#include <emu/detail/dlpack_types.hpp>
+#include <emu/macro.hpp>
+#include <emu/optional.hpp>
 #include <emu/pointer.hpp>
 #include <emu/cuda/pointer.hpp>
-
 #include <emu/utility.hpp>
-#include <emu/cuda.hpp>
-#include <emu/string.hpp>
 
-#include <fmt/format.h>
-#include <cuda.h>
-#include <limits>
+#include <dlpack/dlpack.h>
+#include <tl/expected.hpp>
 
 namespace emu::cuda
 {

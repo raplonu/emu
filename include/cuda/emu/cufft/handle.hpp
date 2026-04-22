@@ -29,7 +29,7 @@ namespace detail
         void operator()(id_t id) const { destroy(id); }
     };
 
-    void set_stream(id_t handle, ::emu::cuda::stream::handle_t mode);
+    void set_stream(id_t handle, ::emu::cuda::stream_id mode);
 
 } // namespace detail
 
@@ -41,9 +41,9 @@ namespace detail
     {
         handle_t();
 
-        handle_t(handle::id_t id, ::emu::cuda::device::id_t device_id, bool owning);
+        handle_t(handle::id_t id, ::emu::cuda::device_id device_id, bool owning);
 
-        handle_t(::emu::cuda::device::id_t device_id);
+        handle_t(::emu::cuda::device_id device_id);
 
         constexpr handle_t(handle_t && o) = default;
         handle_t(const handle_t &) = delete;
@@ -51,10 +51,10 @@ namespace detail
         handle_t& operator=(handle_t &&) = default;
         handle_t& operator=(const handle_t &) = delete;
 
-        handle::id_t id() const noexcept { return id_.value; }
-        ::emu::cuda::device::id_t device_id() const noexcept { return device_id_; }
+        handle::id_t id() const noexcept { return id_.value(); }
+        ::emu::cuda::device_id device_id() const noexcept { return device_id_; }
 
-        void set_stream(const ::emu::cuda::stream_t & stream);
+        void set_stream(const ::emu::cuda::stream_ref & stream);
 
         handle_t & enable();
 
@@ -64,14 +64,14 @@ namespace detail
 
     private:
         handle::ScopedHandle id_;
-        ::emu::cuda::device::id_t device_id_;
+        ::emu::cuda::device_id device_id_;
     };
 
 namespace handle
 {
     handle_t create();
 
-    handle_t wrap(id_t id, const ::emu::cuda::device_t& device, bool take_ownership);
+    handle_t wrap(id_t id, const ::emu::cuda::device_ref& device, bool take_ownership);
 
 } // namespace handle
 

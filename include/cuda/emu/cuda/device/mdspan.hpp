@@ -1,6 +1,7 @@
 #pragma once
 
 #include <emu/detail/basic_mdspan.hpp>
+#include <emu/cuda/device/accessor.hpp>
 
 #include <cuda/mdspan>
 

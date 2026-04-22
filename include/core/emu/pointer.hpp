@@ -15,10 +15,14 @@
 #include <emu/optional.hpp>
 #include <emu/span.hpp>
 
+#include <tl/optional.hpp>
+
 #include <functional>
 #include <string>
 #include <string_view>
 #include <filesystem>
+#include <cstddef>
+#include <span>
 
 namespace emu
 {

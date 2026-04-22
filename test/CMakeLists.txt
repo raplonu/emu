@@ -91,4 +91,5 @@ if (emu_build_python_test)
     target_include_directories(emupythontest PRIVATE include)
 
     gtest_discover_tests(emupythontest)
+
 endif()

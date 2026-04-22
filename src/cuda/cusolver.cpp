@@ -1,7 +1,10 @@
+#include <emu/cusolver/handle.hpp>
+#include <emu/error.hpp>
 #include <emu/cusolver.hpp>
 #include <emu/cublas/type.hpp>
 
-#include <fmt/core.h>
+#include <cuComplex.h>
+#include <cusolverDn.h>
 
 namespace emu::cusolver
 {

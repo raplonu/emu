@@ -2,6 +2,8 @@
 
 #include <emu/assert.hpp>
 
+#include <cufftXt.h>
+
 namespace emu
 {
 

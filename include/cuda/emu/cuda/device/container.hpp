@@ -2,6 +2,8 @@
 
 #include <emu/detail/basic_container.hpp>
 #include <emu/cuda/device/accessor.hpp>
+#include <emu/cuda/stream.hpp>
+#include <emu/cuda/memory.hpp>
 
 namespace emu::cuda::device
 {

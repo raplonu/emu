@@ -4,6 +4,7 @@
 #include <emu/concepts.hpp>
 
 #include <type_traits>
+#include <utility>
 
 namespace emu
 {

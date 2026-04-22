@@ -118,7 +118,7 @@ namespace emu::pybind11::numpy
     inline dlpack::data_type_ext_t from_dtype(py::dtype dtype) {
         return dlpack::data_type_ext_t{
             .code = code_from_np_types(dtype.num()),
-            .bits = dtype.itemsize() * CHAR_BIT,
+            .bits = static_cast<uint64_t>(dtype.itemsize() * CHAR_BIT),
             .lanes = 1
         };
     }

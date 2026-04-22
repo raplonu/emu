@@ -17,6 +17,15 @@ configure *args:
 build build_type="release":
     cmake --build --preset "conan-{{build_type}}"
 
+verify_header build_type="release":
+    cmake --preset "conan-{{build_type}}" --fresh -DCMAKE_VERIFY_INTERFACE_HEADER_SETS=ON
+    cmake --build --preset "conan-{{build_type}}" --target all_verify_header_sets
+
+fix_include build_type="release":
+    cmake --preset "conan-{{build_type}}" --fresh -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE="include-what-you-use"
+    cmake --build build > iwyu.out 2>/dev/null
+    fix_includes.py < iwyu.out
+
 test build_type="release":
     ctest --preset conan-{{build_type}}
 

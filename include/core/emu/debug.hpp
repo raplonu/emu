@@ -1,7 +1,5 @@
 #pragma once
 
-#warning "This header is for debug only, do not include it in production code"
-
 namespace emu
 {
     template<auto V>

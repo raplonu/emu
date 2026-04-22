@@ -98,9 +98,8 @@ target_sources(emucore
             ${CMAKE_CURRENT_SOURCE_DIR}/include/core/emu/tensor_traits.hpp
 )
 
-set_target_properties(
-    emucore
-    PROPERTIES VERIFY_INTERFACE_HEADER_SETS ON EXPORT_NAME core
+set_target_properties(emucore PROPERTIES
+    EXPORT_NAME core
 )
 
 target_compile_features(emucore PUBLIC cxx_std_20)
@@ -153,50 +152,55 @@ if (emu_build_cuda)
             src/cuda/cublas.cpp
             src/cuda/cusolver.cpp
         PUBLIC
-        FILE_SET HEADERS
-        BASE_DIRS
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda
-        FILES
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/device/accessor.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/device/mdspan.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/device/span.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/device/container.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/device/mdcontainer.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/error.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/managed/accessor.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/managed/container.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/managed/mdcontainer.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/managed/mdspan.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/managed/span.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/test/device_test.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/allocator.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/device.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/event.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/memory.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/pointer.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/stream.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cufft.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cufft/type.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cufft/utility.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cufft/error.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cufft/handle.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cusolver.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cusolver/error.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cusolver/handle.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/macro.cuh
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/atomic.cuh
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/config.cuh
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/utility.cuh
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cublas.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cublas/error.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cublas/handle.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cublas/type.hpp
+            FILE_SET public_header TYPE HEADERS
+            BASE_DIRS
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda
+            FILES
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/device/accessor.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/device/mdspan.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/device/span.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/device/container.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/device/mdcontainer.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/error.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/managed/accessor.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/managed/container.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/managed/mdcontainer.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/managed/mdspan.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/managed/span.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/allocator.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/device.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/event.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/memory.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/pointer.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/stream.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cufft.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cufft/type.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cufft/utility.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cufft/error.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cufft/handle.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cusolver.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cusolver/error.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cusolver/handle.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cublas.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cublas/error.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cublas/handle.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cublas/type.hpp
+        PUBLIC
+            FILE_SET skip_verify_header TYPE HEADERS
+            BASE_DIRS
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda
+            FILES
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/macro.cuh
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/atomic.cuh
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/config.cuh
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/utility.cuh
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda/emu/cuda/test/device_test.hpp
     )
 
-    set_target_properties(
-        emucuda
-        PROPERTIES VERIFY_INTERFACE_HEADER_SETS ON EXPORT_NAME cuda
+    set_target_properties(emucuda PROPERTIES
+        EXPORT_NAME cuda
+        INTERFACE_HEADER_SETS_TO_VERIFY public_header  # only verify this set
     )
 
     target_compile_options(emucuda PUBLIC
@@ -216,7 +220,9 @@ if (emu_build_cuda)
     find_package(CUDAToolkit REQUIRED)
 
     # Remove it when the 3.1 version is released in CUDA toolkit
-    find_package(nv-cccl REQUIRED CONFIG)
+    # set(CCCL_VERSION "3.1.0")
+    # set(FPHSA_NAME_MISMATCHED_override TRUE)
+    find_package(CCCL REQUIRED CONFIG)
 
     target_link_libraries(emucuda PUBLIC
         emu::core
@@ -239,7 +245,6 @@ target_sources(emupython INTERFACE FILE_SET HEADERS
         ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/cast/cuda/stream.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/cast/cuda/event.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/cast/detail/capsule.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/cast/detail/accessor_adaptor.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/cast/detail/layout_adaptor.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/cast/detail/tensor_caster.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/include/python/emu/pybind11/cast/mdspan.hpp
@@ -254,6 +259,19 @@ set_target_properties(
     emupython
     PROPERTIES VERIFY_INTERFACE_HEADER_SETS ON EXPORT_NAME python
 )
+
+if(CMAKE_VERIFY_INTERFACE_HEADER_SETS)
+    find_package(Python COMPONENTS Interpreter Development)
+    find_package(pybind11 QUIET)
+
+    if(pybind11_FOUND AND Python_FOUND)
+        message(WARNING "header verification is enabled, emupython links to pybind11 for test purpose only. Do not install it.")
+        target_link_libraries(emupython INTERFACE pybind11::embed)
+    else()
+        message(WARNING "pybind11 or Python not found, disabling interface header verification for emupython")
+        set_target_properties(emupython PROPERTIES VERIFY_INTERFACE_HEADER_SETS FALSE)
+    endif()
+endif()
 
 # We do not link to pybind11 here, we let the consumer do it
 target_link_libraries(emupython INTERFACE
@@ -282,6 +300,8 @@ install(
     DESTINATION ${CMAKE_INSTALL_LIBDIR}$<$<CONFIG:Debug>:/debug>
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}$<$<CONFIG:Debug>:/debug>
     FILE_SET HEADERS DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    FILE_SET public_header DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    FILE_SET skip_verify_header DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
 if(emu_install_config_file_package)

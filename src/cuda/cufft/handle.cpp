@@ -16,7 +16,7 @@ namespace handle::detail
         EMU_CHECK_OR_THROW(cufftDestroy(id));
     }
 
-    void set_stream(id_t handle, ::emu::cuda::stream::handle_t stream) {
+    void set_stream(id_t handle, ::emu::cuda::stream_id stream) {
         EMU_CHECK_OR_THROW(cufftSetStream(handle, stream));
     }
 
@@ -27,12 +27,12 @@ handle_t::handle_t():
     device_id_(::emu::cuda::device::current().id())
 {}
 
-handle_t::handle_t(handle::id_t id, ::emu::cuda::device::id_t device_id, bool owning):
+handle_t::handle_t(handle::id_t id, ::emu::cuda::device_id device_id, bool owning):
     id_(id, owning),
     device_id_(device_id)
 {}
 
-handle_t::handle_t(::emu::cuda::device::id_t device_id):
+handle_t::handle_t(::emu::cuda::device_id device_id):
     id_([&]{
         ::emu::cuda::device_t(device_id).make_current();
         return handle::detail::create();
@@ -40,8 +40,8 @@ handle_t::handle_t(::emu::cuda::device::id_t device_id):
     device_id_(device_id)
 {}
 
-void handle_t::set_stream(const ::emu::cuda::stream_t & stream) {
-    handle::detail::set_stream(id(), stream.handle());
+void handle_t::set_stream(const ::emu::cuda::stream_ref & stream) {
+    handle::detail::set_stream(id(), stream.get());
 }
 
 handle_t & handle_t::enable() {
@@ -60,8 +60,8 @@ namespace handle
         return {};
     }
 
-    handle_t wrap(id_t id, const ::emu::cuda::device_t& device, bool take_ownership) {
-        return { id, device.id(), take_ownership };
+    handle_t wrap(id_t id, const ::emu::cuda::device_ref& device, bool take_ownership) {
+        return { id, device.get(), take_ownership };
     }
 
 } // namespace handle

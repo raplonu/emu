@@ -2,11 +2,13 @@
 
 #include <emu/cusolver/handle.hpp>
 #include <emu/cusolver/error.hpp>
-
 #include <emu/cuda.hpp>
 #include <emu/scoped.hpp>
 #include <emu/cuda/device.hpp>
 #include <emu/cuda/stream.hpp>
+
+#include <cusolverDn.h>
+#include <cuda/stream_ref>
 
 namespace emu::cusolver
 {

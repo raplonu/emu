@@ -1,11 +1,21 @@
 #pragma once
 
+#include <emu/macro.hpp>
+#include <emu/type_traits.hpp>
 #include <emu/expected.hpp>
 #include <emu/error/generation.hpp>
+
+#include <fmt/base.h>
+#include <tl/expected.hpp>
 
 #include <stdexcept>
 #include <system_error>
 #include <cerrno>
+#include <functional>
+#include <string>
+#include <string_view>
+#include <type_traits>
+
 
 namespace emu
 {

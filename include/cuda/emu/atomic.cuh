@@ -94,7 +94,7 @@ EMU_ADD_ATOMIC_FUNCTION(bor , math::bor , atomicOr );
 EMU_ADD_ATOMIC_FUNCTION(band, math::band, atomicAnd);
 EMU_ADD_ATOMIC_FUNCTION(bxor, math::bxor, atomicXor);
 
-#undef EMU_ADD_ATOMIC_FUNCTION;
+#undef EMU_ADD_ATOMIC_FUNCTION
 
 } // namespace atomic
 

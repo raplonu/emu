@@ -2,7 +2,6 @@
 
 #include <emu/cusolver/handle.hpp>
 #include <emu/cublas/type.hpp>
-
 #include <cusolverDn.h>
 
 namespace emu::cusolver

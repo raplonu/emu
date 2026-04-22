@@ -5,6 +5,8 @@
 #include <fmt/format.h>
 
 #include <cstdint>
+#include <string>
+#include <typeinfo>
 
 namespace emu
 {

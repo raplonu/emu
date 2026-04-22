@@ -1,4 +1,9 @@
+#include <emu/cuda/device.hpp>
+#include <emu/cuda/stream.hpp>
 #include <emu/cusolver/handle.hpp>
+#include <emu/error.hpp>
+
+#include <cuda/stream_ref>
 
 namespace emu::cusolver
 {

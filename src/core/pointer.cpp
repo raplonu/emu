@@ -1,10 +1,23 @@
+#include <emu/detail/dlpack_types.hpp>
+#include <emu/error.hpp>
+#include <emu/macro.hpp>
+#include <emu/optional.hpp>
 #include <emu/pointer.hpp>
 #include <emu/utility.hpp>
 #include <emu/string.hpp>
 
+#include <dlpack/dlpack.h>
+
 #include <filesystem>
 #include <list>
 #include <string>
+#include <bit>
+#include <cstdint>
+#include <fstream>
+#include <iterator>
+#include <ranges>
+#include <system_error>
+#include <utility>
 
 namespace emu
 {

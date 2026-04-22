@@ -3,7 +3,6 @@
 #include <emu/type_traits.hpp>
 #include <emu/concepts.hpp>
 #include <emu/assert.hpp>
-
 #include <emu/detail/basic_mdspan.hpp>
 #include <emu/capsule.hpp>
 
@@ -46,9 +45,9 @@ namespace detail
     struct exts_flag_t {};
 
     template<typename T, typename Extents, typename LayoutPolicy, typename AccessorPolicy>
-    struct basic_mdcontainer : mdspan<T, Extents, LayoutPolicy, AccessorPolicy>, emu::capsule
+    struct basic_mdcontainer : stdex::mdspan<T, Extents, LayoutPolicy, AccessorPolicy>, emu::capsule
     {
-        using mdspan_type = mdspan<T, Extents, LayoutPolicy, AccessorPolicy>;
+        using mdspan_type = stdex::mdspan<T, Extents, LayoutPolicy, AccessorPolicy>;
         using capsule_base = emu::capsule;
 
         using extents_type     = typename mdspan_type::extents_type;
@@ -295,7 +294,7 @@ namespace detail
             >
             or not std::is_convertible_v<const OtherAccessor&, accessor_type>
         )
-        basic_mdcontainer( const mdspan<OtherElementType, OtherExtents,
+        basic_mdcontainer( const stdex::mdspan<OtherElementType, OtherExtents,
                              OtherLayoutPolicy, OtherAccessor>& other,
                       DataHolder&& dh )
             : mdspan_type( other )

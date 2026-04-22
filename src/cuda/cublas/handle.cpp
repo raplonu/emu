@@ -1,6 +1,9 @@
+#include <emu/cuda/stream.hpp>
+#include <emu/error.hpp>
 #include <emu/cublas/handle.hpp>
-
 #include <emu/cuda/device.hpp>
+
+#include <cuda/stream_ref>
 
 namespace emu::cublas
 {
